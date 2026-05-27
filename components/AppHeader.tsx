@@ -16,7 +16,7 @@ export function AppHeader() {
         <Link href="/" className="font-serif text-2xl tracking-[0.18em] leading-none">
           AFTERLINE
         </Link>
-        <nav className="flex gap-6">
+        <nav className="flex gap-6 items-end">
           {NAV.map((item) => (
             <Link
               key={item.href}
@@ -27,6 +27,15 @@ export function AppHeader() {
               <span className="text-muted text-[9px] mt-0.5">{item.ko}</span>
             </Link>
           ))}
+          <form action="/auth/signout" method="post" className="ml-2">
+            <button
+              type="submit"
+              className="font-mono text-[10px] tracking-[0.2em] text-muted hover:text-ink transition-colors flex flex-col items-start leading-tight cursor-pointer"
+            >
+              <span>SIGN OUT</span>
+              <span className="text-[9px] mt-0.5">로그아웃</span>
+            </button>
+          </form>
         </nav>
       </div>
     </header>
