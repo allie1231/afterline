@@ -33,14 +33,22 @@ const LOCATION_LABEL: Record<SourceType, { en: string; ko: string }> = {
   other: { en: "LOCATION", ko: "위치" },
 };
 
+// Editorial palette — arranged cool → warm → neutral.
 const SPINE_COLORS = [
   { value: "auto", color: null, label: "AUTO" },
   { value: "var(--blue)", color: "var(--blue)" },
-  { value: "var(--red)", color: "var(--red)" },
-  { value: "var(--green)", color: "var(--green)" },
-  { value: "var(--yellow)", color: "var(--yellow)" },
-  { value: "var(--orange)", color: "var(--orange)" },
+  { value: "#1a2847", color: "#1a2847" }, // navy
+  { value: "#9a8cc4", color: "#9a8cc4" }, // lilac
   { value: "var(--cyan)", color: "var(--cyan)" },
+  { value: "var(--green)", color: "var(--green)" },
+  { value: "#3a5a3a", color: "#3a5a3a" }, // forest
+  { value: "var(--yellow)", color: "var(--yellow)" },
+  { value: "#c89a2e", color: "#c89a2e" }, // mustard
+  { value: "var(--orange)", color: "var(--orange)" },
+  { value: "#b35c3e", color: "#b35c3e" }, // terracotta
+  { value: "var(--red)", color: "var(--red)" },
+  { value: "#7a1f1f", color: "#7a1f1f" }, // burgundy
+  { value: "#e8a08e", color: "#e8a08e" }, // salmon
   { value: "var(--ink)", color: "var(--ink)" },
 ] as const;
 
@@ -131,6 +139,7 @@ export function NewQuoteForm({
 
   // Tags controlled so suggestion chips can append
   const [tagsInput, setTagsInput] = useState("");
+  const [tagsExpanded, setTagsExpanded] = useState(false);
   function appendTag(tag: string) {
     setTagsInput((prev) => {
       const arr = prev
@@ -537,7 +546,7 @@ export function NewQuoteForm({
                   PREVIOUSLY USED / 이전에 쓴 태그
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {allTags.map((tag) => (
+                  {(tagsExpanded ? allTags : allTags.slice(0, 12)).map((tag) => (
                     <button
                       type="button"
                       key={tag}
@@ -547,6 +556,17 @@ export function NewQuoteForm({
                       {tag}
                     </button>
                   ))}
+                  {allTags.length > 12 && (
+                    <button
+                      type="button"
+                      onClick={() => setTagsExpanded((v) => !v)}
+                      className="font-mono text-[10px] tracking-[0.25em] border border-ink px-2 py-1 bg-paper hover:bg-ink hover:text-paper transition-colors"
+                    >
+                      {tagsExpanded
+                        ? "− LESS / 접기"
+                        : `+ ${allTags.length - 12} MORE / 더보기`}
+                    </button>
+                  )}
                 </div>
               </div>
             )}

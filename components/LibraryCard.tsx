@@ -1,4 +1,5 @@
 import type { CollectionNote, Source } from "@/lib/data/types";
+import { StarRating } from "./StarRating";
 
 const STATUS_LABEL: Record<NonNullable<CollectionNote["status"]>, string> = {
   to_read: "TO READ",
@@ -93,6 +94,7 @@ export function LibraryCard({
         </div>
 
         <aside className="border-t md:border-t-0 border-ink px-6 py-6 flex flex-col gap-5">
+          <StarRating sourceId={source.id} initialRating={note?.rating ?? null} />
           <Stamp label="STATUS" value={status} highlight />
           <Stamp label="LINES" value={String(lineCount).padStart(2, "0")} />
           <Stamp label="STARTED" value={fmtDate(note?.started_at)} />

@@ -168,6 +168,48 @@ export interface CreateQuoteInput {
   is_favorite?: boolean;
 }
 
+export interface CollectionNoteFields {
+  summary?: string | null;
+  personal_note?: string | null;
+  rating?: number | null;
+  status?: CollectionNote["status"];
+  started_at?: string | null;
+  finished_at?: string | null;
+  keywords?: string[];
+}
+
+export async function upsertCollectionNote(
+  sourceId: string,
+  fields: CollectionNoteFields,
+): Promise<void> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const { data: existing } = await supabase
+    .from("collection_notes")
+    .select("id")
+    .eq("source_id", sourceId)
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await supabase
+      .from("collection_notes")
+      .update({ ...fields, updated_at: new Date().toISOString() })
+      .eq("id", existing.id);
+    if (error) throw error;
+  } else {
+    const { error } = await supabase.from("collection_notes").insert({
+      ...fields,
+      source_id: sourceId,
+      user_id: user.id,
+    });
+    if (error) throw error;
+  }
+}
+
 export async function createQuote(input: CreateQuoteInput): Promise<Quote> {
   const supabase = await createClient();
   const {
