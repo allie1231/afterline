@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 import Papa from "papaparse";
+import { ROOM_CATEGORIES } from "@/lib/data/categories";
+import type { SourceType } from "@/lib/data/types";
 import {
   runImportAction,
   type ImportResult,
@@ -59,6 +61,7 @@ export function DataPanel({
   const [mapping, setMapping] = useState<
     Record<string, keyof ImportRow | "">
   >({});
+  const [defaultType, setDefaultType] = useState<SourceType>("book");
   const [result, setResult] = useState<ImportResult | null>(null);
   const [pending, startTransition] = useTransition();
   const [dragOver, setDragOver] = useState(false);
@@ -119,7 +122,7 @@ export function DataPanel({
       "other",
     ].includes(t)
       ? t
-      : "other";
+      : defaultType;
     return `${validType}|${(r.source_title ?? "").trim()}||${(r.text ?? "").trim()}`;
   }
 
@@ -149,7 +152,7 @@ export function DataPanel({
 
   function doImport() {
     startTransition(async () => {
-      const res = await runImportAction(mappedRows);
+      const res = await runImportAction(mappedRows, defaultType);
       setResult(res);
     });
   }
@@ -233,6 +236,44 @@ export function DataPanel({
 
         {csv && !result && (
           <div className="flex flex-col gap-8">
+            {/* Default room/type */}
+            <div>
+              <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-2">
+                DEFAULT TYPE / 기본 출처 유형
+              </div>
+              <p className="font-mono text-[10px] tracking-[0.2em] text-muted mb-3">
+                CSV 에 source_type 컬럼이 없거나 비어 있는 행은 이 유형으로 들어갑니다.
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px bg-ink border border-ink">
+                {ROOM_CATEGORIES.map((cat) => {
+                  const active = defaultType === cat.type;
+                  return (
+                    <button
+                      type="button"
+                      key={cat.type}
+                      onClick={() => setDefaultType(cat.type)}
+                      className="p-3 text-left transition-colors"
+                      style={{
+                        background: active ? cat.accent : "var(--paper)",
+                        color: active
+                          ? cat.contrast === "dark"
+                            ? "var(--white)"
+                            : "var(--ink)"
+                          : "var(--ink)",
+                      }}
+                    >
+                      <div className="font-serif text-base leading-none tracking-tight">
+                        {cat.en}
+                      </div>
+                      <div className="font-mono text-[9px] tracking-[0.25em] mt-1 opacity-70">
+                        {cat.ko}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div>
               <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-3">
                 MAP COLUMNS / 컬럼 매핑 — CSV {csv.rows.length}행 감지됨
@@ -348,7 +389,21 @@ export function DataPanel({
                             )}
                           </td>
                           <td className="font-mono text-[10px] text-muted px-3 py-2">
-                            {r.source_type || "other"}
+                            {(() => {
+                              const t = (r.source_type ?? "")
+                                .toLowerCase()
+                                .trim();
+                              return [
+                                "book",
+                                "article",
+                                "lyrics",
+                                "movie",
+                                "conversation",
+                                "other",
+                              ].includes(t)
+                                ? t
+                                : defaultType;
+                            })()}
                           </td>
                         </tr>
                       );

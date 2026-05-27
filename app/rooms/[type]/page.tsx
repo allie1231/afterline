@@ -5,7 +5,7 @@ import {
   getRoomCategory,
   getSourcesByType,
 } from "@/lib/data/repository";
-import { SourceSpine } from "@/components/SourceSpine";
+import { RoomShelf } from "@/components/RoomShelf";
 import type { SourceType } from "@/lib/data/types";
 
 const VALID: SourceType[] = [
@@ -77,23 +77,7 @@ export default async function RoomPage({
           </Link>
         </div>
       ) : (
-        <div className="relative">
-          <div className="border-y-2 border-ink">
-            <div className="flex items-end gap-3 py-6 overflow-x-auto">
-              {sourceCounts.map(({ source, lines }, i) => (
-                <SourceSpine
-                  key={source.id}
-                  source={source}
-                  lines={lines}
-                  index={i}
-                />
-              ))}
-            </div>
-          </div>
-          <div className="mt-3 font-mono text-[10px] tracking-[0.25em] text-muted">
-            SHELF · {String(sources.length).padStart(2, "0")} ITEMS
-          </div>
-        </div>
+        <RoomShelf type={type as SourceType} sourceCounts={sourceCounts} />
       )}
     </section>
   );

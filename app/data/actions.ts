@@ -35,6 +35,7 @@ export type ImportResult = {
 
 export async function runImportAction(
   rows: ImportRow[],
+  defaultType: SourceType = "other",
 ): Promise<ImportResult> {
   const supabase = await createClient();
   const {
@@ -77,7 +78,7 @@ export async function runImportAction(
     const rawType = (row.source_type ?? "").toLowerCase().trim();
     const sourceType: SourceType = (VALID_TYPES as string[]).includes(rawType)
       ? (rawType as SourceType)
-      : "other";
+      : defaultType;
 
     if (!text) {
       errors.push({ row: i + 1, reason: "문장 비어있음" });
