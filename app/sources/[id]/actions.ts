@@ -129,6 +129,23 @@ export async function deleteSourceAction(
   redirect(`/rooms/${type}`);
 }
 
+export async function updateSourceSpineColorAction(
+  sourceId: string,
+  color: string | null,
+): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("sources")
+    .update({
+      spine_color: color,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", sourceId);
+  if (error) throw error;
+  revalidatePath(`/sources/${sourceId}`);
+  revalidatePath("/rooms");
+}
+
 export async function changeSourceTypeAction(
   sourceId: string,
   fromType: SourceType,
