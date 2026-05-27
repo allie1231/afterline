@@ -35,7 +35,7 @@ export const ROOM_CATEGORIES: RoomCategory[] = [
   },
   {
     type: "conversation",
-    en: "CONVERSATIONS",
+    en: "TALK",
     ko: "대화",
     description: "Lines that stayed after speaking.",
     accent: "var(--green)",

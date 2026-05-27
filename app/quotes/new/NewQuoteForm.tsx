@@ -223,7 +223,7 @@ export function NewQuoteForm({
                       : "var(--ink)",
                   }}
                 >
-                  <div className="font-serif text-lg leading-none tracking-tight">
+                  <div className="font-serif text-sm leading-none tracking-tight">
                     {cat.en}
                   </div>
                   <div className="font-mono text-[9px] tracking-[0.25em] mt-1 opacity-70">
