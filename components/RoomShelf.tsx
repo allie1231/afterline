@@ -1,8 +1,12 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { SourceSpine } from "./SourceSpine";
-import { deleteSourcesBulkAction } from "@/app/rooms/[type]/actions";
+import {
+  deleteSourcesBulkAction,
+  moveSourcesBulkAction,
+} from "@/app/rooms/[type]/actions";
+import { ROOM_CATEGORIES } from "@/lib/data/categories";
 import type { Source, SourceType } from "@/lib/data/types";
 
 export function RoomShelf({
@@ -14,7 +18,21 @@ export function RoomShelf({
 }) {
   const [editMode, setEditMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [moveOpen, setMoveOpen] = useState(false);
   const [pending, startTransition] = useTransition();
+  const moveRef = useRef<HTMLDivElement>(null);
+
+  // Close MOVE TO dropdown on outside click
+  useEffect(() => {
+    if (!moveOpen) return;
+    function onClick(e: MouseEvent) {
+      if (moveRef.current && !moveRef.current.contains(e.target as Node)) {
+        setMoveOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [moveOpen]);
 
   function toggle(id: string) {
     setSelected((prev) => {
@@ -36,6 +54,7 @@ export function RoomShelf({
   function exitEditMode() {
     setSelected(new Set());
     setEditMode(false);
+    setMoveOpen(false);
   }
 
   function handleBulkDelete() {
@@ -51,9 +70,24 @@ export function RoomShelf({
     });
   }
 
+  function handleBulkMove(targetType: SourceType) {
+    if (selected.size === 0 || targetType === type) return;
+    const target = ROOM_CATEGORIES.find((c) => c.type === targetType);
+    const ok = confirm(
+      `${selected.size}개의 출처를 ${target?.en} (${target?.ko}) 룸으로 옮길까요?`,
+    );
+    if (!ok) return;
+    startTransition(async () => {
+      await moveSourcesBulkAction([...selected], type, targetType);
+      setSelected(new Set());
+      setEditMode(false);
+      setMoveOpen(false);
+    });
+  }
+
   return (
     <div className="relative">
-      <div className="flex items-center justify-end gap-3 mb-3 min-h-[28px]">
+      <div className="flex items-center justify-end gap-3 mb-3 min-h-[28px] flex-wrap">
         {editMode ? (
           <>
             <span className="font-mono text-[10px] tracking-[0.25em] text-muted">
@@ -79,6 +113,54 @@ export function RoomShelf({
             >
               × DONE
             </button>
+
+            {/* MOVE TO */}
+            <div ref={moveRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setMoveOpen((o) => !o)}
+                disabled={pending || selected.size === 0}
+                className="font-mono text-[10px] tracking-[0.3em] border border-ink px-3 py-1.5 hover:bg-ink hover:text-paper transition-colors disabled:opacity-40"
+              >
+                MOVE {String(selected.size).padStart(2, "0")} ▾
+              </button>
+              {moveOpen && (
+                <div className="absolute top-full right-0 mt-2 z-30 bg-paper border border-ink min-w-[220px] shadow-[4px_4px_0_var(--ink)]">
+                  <div className="font-mono text-[9px] tracking-[0.3em] text-muted px-3 py-2 border-b border-line">
+                    MOVE TO ROOM / 룸 이동
+                  </div>
+                  {ROOM_CATEGORIES.map((cat) => {
+                    const active = cat.type === type;
+                    return (
+                      <button
+                        type="button"
+                        key={cat.type}
+                        disabled={active || pending}
+                        onClick={() => handleBulkMove(cat.type)}
+                        className={`flex w-full items-center justify-between px-3 py-2 font-mono text-[10px] tracking-[0.25em] border-b border-line last:border-b-0 transition-colors ${
+                          active
+                            ? "bg-line/30 text-muted cursor-default"
+                            : "hover:bg-ink hover:text-paper cursor-pointer"
+                        }`}
+                      >
+                        <span>
+                          {cat.en} / {cat.ko}
+                        </span>
+                        {active ? (
+                          <span className="text-[9px]">HERE</span>
+                        ) : (
+                          <span
+                            className="w-2 h-2 inline-block"
+                            style={{ background: cat.accent }}
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
             <button
               type="button"
               onClick={handleBulkDelete}
@@ -86,7 +168,7 @@ export function RoomShelf({
               className="font-mono text-[10px] tracking-[0.3em] border border-ink px-3 py-1.5 hover:bg-red hover:text-paper hover:border-red transition-colors disabled:opacity-40"
             >
               {pending
-                ? "DELETING…"
+                ? "WORKING…"
                 : `DELETE ${String(selected.size).padStart(2, "0")}`}
             </button>
           </>

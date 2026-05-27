@@ -32,7 +32,10 @@ export function SourceSpine({
   index: number;
 }) {
   // User-picked color wins; otherwise rotate through the default palette.
-  const bg = source.spine_color ?? PALETTE[index % PALETTE.length];
+  // Use `||` (not `??`) so empty strings also fall back to the palette.
+  const bg =
+    (source.spine_color && source.spine_color.trim()) ||
+    PALETTE[index % PALETTE.length];
   const label = SPINE_LABEL[source.type];
   // Light backgrounds need dark ink; everything else gets white text.
   const LIGHT_BGS = new Set([

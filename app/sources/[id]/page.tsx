@@ -11,6 +11,7 @@ import { LibraryCard } from "@/components/LibraryCard";
 import { QuoteRow } from "@/components/QuoteRow";
 import { SourceFieldEditor } from "@/components/SourceFieldEditor";
 import { DeleteSourceButton } from "@/components/DeleteSourceButton";
+import { SourceTypeChanger } from "@/components/SourceTypeChanger";
 import type { SourceType } from "@/lib/data/types";
 
 const NOTE_LABEL: Record<SourceType, { en: string; ko: string }> = {
@@ -61,8 +62,11 @@ export default async function SourcePage({
         {showCover && <SourceCover source={source} category={category} />}
 
         <div className="flex flex-col justify-end">
-          <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-2">
-            {category.en} / {category.ko}
+          <div className="mb-2">
+            <SourceTypeChanger
+              sourceId={source.id}
+              currentType={source.type}
+            />
           </div>
           <h1 className="font-serif text-[clamp(28px,4vw,48px)] leading-[1.05] tracking-tight break-words">
             <SourceFieldEditor

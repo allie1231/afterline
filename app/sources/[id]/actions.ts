@@ -128,3 +128,21 @@ export async function deleteSourceAction(
   revalidatePath(`/rooms/${type}`);
   redirect(`/rooms/${type}`);
 }
+
+export async function changeSourceTypeAction(
+  sourceId: string,
+  fromType: SourceType,
+  toType: SourceType,
+): Promise<void> {
+  if (fromType === toType) return;
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("sources")
+    .update({ type: toType, updated_at: new Date().toISOString() })
+    .eq("id", sourceId);
+  if (error) throw error;
+  revalidatePath("/rooms");
+  revalidatePath(`/rooms/${fromType}`);
+  revalidatePath(`/rooms/${toType}`);
+  revalidatePath(`/sources/${sourceId}`);
+}
