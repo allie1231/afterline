@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { ROOM_CATEGORIES } from "@/lib/data/categories";
+import { describeUploadError, uploadCover } from "@/lib/storage";
 import type { Source, SourceType } from "@/lib/data/types";
 import { createQuoteAction } from "./actions";
 
@@ -312,6 +313,28 @@ export function NewQuoteForm({
     setPublishedDate(l.published_date ?? "");
     setCoverUrl(l.cover_url ?? "");
     setLyricsResults([]);
+  }
+
+  // Cover file upload
+  const coverFileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  async function handleCoverUpload(files: FileList | null) {
+    setUploadError(null);
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      const result = await uploadCover(files[0]);
+      if ("kind" in result) {
+        setUploadError(describeUploadError(result));
+      } else {
+        setCoverUrl(result.url);
+      }
+    } finally {
+      setUploading(false);
+      if (coverFileInputRef.current) coverFileInputRef.current.value = "";
+    }
   }
 
   function handleTypeChange(t: SourceType) {
@@ -777,21 +800,57 @@ export function NewQuoteForm({
                 </Field>
               )}
 
-              {/* Cover URL — only for image-based covers */}
+              {/* Cover URL + UPLOAD — only for image-based covers */}
               {(type === "book" || type === "lyrics" || type === "movie") && (
                 <Field
-                  labelEn="COVER URL"
-                  labelKo="표지/포스터 URL (선택)"
+                  labelEn="COVER"
+                  labelKo="표지/포스터 — URL 붙여넣기 또는 직접 업로드"
                   className="md:col-span-2"
                 >
-                  <input
-                    type="url"
-                    name="cover_url"
-                    value={coverUrl}
-                    onChange={(e) => setCoverUrl(e.target.value)}
-                    placeholder="https://..."
-                    className="w-full border border-ink bg-paper px-4 py-3 font-serif text-lg focus:outline-none focus:border-blue"
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      name="cover_url"
+                      value={coverUrl}
+                      onChange={(e) => setCoverUrl(e.target.value)}
+                      placeholder="https://... (검색 결과를 USE 하거나 직접 입력)"
+                      className="flex-1 border border-ink bg-paper px-4 py-3 font-serif text-lg focus:outline-none focus:border-blue"
+                    />
+                    <input
+                      ref={coverFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleCoverUpload(e.target.files)}
+                      className="sr-only"
+                      disabled={uploading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => coverFileInputRef.current?.click()}
+                      disabled={uploading}
+                      className="font-mono text-[10px] tracking-[0.3em] border border-ink px-4 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
+                    >
+                      {uploading ? "..." : "↑ UPLOAD"}
+                    </button>
+                  </div>
+                  {coverUrl && (
+                    <div className="mt-2 flex items-start gap-2">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={coverUrl}
+                        alt=""
+                        className="w-16 h-24 object-cover bg-ink border border-line"
+                      />
+                      <span className="font-mono text-[9px] tracking-[0.2em] text-muted">
+                        PREVIEW
+                      </span>
+                    </div>
+                  )}
+                  {uploadError && (
+                    <div className="font-mono text-xs text-red mt-2">
+                      {uploadError}
+                    </div>
+                  )}
                 </Field>
               )}
             </div>

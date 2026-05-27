@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updateSourceTextAction } from "@/app/sources/[id]/actions";
+import {
+  describeUploadError,
+  uploadCover,
+  MAX_COVER_BYTES,
+} from "@/lib/storage";
 import type { Source, SourceType } from "@/lib/data/types";
 
 // ── Normalized result type used by all three providers ──────────────
@@ -152,12 +157,16 @@ export function ChangeCoverDialog({
   onClose: () => void;
 }) {
   const router = useRouter();
-  const [mode, setMode] = useState<"search" | "url">("search");
+  const [mode, setMode] = useState<"search" | "url" | "upload">("search");
   const [query, setQuery] = useState("");
   const [hits, setHits] = useState<CoverHit[]>([]);
   const [searching, setSearching] = useState(false);
   const [urlInput, setUrlInput] = useState(source.cover_url ?? "");
   const [pending, startTransition] = useTransition();
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Close on Escape
   useEffect(() => {
@@ -195,6 +204,23 @@ export function ChangeCoverDialog({
       router.refresh();
       onClose();
     });
+  }
+
+  async function handleFiles(files: FileList | null) {
+    setUploadError(null);
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    setUploading(true);
+    try {
+      const result = await uploadCover(file);
+      if ("kind" in result) {
+        setUploadError(describeUploadError(result));
+        return;
+      }
+      apply(result.url);
+    } finally {
+      setUploading(false);
+    }
   }
 
   return (
@@ -240,8 +266,11 @@ export function ChangeCoverDialog({
           <TabButton active={mode === "search"} onClick={() => setMode("search")}>
             SEARCH / 검색
           </TabButton>
+          <TabButton active={mode === "upload"} onClick={() => setMode("upload")}>
+            UPLOAD / 업로드
+          </TabButton>
           <TabButton active={mode === "url"} onClick={() => setMode("url")}>
-            URL / 주소 직접 입력
+            URL / 주소
           </TabButton>
         </div>
 
@@ -325,6 +354,56 @@ export function ChangeCoverDialog({
                   NO RESULTS / 결과 없음
                 </div>
               )}
+            </>
+          ) : mode === "upload" ? (
+            <>
+              <div className="font-mono text-[9px] tracking-[0.3em] text-muted mb-2">
+                UPLOAD IMAGE / 이미지 파일 — 최대 5 MB
+              </div>
+              <label
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragOver(true);
+                }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDragOver(false);
+                  handleFiles(e.dataTransfer.files);
+                }}
+                className={`flex flex-col items-center justify-center border-2 border-dashed py-10 cursor-pointer transition-colors ${
+                  dragOver
+                    ? "border-ink bg-line/40"
+                    : "border-line hover:border-ink"
+                } ${uploading ? "opacity-60 pointer-events-none" : ""}`}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleFiles(e.target.files)}
+                  className="sr-only"
+                  disabled={uploading}
+                />
+                <div className="font-mono text-[10px] tracking-[0.3em] text-muted">
+                  {uploading ? "UPLOADING…" : "DROP IMAGE HERE / 끌어다 놓기"}
+                </div>
+                <div className="font-serif text-base text-ink mt-2">
+                  {uploading ? "잠시만요…" : "또는 클릭해서 선택"}
+                </div>
+                <div className="font-mono text-[9px] tracking-[0.25em] text-muted mt-2">
+                  JPG · PNG · WEBP · GIF
+                </div>
+              </label>
+              {uploadError && (
+                <div className="font-mono text-xs text-red mt-3">
+                  {uploadError}
+                </div>
+              )}
+              <p className="font-mono text-[9px] tracking-[0.25em] text-muted mt-4 leading-relaxed">
+                ※ 업로드 즉시 해당 출처의 표지로 저장됩니다. 같은 다이얼로그에서
+                CLEAR COVER 로 다시 비울 수 있어요.
+              </p>
             </>
           ) : (
             <>
