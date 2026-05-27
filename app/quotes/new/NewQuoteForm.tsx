@@ -58,7 +58,7 @@ const SPINE_COLORS: Array<{
 
 const MOVIE_FORMATS = ["영화", "드라마", "애니메이션"] as const;
 
-// ── Google Books search ──────────────────────────────────────────────
+// ── Book search (server proxy: Aladin first, Google Books fallback) ──
 type BookResult = {
   id: string;
   title: string;
@@ -67,42 +67,14 @@ type BookResult = {
   published_date?: string;
   isbn?: string;
   cover_url?: string;
+  source: "aladin" | "google";
 };
 
-async function searchGoogleBooks(query: string): Promise<BookResult[]> {
-  const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=8&printType=books`;
-  const res = await fetch(url);
+async function searchBooks(query: string): Promise<BookResult[]> {
+  const res = await fetch(`/api/books/search?q=${encodeURIComponent(query)}`);
   if (!res.ok) return [];
-  const data = await res.json();
-  const items = (data.items ?? []) as Array<{
-    id: string;
-    volumeInfo: {
-      title?: string;
-      authors?: string[];
-      publisher?: string;
-      publishedDate?: string;
-      industryIdentifiers?: { type: string; identifier: string }[];
-      imageLinks?: { thumbnail?: string; smallThumbnail?: string };
-    };
-  }>;
-  return items.map((it) => {
-    const v = it.volumeInfo;
-    const isbn13 = v.industryIdentifiers?.find((x) => x.type === "ISBN_13");
-    const isbn10 = v.industryIdentifiers?.find((x) => x.type === "ISBN_10");
-    const cover = (v.imageLinks?.thumbnail ?? v.imageLinks?.smallThumbnail)?.replace(
-      "http://",
-      "https://",
-    );
-    return {
-      id: it.id,
-      title: v.title ?? "",
-      creator: v.authors?.join(", "),
-      publisher: v.publisher,
-      published_date: v.publishedDate,
-      isbn: isbn13?.identifier ?? isbn10?.identifier,
-      cover_url: cover,
-    };
-  });
+  const data = (await res.json()) as { results?: BookResult[] };
+  return data.results ?? [];
 }
 
 // ── TMDb search (movies + TV) ─────────────────────────────────────────
@@ -226,7 +198,7 @@ export function NewQuoteForm({
     if (!q) return;
     setSearching(true);
     try {
-      const results = await searchGoogleBooks(q);
+      const results = await searchBooks(q);
       setBookResults(results);
     } finally {
       setSearching(false);
@@ -396,11 +368,11 @@ export function NewQuoteForm({
           </Field>
         ) : (
           <>
-            {/* Book search (Google Books) */}
+            {/* Book search — Aladin 우선, Google Books 폴백 */}
             {type === "book" && (
               <div className="mb-6 border border-line bg-paper p-4">
                 <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-2">
-                  SEARCH GOOGLE BOOKS / 책 검색
+                  SEARCH BOOKS / 책 검색
                 </div>
                 <div className="flex gap-2">
                   <input
@@ -452,12 +424,15 @@ export function NewQuoteForm({
                               {b.creator}
                             </div>
                           )}
-                          {b.publisher && (
-                            <div className="font-mono text-[9px] tracking-[0.2em] text-muted mt-0.5">
-                              {b.publisher}
-                              {b.published_date ? ` · ${b.published_date}` : ""}
-                            </div>
-                          )}
+                          <div className="font-mono text-[9px] tracking-[0.2em] text-muted mt-0.5 flex gap-2 flex-wrap">
+                            {b.publisher && <span>{b.publisher}</span>}
+                            {b.published_date && (
+                              <span>· {b.published_date}</span>
+                            )}
+                            <span className="opacity-60">
+                              · {b.source.toUpperCase()}
+                            </span>
+                          </div>
                         </div>
                         <button
                           type="button"
