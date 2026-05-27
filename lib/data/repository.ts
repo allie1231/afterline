@@ -32,6 +32,64 @@ export async function getSourcesByType(type: SourceType): Promise<Source[]> {
   return (data ?? []) as Source[];
 }
 
+export interface CollectionsItem {
+  source: Source;
+  lines: number;
+  favorites: number;
+  note: CollectionNote | null;
+  /** ISO string used for sorting; max of source.updated_at + note.updated_at */
+  last_touch: string;
+}
+
+/**
+ * Composite query for the /collections index — every source with its
+ * line count, favorite count, and (optional) collection note.
+ */
+export async function getCollectionsItems(): Promise<CollectionsItem[]> {
+  const supabase = await createClient();
+  const [sourcesRes, quotesRes, notesRes] = await Promise.all([
+    supabase.from("sources").select("*"),
+    supabase.from("quotes").select("source_id, is_favorite"),
+    supabase.from("collection_notes").select("*"),
+  ]);
+  if (sourcesRes.error) throw sourcesRes.error;
+  if (quotesRes.error) throw quotesRes.error;
+  if (notesRes.error) throw notesRes.error;
+
+  const linesById = new Map<string, number>();
+  const favsById = new Map<string, number>();
+  for (const q of quotesRes.data ?? []) {
+    if (!q.source_id) continue;
+    const sid = q.source_id as string;
+    linesById.set(sid, (linesById.get(sid) ?? 0) + 1);
+    if (q.is_favorite) favsById.set(sid, (favsById.get(sid) ?? 0) + 1);
+  }
+
+  const noteById = new Map<string, CollectionNote>();
+  for (const n of (notesRes.data ?? []) as CollectionNote[]) {
+    noteById.set(n.source_id, n);
+  }
+
+  const items: CollectionsItem[] = (sourcesRes.data ?? []).map((s) => {
+    const note = noteById.get(s.id as string) ?? null;
+    const last_touch =
+      note?.updated_at && note.updated_at > (s.updated_at ?? "")
+        ? note.updated_at
+        : (s.updated_at as string) ?? (s.created_at as string);
+    return {
+      source: s as Source,
+      lines: linesById.get(s.id as string) ?? 0,
+      favorites: favsById.get(s.id as string) ?? 0,
+      note,
+      last_touch,
+    };
+  });
+
+  // Default: most recently touched first.
+  items.sort((a, b) => b.last_touch.localeCompare(a.last_touch));
+  return items;
+}
+
 export async function getAllSources(): Promise<Source[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
