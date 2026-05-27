@@ -6,7 +6,7 @@ import {
   getRoomCategory,
   getSourceById,
 } from "@/lib/data/repository";
-import { SourceCover } from "@/components/SourceCover";
+import { CoverEditor } from "@/components/CoverEditor";
 import { LibraryCard } from "@/components/LibraryCard";
 import { QuoteRow } from "@/components/QuoteRow";
 import { SourceFieldEditor } from "@/components/SourceFieldEditor";
@@ -59,7 +59,7 @@ export default async function SourcePage({
             : ""
         } border-b border-ink pb-8 mb-12`}
       >
-        {showCover && <SourceCover source={source} category={category} />}
+        {showCover && <CoverEditor source={source} category={category} />}
 
         <div className="flex flex-col justify-end">
           <div className="mb-2">
