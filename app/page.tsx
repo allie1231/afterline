@@ -1,6 +1,10 @@
 import Link from "next/link";
+import { getRandomLinePool } from "@/lib/data/repository";
+import { RandomQuotePanel } from "@/components/RandomQuotePanel";
 
-export default function EntrancePage() {
+export default async function EntrancePage() {
+  const pool = await getRandomLinePool(200);
+
   return (
     <section className="min-h-[calc(100vh-77px)] flex flex-col justify-between px-8 py-16">
       <div className="font-mono text-[10px] tracking-[0.25em] text-muted">
@@ -17,6 +21,8 @@ export default function EntrancePage() {
           <span className="text-muted">읽고 난 뒤에도 남은 문장들.</span>
         </div>
       </div>
+
+      <RandomQuotePanel pool={pool} />
 
       <div className="flex items-end justify-between">
         <Link

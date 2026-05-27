@@ -305,6 +305,119 @@ export async function getAllTags(): Promise<string[]> {
   return [...seen].sort();
 }
 
+export interface RandomLine {
+  id: string;
+  text: string;
+  page: string | null;
+  mood_tags: string[];
+  is_favorite: boolean;
+  source_id: string | null;
+  source_title: string | null;
+  source_type: SourceType | null;
+  source_creator: string | null;
+}
+
+/**
+ * Pool used by the entrance page's "Today's Line" panel. Fetches a
+ * reasonable cap so the entire pool can ship to the client for shuffling
+ * without a round-trip per click.
+ */
+export async function getRandomLinePool(
+  limit = 200,
+): Promise<RandomLine[]> {
+  const supabase = await createClient();
+  const { data: quotes } = await supabase
+    .from("quotes")
+    .select("id, text, page, mood_tags, is_favorite, source_id")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  const sourceIds = Array.from(
+    new Set(
+      (quotes ?? [])
+        .map((q) => q.source_id as string | null)
+        .filter((id): id is string => !!id),
+    ),
+  );
+
+  let sourcesById = new Map<
+    string,
+    { title: string; type: SourceType; creator: string | null }
+  >();
+  if (sourceIds.length > 0) {
+    const { data: sources } = await supabase
+      .from("sources")
+      .select("id, title, type, creator")
+      .in("id", sourceIds);
+    sourcesById = new Map(
+      (sources ?? []).map((s) => [
+        s.id as string,
+        {
+          title: s.title as string,
+          type: s.type as SourceType,
+          creator: (s.creator as string | null) ?? null,
+        },
+      ]),
+    );
+  }
+
+  return (quotes ?? []).map((q) => {
+    const src = q.source_id ? sourcesById.get(q.source_id as string) : null;
+    return {
+      id: q.id as string,
+      text: q.text as string,
+      page: (q.page as string | null) ?? null,
+      mood_tags: ((q.mood_tags ?? []) as string[]) ?? [],
+      is_favorite: !!q.is_favorite,
+      source_id: (q.source_id as string | null) ?? null,
+      source_title: src?.title ?? null,
+      source_type: src?.type ?? null,
+      source_creator: src?.creator ?? null,
+    };
+  });
+}
+
+export interface QuoteWithSource {
+  quote: Quote;
+  source: Source | null;
+}
+
+/**
+ * All quotes carrying a given mood tag, joined with their source.
+ * Used by /mood/[tag] tag drill-in pages.
+ */
+export async function getQuotesByTag(tag: string): Promise<QuoteWithSource[]> {
+  const supabase = await createClient();
+  const { data: quotes, error } = await supabase
+    .from("quotes")
+    .select("*")
+    .contains("mood_tags", [tag])
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+
+  const sourceIds = Array.from(
+    new Set(
+      (quotes ?? [])
+        .map((q) => q.source_id as string | null)
+        .filter((id): id is string => !!id),
+    ),
+  );
+  let byId = new Map<string, Source>();
+  if (sourceIds.length > 0) {
+    const { data: sources } = await supabase
+      .from("sources")
+      .select("*")
+      .in("id", sourceIds);
+    byId = new Map(
+      ((sources ?? []) as Source[]).map((s) => [s.id, s]),
+    );
+  }
+  return ((quotes ?? []) as Quote[]).map((q) => ({
+    quote: q,
+    source: q.source_id ? byId.get(q.source_id) ?? null : null,
+  }));
+}
+
 export async function getMoodTagsWithCounts(): Promise<
   { tag: string; count: number }[]
 > {
