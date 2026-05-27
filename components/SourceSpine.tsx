@@ -67,7 +67,7 @@ export function SourceSpine({
   return (
     <Link
       href={`/sources/${source.id}`}
-      className={`group relative shrink-0 ${SPINE_SIZE.width} ${SPINE_SIZE.height} hover:-translate-y-2 transition-transform`}
+      className={`group relative block shrink-0 ${SPINE_SIZE.width} ${SPINE_SIZE.height} overflow-hidden hover:-translate-y-2 transition-transform`}
       style={{ background: bg, color: fg }}
       aria-label={`${source.title} — ${lines} lines`}
     >
