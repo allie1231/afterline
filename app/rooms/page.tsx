@@ -52,7 +52,7 @@ export default async function RoomsPage() {
                 <div
                   className={`font-serif leading-[0.95] tracking-tight break-words ${
                     cat.en.length > 10
-                      ? "text-[clamp(34px,4vw,52px)]"
+                      ? "text-[clamp(32px,3.4vw,46px)]"
                       : "text-[clamp(40px,5vw,64px)]"
                   }`}
                 >
