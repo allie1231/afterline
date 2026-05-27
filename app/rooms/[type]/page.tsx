@@ -47,7 +47,7 @@ export default async function RoomPage({
       </div>
 
       <div className="flex items-baseline justify-between mb-12 border-b border-line pb-6">
-        <h2 className="font-serif text-6xl tracking-tight">{category.en}</h2>
+        <h2 className="font-serif text-4xl md:text-5xl tracking-tight">{category.en}</h2>
         <div className="flex items-end gap-6">
           <div className="text-right">
             <div className="font-mono text-[10px] tracking-[0.25em] text-muted">

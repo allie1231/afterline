@@ -8,6 +8,19 @@ import {
 } from "@/lib/data/repository";
 import { SourceCover } from "@/components/SourceCover";
 import { LibraryCard } from "@/components/LibraryCard";
+import type { SourceType } from "@/lib/data/types";
+
+const NOTE_LABEL: Record<SourceType, { en: string; ko: string }> = {
+  book: { en: "READING NOTE", ko: "독서노트" },
+  article: { en: "ARTICLE READ", ko: "기사 읽기" },
+  movie: { en: "TICKET", ko: "티켓 보기" },
+  lyrics: { en: "A LINE OF MUSIC", ko: "음악 한 줄" },
+  conversation: { en: "A BUBBLE", ko: "말풍선 하나" },
+  other: { en: "COLLECTION NOTE", ko: "수집노트" },
+};
+
+// Types that don't show a left-side cover image on the detail page.
+const NO_COVER_TYPES = new Set<SourceType>(["article", "conversation"]);
 
 export default async function SourcePage({
   params,
@@ -26,36 +39,46 @@ export default async function SourcePage({
 
   if (!category) notFound();
 
+  const showCover = !NO_COVER_TYPES.has(source.type);
+  const noteLabel = NOTE_LABEL[source.type];
+
   return (
     <section className="px-6 py-10 max-w-5xl mx-auto">
       <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-8">
         AFTERLINE / {source.type.toUpperCase()} / COLLECTION NOTE
       </div>
 
-      {/* Header: cover + title */}
-      <header className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-10 border-b border-ink pb-10 mb-12">
-        <SourceCover source={source} category={category} />
+      {/* Header */}
+      <header
+        className={`${
+          showCover
+            ? "grid grid-cols-1 md:grid-cols-[200px_1fr] gap-10"
+            : ""
+        } border-b border-ink pb-8 mb-12`}
+      >
+        {showCover && <SourceCover source={source} category={category} />}
 
         <div className="flex flex-col justify-end">
           <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-2">
             {category.en} / {category.ko}
           </div>
-          <h1 className="font-serif text-[clamp(40px,5.5vw,68px)] leading-[0.95] tracking-tight break-words">
+          <h1 className="font-serif text-[clamp(28px,4vw,48px)] leading-[1.05] tracking-tight break-words">
             {source.title}
           </h1>
           {source.creator && (
-            <div className="font-serif text-2xl text-muted mt-3">
+            <div className="font-serif text-lg text-muted mt-2">
               {source.creator}
             </div>
           )}
-          {source.publisher && (
-            <div className="font-mono text-[10px] tracking-[0.2em] text-muted mt-2">
-              {source.publisher}
-              {source.published_date ? ` · ${source.published_date}` : ""}
+          {(source.publisher || source.published_date) && (
+            <div className="font-mono text-[10px] tracking-[0.2em] text-muted mt-1.5">
+              {[source.publisher, source.published_date]
+                .filter(Boolean)
+                .join(" · ")}
             </div>
           )}
 
-          <div className="flex gap-6 mt-6 font-mono text-[10px] tracking-[0.25em]">
+          <div className="flex gap-6 mt-5 font-mono text-[10px] tracking-[0.25em]">
             <span>COLLECTED LINES {String(quotes.length).padStart(2, "0")}</span>
             {note?.status && (
               <span>STATUS: {note.status.replace("_", " ").toUpperCase()}</span>
@@ -118,12 +141,17 @@ export default async function SourcePage({
         </ol>
       </div>
 
-      {/* Reading note as library card */}
+      {/* Note as library card */}
       <div>
         <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-4">
-          READING NOTE / 독서노트
+          {noteLabel.en} / {noteLabel.ko}
         </div>
-        <LibraryCard note={note} source={source} lineCount={quotes.length} />
+        <LibraryCard
+          note={note}
+          source={source}
+          lineCount={quotes.length}
+          noteLabel={noteLabel}
+        />
       </div>
 
       <div className="mt-16">

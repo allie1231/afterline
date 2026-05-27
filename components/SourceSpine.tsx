@@ -31,10 +31,15 @@ export function SourceSpine({
   lines: number;
   index: number;
 }) {
-  const bg = PALETTE[index % PALETTE.length];
+  // User-picked color wins; otherwise rotate through the default palette.
+  const bg = source.spine_color ?? PALETTE[index % PALETTE.length];
   const label = SPINE_LABEL[source.type];
-  // text color: yellow needs dark ink
-  const isLight = bg === "var(--yellow)" || bg === "var(--cyan)";
+  // Light backgrounds (yellow, cyan, paper) need dark ink. Everything else gets white.
+  const isLight =
+    bg === "var(--yellow)" ||
+    bg === "var(--cyan)" ||
+    bg === "var(--paper)" ||
+    bg === "var(--white)";
   const fg = isLight ? "var(--ink)" : "var(--white)";
   const fgMuted = isLight ? "rgba(17,17,17,0.55)" : "rgba(255,255,255,0.7)";
 

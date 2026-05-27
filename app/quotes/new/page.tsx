@@ -1,4 +1,4 @@
-import { getAllSources } from "@/lib/data/repository";
+import { getAllSources, getAllTags } from "@/lib/data/repository";
 import type { SourceType } from "@/lib/data/types";
 import { NewQuoteForm } from "./NewQuoteForm";
 
@@ -22,14 +22,17 @@ export default async function NewQuotePage({
     : undefined;
   const defaultSourceId = params.source;
 
-  const sources = await getAllSources();
+  const [sources, allTags] = await Promise.all([
+    getAllSources(),
+    getAllTags(),
+  ]);
 
   return (
     <section className="px-6 py-10 max-w-3xl mx-auto">
       <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-3">
         AFTERLINE / NEW LINE
       </div>
-      <h1 className="font-serif text-6xl tracking-tight leading-none">
+      <h1 className="font-serif text-4xl tracking-tight leading-none">
         New Line
       </h1>
       <p className="font-mono text-xs tracking-[0.2em] text-muted mt-3 mb-12">
@@ -38,6 +41,7 @@ export default async function NewQuotePage({
 
       <NewQuoteForm
         sources={sources}
+        allTags={allTags}
         defaultType={defaultType}
         defaultSourceId={defaultSourceId}
       />

@@ -140,6 +140,7 @@ export interface CreateSourceInput {
   isbn?: string;
   cover_url?: string;
   url?: string;
+  spine_color?: string | null;
 }
 
 export async function createSource(input: CreateSourceInput): Promise<Source> {
@@ -190,6 +191,18 @@ export async function createQuote(input: CreateQuoteInput): Promise<Quote> {
     .single();
   if (error) throw error;
   return data as Quote;
+}
+
+export async function getAllTags(): Promise<string[]> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("quotes").select("mood_tags");
+  const seen = new Set<string>();
+  for (const q of data ?? []) {
+    for (const t of (q.mood_tags ?? []) as string[]) {
+      if (t.trim()) seen.add(t);
+    }
+  }
+  return [...seen].sort();
 }
 
 export async function getMoodTagsWithCounts(): Promise<

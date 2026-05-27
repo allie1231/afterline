@@ -16,18 +16,20 @@ export function LibraryCard({
   note,
   source,
   lineCount,
+  noteLabel,
 }: {
   note: CollectionNote | null;
   source: Source;
   lineCount: number;
+  noteLabel: { en: string; ko: string };
 }) {
   const status = note?.status ? STATUS_LABEL[note.status] : "UNFILED";
+  const filedDate = fmtDate(source.created_at);
 
   return (
     <article
       className="library-card group relative bg-paper border border-ink transition-all duration-200 hover:-translate-y-1 hover:-rotate-[0.4deg]"
     >
-      {/* Top stripe header */}
       <header className="flex items-center justify-between border-b border-ink px-6 py-3">
         <div className="font-mono text-[10px] tracking-[0.3em]">
           AFTERLINE / LIBRARY CARD
@@ -37,17 +39,16 @@ export function LibraryCard({
         </div>
       </header>
 
-      {/* Body */}
       <div className="grid grid-cols-1 md:grid-cols-[1fr_180px]">
         <div className="px-6 py-6 border-r border-ink/0 md:border-ink">
           <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-1">
             TITLE
           </div>
-          <div className="font-serif text-3xl leading-tight">
+          <div className="font-serif text-2xl leading-tight">
             {source.title}
           </div>
           {source.creator && (
-            <div className="font-serif text-lg text-muted mt-1">
+            <div className="font-serif text-base text-muted mt-1">
               {source.creator}
             </div>
           )}
@@ -57,7 +58,7 @@ export function LibraryCard({
               <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-1">
                 SUMMARY
               </div>
-              <p className="font-serif text-xl leading-snug">{note.summary}</p>
+              <p className="font-serif text-lg leading-snug">{note.summary}</p>
             </div>
           )}
 
@@ -66,7 +67,7 @@ export function LibraryCard({
               <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-1">
                 MY THOUGHT
               </div>
-              <p className="font-serif text-xl leading-snug">
+              <p className="font-serif text-lg leading-snug">
                 {note.personal_note}
               </p>
             </div>
@@ -91,7 +92,6 @@ export function LibraryCard({
           )}
         </div>
 
-        {/* Right side: stamp-like meta column */}
         <aside className="border-t md:border-t-0 border-ink px-6 py-6 flex flex-col gap-5">
           <Stamp label="STATUS" value={status} highlight />
           <Stamp label="LINES" value={String(lineCount).padStart(2, "0")} />
@@ -100,11 +100,10 @@ export function LibraryCard({
         </aside>
       </div>
 
-      {/* Bottom rule lines like a real checkout card */}
-      <div className="border-t border-ink px-6 py-3 flex justify-between font-mono text-[10px] tracking-[0.3em] text-muted">
-        <span>DATE / 날짜</span>
-        <span>BORROWER / 빌린 사람</span>
-        <span>NOTE / 메모</span>
+      <div className="border-t border-ink px-6 py-3 grid grid-cols-3 gap-4">
+        <Footer label="DATE / 날짜" value={filedDate} />
+        <Footer label={`${noteLabel.en} / ${noteLabel.ko}`} value="" />
+        <Footer label="NO." value={source.id.slice(-6).toUpperCase()} align="right" />
       </div>
     </article>
   );
@@ -131,6 +130,29 @@ function Stamp({
       >
         {value}
       </div>
+    </div>
+  );
+}
+
+function Footer({
+  label,
+  value,
+  align = "left",
+}: {
+  label: string;
+  value: string;
+  align?: "left" | "right";
+}) {
+  return (
+    <div className={align === "right" ? "text-right" : ""}>
+      <div className="font-mono text-[9px] tracking-[0.3em] text-muted">
+        {label}
+      </div>
+      {value && (
+        <div className="font-mono text-xs tracking-[0.15em] mt-0.5">
+          {value}
+        </div>
+      )}
     </div>
   );
 }

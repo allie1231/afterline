@@ -12,7 +12,7 @@ export function Placeholder({
       <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-6">
         AFTERLINE / {en.toUpperCase()}
       </div>
-      <h2 className="font-serif text-6xl tracking-tight leading-none">{en}</h2>
+      <h2 className="font-serif text-4xl md:text-5xl tracking-tight leading-none">{en}</h2>
       <div className="font-mono text-xs tracking-[0.2em] text-muted mt-3">
         {ko}
       </div>

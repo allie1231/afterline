@@ -34,6 +34,9 @@ export async function createQuoteAction(formData: FormData): Promise<void> {
     const title = str(formData, "title");
     if (!title) throw new Error("Source title is required");
 
+    const spineColorRaw = str(formData, "spine_color");
+    const spine_color = !spineColorRaw || spineColorRaw === "auto" ? null : spineColorRaw;
+
     const newSource = await createSource({
       type,
       title,
@@ -43,6 +46,7 @@ export async function createQuoteAction(formData: FormData): Promise<void> {
       isbn: str(formData, "isbn"),
       cover_url: str(formData, "cover_url"),
       url: str(formData, "url"),
+      spine_color,
     });
     sourceId = newSource.id;
   }
