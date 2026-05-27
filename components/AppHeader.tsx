@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SearchTrigger } from "./SearchTrigger";
 
 const NAV = [
   { href: "/", en: "INDEX", ko: "색인" },
@@ -27,6 +28,7 @@ export function AppHeader() {
               <span className="text-muted text-[9px] mt-0.5">{item.ko}</span>
             </Link>
           ))}
+          <SearchTrigger />
           <form action="/auth/signout" method="post" className="ml-2">
             <button
               type="submit"
