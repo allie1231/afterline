@@ -30,7 +30,7 @@ export default async function RoomsPage() {
             <Link
               key={cat.type}
               href={`/rooms/${cat.type}`}
-              className="group relative p-8 min-h-[320px] flex flex-col justify-between transition-all duration-200 hover:[transform:translateY(-4px)]"
+              className="group relative p-8 min-h-[320px] flex flex-col justify-between transition-[transform,filter] duration-300 ease-out hover:[transform:translateY(-6px)_scale(1.015)] hover:brightness-[1.04]"
               style={{ background: cat.accent, color: fg }}
             >
               <div className="flex justify-between items-start">
@@ -41,7 +41,7 @@ export default async function RoomsPage() {
                   ROOM / 0{categories.indexOf(cat) + 1}
                 </span>
                 <span
-                  className="font-mono text-[10px] tracking-[0.3em] opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="font-mono text-[10px] tracking-[0.3em] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-[opacity,transform] duration-300 ease-out"
                   style={{ color: fgMuted }}
                 >
                   ENTER →

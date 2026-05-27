@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SearchTrigger } from "./SearchTrigger";
+import { MobileNav } from "./MobileNav";
 
 const NAV = [
   { href: "/", en: "INDEX", ko: "색인" },
@@ -14,11 +15,16 @@ const NAV = [
 export function AppHeader() {
   return (
     <header className="border-b border-line bg-paper">
-      <div className="flex items-end justify-between px-6 py-5">
-        <Link href="/" className="font-serif text-2xl tracking-[0.18em] leading-none">
+      <div className="flex items-end justify-between px-4 sm:px-6 py-4 sm:py-5 gap-4">
+        <Link
+          href="/"
+          className="font-serif text-xl sm:text-2xl tracking-[0.18em] leading-none shrink-0"
+        >
           AFTERLINE
         </Link>
-        <nav className="flex gap-6 items-end">
+
+        {/* Desktop nav */}
+        <nav className="hidden lg:flex gap-6 items-end">
           {NAV.map((item) => (
             <Link
               key={item.href}
@@ -40,6 +46,12 @@ export function AppHeader() {
             </button>
           </form>
         </nav>
+
+        {/* Mobile: just search + menu */}
+        <div className="lg:hidden flex items-center gap-3">
+          <SearchTrigger />
+          <MobileNav />
+        </div>
       </div>
     </header>
   );
