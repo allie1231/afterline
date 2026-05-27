@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #111111;
+  --paper: #f5f1e8;
+  --ink: #111111;
+  --white: #ffffff;
+  --muted: #8c867d;
+  --line: #d8d1c5;
+
+  --blue: #2f5fbb;
+  --green: #3f8f66;
+  --yellow: #f2d23c;
+  --red: #e94b2e;
+  --orange: #f26938;
+  --cyan: #7fc7c6;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-white: var(--white);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+
+  --color-blue: var(--blue);
+  --color-green: var(--green);
+  --color-yellow: var(--yellow);
+  --color-red: var(--red);
+  --color-orange: var(--orange);
+  --color-cyan: var(--cyan);
+
+  --font-serif: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  --font-sans: var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, monospace;
+}
+
+html,
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--paper);
+}
