@@ -1,12 +1,8 @@
 import type { CollectionNote, Source } from "@/lib/data/types";
 import { StarRating } from "./StarRating";
-
-const STATUS_LABEL: Record<NonNullable<CollectionNote["status"]>, string> = {
-  to_read: "TO READ",
-  reading: "READING",
-  finished: "FINISHED",
-  archived: "ARCHIVED",
-};
+import { StatusPicker } from "./StatusPicker";
+import { DateField } from "./DateField";
+import { NoteFieldEditor } from "./NoteFieldEditor";
 
 function fmtDate(iso?: string) {
   if (!iso) return "—";
@@ -24,13 +20,10 @@ export function LibraryCard({
   lineCount: number;
   noteLabel: { en: string; ko: string };
 }) {
-  const status = note?.status ? STATUS_LABEL[note.status] : "UNFILED";
   const filedDate = fmtDate(source.created_at);
 
   return (
-    <article
-      className="library-card group relative bg-paper border border-ink transition-all duration-200 hover:-translate-y-1 hover:-rotate-[0.4deg]"
-    >
+    <article className="library-card group relative bg-paper border border-ink transition-all duration-200 hover:-translate-y-1 hover:-rotate-[0.4deg]">
       <header className="flex items-center justify-between border-b border-ink px-6 py-3">
         <div className="font-mono text-[10px] tracking-[0.3em]">
           AFTERLINE / LIBRARY CARD
@@ -54,25 +47,31 @@ export function LibraryCard({
             </div>
           )}
 
-          {note?.summary && (
-            <div className="mt-6 pt-5 border-t border-dashed border-line">
-              <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-1">
-                SUMMARY
-              </div>
-              <p className="font-serif text-lg leading-snug">{note.summary}</p>
+          <div className="mt-6 pt-5 border-t border-dashed border-line">
+            <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-2">
+              SUMMARY / 요약
             </div>
-          )}
+            <NoteFieldEditor
+              sourceId={source.id}
+              field="summary"
+              initialValue={note?.summary ?? ""}
+              placeholder="+ 요약을 더해보세요"
+              textClassName="font-serif text-lg leading-snug"
+            />
+          </div>
 
-          {note?.personal_note && (
-            <div className="mt-6 pt-5 border-t border-dashed border-line">
-              <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-1">
-                MY THOUGHT
-              </div>
-              <p className="font-serif text-lg leading-snug">
-                {note.personal_note}
-              </p>
+          <div className="mt-6 pt-5 border-t border-dashed border-line">
+            <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-2">
+              MY THOUGHT / 내 생각
             </div>
-          )}
+            <NoteFieldEditor
+              sourceId={source.id}
+              field="personal_note"
+              initialValue={note?.personal_note ?? ""}
+              placeholder="+ 짧은 생각을 더해보세요"
+              textClassName="font-serif text-lg leading-snug"
+            />
+          </div>
 
           {note?.keywords && note.keywords.length > 0 && (
             <div className="mt-6 pt-5 border-t border-dashed border-line">
@@ -94,18 +93,38 @@ export function LibraryCard({
         </div>
 
         <aside className="border-t md:border-t-0 border-ink px-6 py-6 flex flex-col gap-5">
-          <StarRating sourceId={source.id} initialRating={note?.rating ?? null} />
-          <Stamp label="STATUS" value={status} highlight />
+          <StarRating
+            sourceId={source.id}
+            initialRating={note?.rating ?? null}
+          />
+          <StatusPicker
+            sourceId={source.id}
+            initialStatus={note?.status ?? null}
+          />
           <Stamp label="LINES" value={String(lineCount).padStart(2, "0")} />
-          <Stamp label="STARTED" value={fmtDate(note?.started_at)} />
-          <Stamp label="FINISHED" value={fmtDate(note?.finished_at)} />
+          <DateField
+            sourceId={source.id}
+            field="started_at"
+            label="STARTED"
+            initialDate={note?.started_at ?? null}
+          />
+          <DateField
+            sourceId={source.id}
+            field="finished_at"
+            label="FINISHED"
+            initialDate={note?.finished_at ?? null}
+          />
         </aside>
       </div>
 
       <div className="border-t border-ink px-6 py-3 grid grid-cols-3 gap-4">
         <Footer label="DATE / 날짜" value={filedDate} />
         <Footer label={`${noteLabel.en} / ${noteLabel.ko}`} value="" />
-        <Footer label="NO." value={source.id.slice(-6).toUpperCase()} align="right" />
+        <Footer
+          label="NO."
+          value={source.id.slice(-6).toUpperCase()}
+          align="right"
+        />
       </div>
     </article>
   );

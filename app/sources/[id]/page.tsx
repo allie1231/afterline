@@ -8,6 +8,9 @@ import {
 } from "@/lib/data/repository";
 import { SourceCover } from "@/components/SourceCover";
 import { LibraryCard } from "@/components/LibraryCard";
+import { QuoteRow } from "@/components/QuoteRow";
+import { SourceFieldEditor } from "@/components/SourceFieldEditor";
+import { DeleteSourceButton } from "@/components/DeleteSourceButton";
 import type { SourceType } from "@/lib/data/types";
 
 const NOTE_LABEL: Record<SourceType, { en: string; ko: string }> = {
@@ -19,7 +22,6 @@ const NOTE_LABEL: Record<SourceType, { en: string; ko: string }> = {
   other: { en: "COLLECTION NOTE", ko: "수집노트" },
 };
 
-// Types that don't show a left-side cover image on the detail page.
 const NO_COVER_TYPES = new Set<SourceType>(["article", "conversation"]);
 
 export default async function SourcePage({
@@ -48,7 +50,7 @@ export default async function SourcePage({
         AFTERLINE / {source.type.toUpperCase()} / COLLECTION NOTE
       </div>
 
-      {/* Header */}
+      {/* Header — title/creator/publisher all inline-editable */}
       <header
         className={`${
           showCover
@@ -63,20 +65,40 @@ export default async function SourcePage({
             {category.en} / {category.ko}
           </div>
           <h1 className="font-serif text-[clamp(28px,4vw,48px)] leading-[1.05] tracking-tight break-words">
-            {source.title}
+            <SourceFieldEditor
+              sourceId={source.id}
+              field="title"
+              initialValue={source.title}
+              placeholder="제목"
+            />
           </h1>
-          {source.creator && (
-            <div className="font-serif text-lg text-muted mt-2">
-              {source.creator}
-            </div>
-          )}
-          {(source.publisher || source.published_date) && (
-            <div className="font-mono text-[10px] tracking-[0.2em] text-muted mt-1.5">
-              {[source.publisher, source.published_date]
-                .filter(Boolean)
-                .join(" · ")}
-            </div>
-          )}
+          <div className="font-serif text-lg text-muted mt-2">
+            <SourceFieldEditor
+              sourceId={source.id}
+              field="creator"
+              initialValue={source.creator ?? ""}
+              placeholder="+ 저자 / 출연자"
+              emptyClassName="text-muted italic text-base"
+            />
+          </div>
+          <div className="font-mono text-[10px] tracking-[0.2em] text-muted mt-2 flex gap-4">
+            <SourceFieldEditor
+              sourceId={source.id}
+              field="publisher"
+              initialValue={source.publisher ?? ""}
+              placeholder="+ 출판사 / 앨범"
+            />
+            {(source.type === "movie" ||
+              source.type === "book" ||
+              source.type === "lyrics") && (
+              <SourceFieldEditor
+                sourceId={source.id}
+                field="published_date"
+                initialValue={source.published_date ?? ""}
+                placeholder="+ 연도"
+              />
+            )}
+          </div>
 
           <div className="flex gap-6 mt-5 font-mono text-[10px] tracking-[0.25em]">
             <span>COLLECTED LINES {String(quotes.length).padStart(2, "0")}</span>
@@ -102,36 +124,7 @@ export default async function SourcePage({
         </div>
         <ol className="flex flex-col gap-8">
           {quotes.map((q, i) => (
-            <li key={q.id} className="grid grid-cols-[40px_1fr] gap-6">
-              <div className="font-mono text-[10px] tracking-[0.2em] text-muted pt-2">
-                {String(i + 1).padStart(2, "0")}
-              </div>
-              <div>
-                <p className="font-serif text-2xl leading-snug">
-                  &ldquo;{q.text}&rdquo;
-                </p>
-                {q.note && (
-                  <div className="mt-3">
-                    <div className="font-mono text-[10px] tracking-[0.2em] text-muted">
-                      memo
-                    </div>
-                    <p className="font-sans text-sm mt-1">{q.note}</p>
-                  </div>
-                )}
-                {q.mood_tags.length > 0 && (
-                  <div className="mt-3 flex gap-2 flex-wrap">
-                    {q.mood_tags.map((m) => (
-                      <span
-                        key={m}
-                        className="font-mono text-[10px] tracking-[0.2em] border border-line px-2 py-0.5"
-                      >
-                        {m}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </li>
+            <QuoteRow key={q.id} quote={q} index={i} sourceId={source.id} />
           ))}
           {quotes.length === 0 && (
             <li className="font-mono text-xs text-muted">
@@ -154,13 +147,18 @@ export default async function SourcePage({
         />
       </div>
 
-      <div className="mt-16">
+      <div className="mt-16 flex items-center justify-between">
         <Link
           href={`/rooms/${source.type}`}
           className="font-mono text-[10px] tracking-[0.25em] text-muted hover:text-ink"
         >
           ← BACK TO {source.type.toUpperCase()} ROOM
         </Link>
+        <DeleteSourceButton
+          sourceId={source.id}
+          type={source.type}
+          title={source.title}
+        />
       </div>
     </section>
   );

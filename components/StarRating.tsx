@@ -58,10 +58,11 @@ export function StarRating({
             type="button"
             onClick={() => handleClick(rating)}
             disabled={pending}
-            className="font-mono text-[9px] tracking-[0.3em] text-muted ml-2 hover:text-ink"
+            className="text-base leading-none text-muted ml-1.5 hover:text-ink cursor-pointer disabled:opacity-50"
             aria-label="Clear rating"
+            title="Clear"
           >
-            CLEAR
+            ×
           </button>
         )}
       </div>
