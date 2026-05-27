@@ -91,6 +91,52 @@ type MovieResult = {
 
 const TMDB_ANIMATION_GENRE_IDS = new Set([16]); // 16 = Animation in both movie and tv
 
+// ── iTunes search (album / track) ─────────────────────────────────────
+type LyricsResult = {
+  id: string;
+  title: string;
+  creator?: string;
+  publisher?: string;
+  published_date?: string;
+  cover_url?: string;
+};
+
+async function searchITunes(query: string): Promise<LyricsResult[]> {
+  const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=10`;
+  try {
+    const r = await fetch(url);
+    if (!r.ok) return [];
+    const data = await r.json();
+    const items = (data.results ?? []) as Array<{
+      trackId?: number;
+      trackName?: string;
+      artistName?: string;
+      collectionName?: string;
+      releaseDate?: string;
+      artworkUrl100?: string;
+    }>;
+    return items
+      .filter((it) => it.trackName)
+      .map<LyricsResult>((it) => {
+        // Bump the artwork resolution: iTunes serves it tiny by default.
+        const cover = it.artworkUrl100?.replace(
+          /\/[0-9]+x[0-9]+bb\./,
+          "/600x600bb.",
+        );
+        return {
+          id: `itunes-${it.trackId ?? Math.random()}`,
+          title: it.trackName ?? "",
+          creator: it.artistName,
+          publisher: it.collectionName,
+          published_date: it.releaseDate?.slice(0, 4),
+          cover_url: cover,
+        };
+      });
+  } catch {
+    return [];
+  }
+}
+
 async function searchTmdb(query: string): Promise<MovieResult[]> {
   const key = process.env.NEXT_PUBLIC_TMDB_API_KEY;
   if (!key) return [];
@@ -240,6 +286,32 @@ export function NewQuoteForm({
     // User can immediately re-click another radio to override.
     setCreator(m.format_guess);
     setMovieResults([]);
+  }
+
+  // Lyrics / song search (iTunes)
+  const [lyricsQuery, setLyricsQuery] = useState("");
+  const [lyricsResults, setLyricsResults] = useState<LyricsResult[]>([]);
+  const [lyricsSearching, setLyricsSearching] = useState(false);
+
+  async function doLyricsSearch() {
+    const q = lyricsQuery.trim();
+    if (!q) return;
+    setLyricsSearching(true);
+    try {
+      const results = await searchITunes(q);
+      setLyricsResults(results);
+    } finally {
+      setLyricsSearching(false);
+    }
+  }
+
+  function applyLyricsResult(l: LyricsResult) {
+    setTitle(l.title);
+    setCreator(l.creator ?? "");
+    setPublisher(l.publisher ?? "");
+    setPublishedDate(l.published_date ?? "");
+    setCoverUrl(l.cover_url ?? "");
+    setLyricsResults([]);
   }
 
   function handleTypeChange(t: SourceType) {
@@ -521,15 +593,84 @@ export function NewQuoteForm({
               </div>
             )}
 
-            {/* Lyrics — manual only notice */}
+            {/* Lyrics — song search via iTunes (artwork only; lyrics text stays manual) */}
             {type === "lyrics" && (
               <div className="mb-6 border border-line bg-paper p-4">
-                <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-1">
-                  MANUAL ONLY / 직접 입력
+                <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-2">
+                  SEARCH SONG / 노래 검색 — 앨범 표지 가져오기
                 </div>
-                <p className="font-serif text-base leading-snug text-ink">
-                  가사는 저작권 이슈로 자동 검색을 하지 않습니다. 제목과 아티스트를
-                  아래에 직접 입력해주세요.
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={lyricsQuery}
+                    onChange={(e) => setLyricsQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        doLyricsSearch();
+                      }
+                    }}
+                    placeholder="곡 제목 또는 아티스트…"
+                    className="flex-1 border border-ink bg-paper px-3 py-2 font-serif text-base focus:outline-none focus:border-blue"
+                  />
+                  <button
+                    type="button"
+                    onClick={doLyricsSearch}
+                    disabled={lyricsSearching}
+                    className="font-mono text-[10px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
+                  >
+                    {lyricsSearching ? "..." : "SEARCH"}
+                  </button>
+                </div>
+
+                {lyricsResults.length > 0 && (
+                  <div className="mt-3 flex flex-col gap-2 max-h-[360px] overflow-y-auto">
+                    {lyricsResults.map((l) => (
+                      <div
+                        key={l.id}
+                        className="flex gap-3 items-center border border-line p-2 hover:border-ink transition-colors"
+                      >
+                        {l.cover_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={l.cover_url}
+                            alt=""
+                            className="w-14 h-14 object-cover bg-ink shrink-0"
+                          />
+                        ) : (
+                          <div className="w-14 h-14 bg-line shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="font-serif text-base leading-tight truncate">
+                            {l.title}
+                          </div>
+                          {l.creator && (
+                            <div className="font-mono text-[10px] tracking-[0.2em] text-muted mt-1 truncate">
+                              {l.creator}
+                            </div>
+                          )}
+                          <div className="font-mono text-[9px] tracking-[0.2em] text-muted mt-0.5 flex gap-2 flex-wrap truncate">
+                            {l.publisher && <span>{l.publisher}</span>}
+                            {l.published_date && (
+                              <span>· {l.published_date}</span>
+                            )}
+                            <span className="opacity-60">· ITUNES</span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => applyLyricsResult(l)}
+                          className="font-mono text-[10px] tracking-[0.3em] border border-ink px-3 py-2 hover:bg-ink hover:text-paper transition-colors shrink-0"
+                        >
+                          USE
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <p className="font-mono text-[9px] tracking-[0.25em] text-muted mt-3 leading-relaxed">
+                  ※ 가사 본문은 저작권 이슈로 가져오지 않습니다. 앨범 표지와 메타 정보만 채워져요.
                 </p>
               </div>
             )}
