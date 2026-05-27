@@ -34,7 +34,11 @@ const LOCATION_LABEL: Record<SourceType, { en: string; ko: string }> = {
 };
 
 // Editorial palette — arranged cool → warm → neutral.
-const SPINE_COLORS = [
+const SPINE_COLORS: Array<{
+  value: string;
+  color: string | null;
+  label?: string;
+}> = [
   { value: "auto", color: null, label: "AUTO" },
   { value: "var(--blue)", color: "var(--blue)" },
   { value: "#1a2847", color: "#1a2847" }, // navy
@@ -50,7 +54,7 @@ const SPINE_COLORS = [
   { value: "#7a1f1f", color: "#7a1f1f" }, // burgundy
   { value: "#e8a08e", color: "#e8a08e" }, // salmon
   { value: "var(--ink)", color: "var(--ink)" },
-] as const;
+];
 
 const MOVIE_FORMATS = ["영화", "드라마", "애니메이션"] as const;
 
@@ -99,6 +103,67 @@ async function searchGoogleBooks(query: string): Promise<BookResult[]> {
       cover_url: cover,
     };
   });
+}
+
+// ── TMDb search (movies + TV) ─────────────────────────────────────────
+type MovieFormatGuess = (typeof MOVIE_FORMATS)[number];
+
+type MovieResult = {
+  id: string;
+  title: string;
+  year?: string;
+  cover_url?: string;
+  media_type: "movie" | "tv";
+  format_guess: MovieFormatGuess;
+};
+
+const TMDB_ANIMATION_GENRE_IDS = new Set([16]); // 16 = Animation in both movie and tv
+
+async function searchTmdb(query: string): Promise<MovieResult[]> {
+  const key = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+  if (!key) return [];
+  const url = `https://api.themoviedb.org/3/search/multi?api_key=${key}&query=${encodeURIComponent(query)}&language=ko-KR&include_adult=false&page=1`;
+  const res = await fetch(url);
+  if (!res.ok) return [];
+  const data = await res.json();
+  const items = (data.results ?? []) as Array<{
+    id: number;
+    media_type: string;
+    title?: string; // movie
+    name?: string; // tv
+    release_date?: string; // movie
+    first_air_date?: string; // tv
+    poster_path?: string | null;
+    genre_ids?: number[];
+  }>;
+  return items
+    .filter((it) => it.media_type === "movie" || it.media_type === "tv")
+    .map((it) => {
+      const title = (it.media_type === "movie" ? it.title : it.name) ?? "";
+      const date =
+        it.media_type === "movie" ? it.release_date : it.first_air_date;
+      const year = date && date.length >= 4 ? date.slice(0, 4) : undefined;
+      const cover = it.poster_path
+        ? `https://image.tmdb.org/t/p/w500${it.poster_path}`
+        : undefined;
+      const hasAnimation = (it.genre_ids ?? []).some((g) =>
+        TMDB_ANIMATION_GENRE_IDS.has(g),
+      );
+      const format_guess: MovieFormatGuess = hasAnimation
+        ? "애니메이션"
+        : it.media_type === "tv"
+          ? "드라마"
+          : "영화";
+      return {
+        id: `${it.media_type}-${it.id}`,
+        title,
+        year,
+        cover_url: cover,
+        media_type: it.media_type as "movie" | "tv",
+        format_guess,
+      };
+    })
+    .filter((r) => r.title.length > 0);
 }
 
 // ── Component ────────────────────────────────────────────────────────
@@ -176,6 +241,33 @@ export function NewQuoteForm({
     setIsbn(b.isbn ?? "");
     setCoverUrl(b.cover_url ?? "");
     setBookResults([]);
+  }
+
+  // Movie / TV search (TMDb)
+  const [movieQuery, setMovieQuery] = useState("");
+  const [movieResults, setMovieResults] = useState<MovieResult[]>([]);
+  const [movieSearching, setMovieSearching] = useState(false);
+
+  async function doMovieSearch() {
+    const q = movieQuery.trim();
+    if (!q) return;
+    setMovieSearching(true);
+    try {
+      const results = await searchTmdb(q);
+      setMovieResults(results);
+    } finally {
+      setMovieSearching(false);
+    }
+  }
+
+  function applyMovieResult(m: MovieResult) {
+    setTitle(m.title);
+    setPublishedDate(m.year ?? "");
+    setCoverUrl(m.cover_url ?? "");
+    // Auto-pick the FORMAT radio based on TMDb media_type + genre.
+    // User can immediately re-click another radio to override.
+    setCreator(m.format_guess);
+    setMovieResults([]);
   }
 
   function handleTypeChange(t: SourceType) {
@@ -304,7 +396,7 @@ export function NewQuoteForm({
           </Field>
         ) : (
           <>
-            {/* Book search (only for books) */}
+            {/* Book search (Google Books) */}
             {type === "book" && (
               <div className="mb-6 border border-line bg-paper p-4">
                 <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-2">
@@ -337,11 +429,9 @@ export function NewQuoteForm({
                 {bookResults.length > 0 && (
                   <div className="mt-3 flex flex-col gap-2 max-h-[320px] overflow-y-auto">
                     {bookResults.map((b) => (
-                      <button
-                        type="button"
+                      <div
                         key={b.id}
-                        onClick={() => applyBookResult(b)}
-                        className="flex gap-3 items-start text-left border border-line p-2 hover:border-ink hover:bg-paper transition-colors"
+                        className="flex gap-3 items-center border border-line p-2 hover:border-ink transition-colors"
                       >
                         {b.cover_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
@@ -369,10 +459,103 @@ export function NewQuoteForm({
                             </div>
                           )}
                         </div>
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => applyBookResult(b)}
+                          className="font-mono text-[10px] tracking-[0.3em] border border-ink px-3 py-2 hover:bg-ink hover:text-paper transition-colors shrink-0"
+                        >
+                          USE
+                        </button>
+                      </div>
                     ))}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Movie / TV search (TMDb) */}
+            {type === "movie" && (
+              <div className="mb-6 border border-line bg-paper p-4">
+                <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-2">
+                  SEARCH MOVIES &amp; TV / 영화·드라마·애니 검색
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={movieQuery}
+                    onChange={(e) => setMovieQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        doMovieSearch();
+                      }
+                    }}
+                    placeholder="제목으로 검색…"
+                    className="flex-1 border border-ink bg-paper px-3 py-2 font-serif text-base focus:outline-none focus:border-blue"
+                  />
+                  <button
+                    type="button"
+                    onClick={doMovieSearch}
+                    disabled={movieSearching}
+                    className="font-mono text-[10px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
+                  >
+                    {movieSearching ? "..." : "SEARCH"}
+                  </button>
+                </div>
+
+                {movieResults.length > 0 && (
+                  <div className="mt-3 flex flex-col gap-2 max-h-[360px] overflow-y-auto">
+                    {movieResults.map((m) => (
+                      <div
+                        key={m.id}
+                        className="flex gap-3 items-center border border-line p-2 hover:border-ink transition-colors"
+                      >
+                        {m.cover_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={m.cover_url}
+                            alt=""
+                            className="w-12 h-[72px] object-cover bg-ink shrink-0"
+                          />
+                        ) : (
+                          <div className="w-12 h-[72px] bg-line shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="font-serif text-base leading-tight">
+                            {m.title}
+                          </div>
+                          <div className="font-mono text-[10px] tracking-[0.2em] text-muted mt-1 flex gap-2">
+                            <span>{m.format_guess}</span>
+                            {m.year && <span>· {m.year}</span>}
+                            <span className="opacity-60">
+                              · {m.media_type === "tv" ? "TV" : "MOVIE"}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => applyMovieResult(m)}
+                          className="font-mono text-[10px] tracking-[0.3em] border border-ink px-3 py-2 hover:bg-ink hover:text-paper transition-colors shrink-0"
+                        >
+                          USE
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Lyrics — manual only notice */}
+            {type === "lyrics" && (
+              <div className="mb-6 border border-line bg-paper p-4">
+                <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-1">
+                  MANUAL ONLY / 직접 입력
+                </div>
+                <p className="font-serif text-base leading-snug text-ink">
+                  가사는 저작권 이슈로 자동 검색을 하지 않습니다. 제목과 아티스트를
+                  아래에 직접 입력해주세요.
+                </p>
               </div>
             )}
 
