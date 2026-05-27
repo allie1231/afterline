@@ -8,7 +8,7 @@ import {
 } from "@/lib/data/repository";
 import { CoverEditor } from "@/components/CoverEditor";
 import { LibraryCard } from "@/components/LibraryCard";
-import { QuoteRow } from "@/components/QuoteRow";
+import { QuoteList } from "@/components/QuoteList";
 import { SourceFieldEditor } from "@/components/SourceFieldEditor";
 import { DeleteSourceButton } from "@/components/DeleteSourceButton";
 import { SourceTypeChanger } from "@/components/SourceTypeChanger";
@@ -126,16 +126,7 @@ export default async function SourcePage({
             + NEW LINE
           </Link>
         </div>
-        <ol className="flex flex-col gap-8">
-          {quotes.map((q, i) => (
-            <QuoteRow key={q.id} quote={q} index={i} sourceId={source.id} />
-          ))}
-          {quotes.length === 0 && (
-            <li className="font-mono text-xs text-muted">
-              NO LINES YET / 아직 수집된 문장이 없습니다.
-            </li>
-          )}
-        </ol>
+        <QuoteList quotes={quotes} sourceId={source.id} />
       </div>
 
       {/* Note as library card */}

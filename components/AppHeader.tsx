@@ -7,6 +7,7 @@ const NAV = [
   { href: "/quotes/new", en: "NEW LINE", ko: "새 문장" },
   { href: "/collections", en: "COLLECTIONS", ko: "수집노트" },
   { href: "/mood", en: "TAGS", ko: "태그" },
+  { href: "/stats", en: "STATS", ko: "통계" },
   { href: "/data", en: "DATA", ko: "데이터" },
 ];
 

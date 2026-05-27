@@ -418,6 +418,112 @@ export async function getQuotesByTag(tag: string): Promise<QuoteWithSource[]> {
   }));
 }
 
+export interface StatsData {
+  totalLines: number;
+  totalSources: number;
+  totalTags: number;
+  favoriteLines: number;
+  linesByType: Record<SourceType, number>;
+  sourcesByType: Record<SourceType, number>;
+  topTags: { tag: string; count: number }[];
+  topSources: { source: Source; lines: number }[];
+  activity: { date: string; count: number }[]; // last 30 days, oldest → newest
+  latestLineAt: string | null;
+}
+
+export async function getStatsData(): Promise<StatsData> {
+  const supabase = await createClient();
+  const [{ data: sources }, { data: quotes }] = await Promise.all([
+    supabase.from("sources").select("*"),
+    supabase
+      .from("quotes")
+      .select("id, source_id, mood_tags, is_favorite, created_at"),
+  ]);
+
+  const allSources = (sources ?? []) as Source[];
+  const allQuotes = quotes ?? [];
+
+  // Init type buckets
+  const linesByType = {} as Record<SourceType, number>;
+  const sourcesByType = {} as Record<SourceType, number>;
+  for (const cat of ROOM_CATEGORIES) {
+    linesByType[cat.type] = 0;
+    sourcesByType[cat.type] = 0;
+  }
+
+  const sourceTypeById = new Map<string, SourceType>();
+  for (const s of allSources) {
+    sourceTypeById.set(s.id, s.type);
+    sourcesByType[s.type] = (sourcesByType[s.type] ?? 0) + 1;
+  }
+
+  const linesBySourceId = new Map<string, number>();
+  const tagCounts = new Map<string, number>();
+  const activityByDay = new Map<string, number>();
+  let favoriteLines = 0;
+  let latestLineAt: string | null = null;
+
+  for (const q of allQuotes) {
+    if (q.source_id) {
+      const t = sourceTypeById.get(q.source_id as string);
+      if (t) linesByType[t] = (linesByType[t] ?? 0) + 1;
+      linesBySourceId.set(
+        q.source_id as string,
+        (linesBySourceId.get(q.source_id as string) ?? 0) + 1,
+      );
+    }
+    if (q.is_favorite) favoriteLines += 1;
+    const created = q.created_at as string;
+    if (created) {
+      if (!latestLineAt || created > latestLineAt) latestLineAt = created;
+      const day = created.slice(0, 10);
+      activityByDay.set(day, (activityByDay.get(day) ?? 0) + 1);
+    }
+    for (const tag of (q.mood_tags ?? []) as string[]) {
+      if (!tag.trim()) continue;
+      tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+    }
+  }
+
+  const topTags = [...tagCounts.entries()]
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
+
+  const topSources = [...linesBySourceId.entries()]
+    .map(([sourceId, lines]) => ({
+      source: allSources.find((s) => s.id === sourceId)!,
+      lines,
+    }))
+    .filter((x) => !!x.source)
+    .sort((a, b) => b.lines - a.lines)
+    .slice(0, 5);
+
+  // Build last-30-day activity array (oldest → newest), filling zeros for empty days.
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  const activity: { date: string; count: number }[] = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(today);
+    d.setUTCDate(today.getUTCDate() - i);
+    const iso = d.toISOString().slice(0, 10);
+    activity.push({ date: iso, count: activityByDay.get(iso) ?? 0 });
+  }
+
+  return {
+    totalLines: allQuotes.length,
+    totalSources: allSources.length,
+    totalTags: tagCounts.size,
+    favoriteLines,
+    linesByType,
+    sourcesByType,
+    topTags,
+    topSources,
+    activity,
+    latestLineAt,
+  };
+}
+
 export async function getMoodTagsWithCounts(): Promise<
   { tag: string; count: number }[]
 > {
