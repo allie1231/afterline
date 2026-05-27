@@ -32,10 +32,25 @@ export function SourceSpine({
   index: number;
 }) {
   // User-picked color wins; otherwise rotate through the default palette.
-  // Use `||` (not `??`) so empty strings also fall back to the palette.
+  // Values that would render invisible against the paper background — or
+  // stale values from older imports — are treated as "use the default."
+  const INVISIBLE_BGS = new Set([
+    "",
+    "auto",
+    "transparent",
+    "none",
+    "var(--paper)",
+    "var(--white)",
+    "var(--bg)",
+    "#f5f1e8",
+    "#ffffff",
+    "#fff",
+  ]);
+  const raw = (source.spine_color ?? "").trim().toLowerCase();
   const bg =
-    (source.spine_color && source.spine_color.trim()) ||
-    PALETTE[index % PALETTE.length];
+    raw && !INVISIBLE_BGS.has(raw)
+      ? source.spine_color!.trim()
+      : PALETTE[index % PALETTE.length];
   const label = SPINE_LABEL[source.type];
   // Light backgrounds need dark ink; everything else gets white text.
   const LIGHT_BGS = new Set([
