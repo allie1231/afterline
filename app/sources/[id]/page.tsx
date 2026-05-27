@@ -66,8 +66,16 @@ export default async function SourcePage({
 
       {/* Lines */}
       <div className="mb-16">
-        <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-6">
-          LINES / 수집 문장
+        <div className="flex items-baseline justify-between mb-6">
+          <div className="font-mono text-[10px] tracking-[0.25em] text-muted">
+            LINES / 수집 문장
+          </div>
+          <Link
+            href={`/quotes/new?type=${source.type}&source=${source.id}`}
+            className="font-mono text-[10px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors"
+          >
+            + NEW LINE
+          </Link>
         </div>
         <ol className="flex flex-col gap-8">
           {quotes.map((q, i) => (

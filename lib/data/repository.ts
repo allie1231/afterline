@@ -127,6 +127,71 @@ export async function countByRoom(): Promise<
   return result;
 }
 
+// ---------------------------------------------------------------------
+// Writes
+// ---------------------------------------------------------------------
+
+export interface CreateSourceInput {
+  type: SourceType;
+  title: string;
+  creator?: string;
+  publisher?: string;
+  published_date?: string;
+  isbn?: string;
+  cover_url?: string;
+  url?: string;
+}
+
+export async function createSource(input: CreateSourceInput): Promise<Source> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const { data, error } = await supabase
+    .from("sources")
+    .insert({ ...input, user_id: user.id })
+    .select()
+    .single();
+  if (error) throw error;
+  return data as Source;
+}
+
+export interface CreateQuoteInput {
+  source_id: string;
+  text: string;
+  page?: string;
+  note?: string;
+  mood_tags?: string[];
+  is_favorite?: boolean;
+}
+
+export async function createQuote(input: CreateQuoteInput): Promise<Quote> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const { data, error } = await supabase
+    .from("quotes")
+    .insert({
+      source_id: input.source_id,
+      text: input.text,
+      page: input.page ?? null,
+      note: input.note ?? null,
+      mood_tags: input.mood_tags ?? [],
+      is_favorite: input.is_favorite ?? false,
+      visibility: "private",
+      user_id: user.id,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return data as Quote;
+}
+
 export async function getMoodTagsWithCounts(): Promise<
   { tag: string; count: number }[]
 > {

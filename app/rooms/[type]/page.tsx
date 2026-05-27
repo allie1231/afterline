@@ -48,17 +48,33 @@ export default async function RoomPage({
 
       <div className="flex items-baseline justify-between mb-12 border-b border-line pb-6">
         <h2 className="font-serif text-6xl tracking-tight">{category.en}</h2>
-        <div className="text-right">
-          <div className="font-mono text-[10px] tracking-[0.25em] text-muted">
-            {category.ko}
+        <div className="flex items-end gap-6">
+          <div className="text-right">
+            <div className="font-mono text-[10px] tracking-[0.25em] text-muted">
+              {category.ko}
+            </div>
+            <div className="font-serif text-lg mt-1">{category.description}</div>
           </div>
-          <div className="font-serif text-lg mt-1">{category.description}</div>
+          <Link
+            href={`/quotes/new?type=${category.type}`}
+            className="font-mono text-[11px] tracking-[0.3em] border border-ink px-5 py-3 hover:bg-ink hover:text-paper transition-colors whitespace-nowrap"
+          >
+            + NEW LINE
+          </Link>
         </div>
       </div>
 
       {sources.length === 0 ? (
-        <div className="font-mono text-xs tracking-[0.2em] text-muted py-20 text-center">
-          NO SOURCES YET / 아직 수집된 출처가 없습니다.
+        <div className="flex flex-col items-center py-24 gap-6">
+          <div className="font-mono text-xs tracking-[0.25em] text-muted">
+            NO SOURCES YET / 아직 수집된 출처가 없습니다.
+          </div>
+          <Link
+            href={`/quotes/new?type=${category.type}`}
+            className="font-mono text-[11px] tracking-[0.3em] border border-ink px-6 py-4 hover:bg-ink hover:text-paper transition-colors"
+          >
+            [ ADD FIRST LINE / 첫 문장 더하기 ]
+          </Link>
         </div>
       ) : (
         <div className="relative">
