@@ -191,11 +191,15 @@ function FilterChip({
   );
 }
 
+// Types whose cards stay typographic — no thumbnail block on the left.
+const NO_THUMB_TYPES = new Set<SourceType>(["article", "conversation"]);
+
 function CollectionCard({ item }: { item: CollectionsItem }) {
   const cat = ROOM_CATEGORIES.find((c) => c.type === item.source.type)!;
   const statusLabel = item.note?.status
     ? STATUS_LABEL[item.note.status]
     : null;
+  const showThumb = !NO_THUMB_TYPES.has(item.source.type);
 
   return (
     <li className="bg-paper hover:bg-line/30 transition-colors">
@@ -203,9 +207,11 @@ function CollectionCard({ item }: { item: CollectionsItem }) {
         href={`/sources/${item.source.id}`}
         className="flex gap-4 items-start p-4 h-full"
       >
-        <div className="shrink-0">
-          <SourceCover source={item.source} category={cat} size="sm" />
-        </div>
+        {showThumb && (
+          <div className="shrink-0">
+            <SourceCover source={item.source} category={cat} size="sm" />
+          </div>
+        )}
         <div className="flex-1 min-w-0 flex flex-col">
           <div className="flex items-baseline justify-between gap-2 mb-1">
             <span
