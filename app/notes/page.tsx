@@ -3,6 +3,10 @@ import { getAllNotesWithSource } from "@/lib/data/repository";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { NotesBrowser } from "./NotesBrowser";
 
+// [[q:id]] tokens are not resolved on the index — only on per-source pages.
+// The browser previews show the first ~240 chars of raw body, which is
+// enough to identify the note before clicking through.
+
 export const dynamic = "force-dynamic";
 
 export default async function NotesPage() {

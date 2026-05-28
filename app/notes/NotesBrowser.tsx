@@ -109,8 +109,11 @@ export function NotesBrowser({ items }: { items: NoteWithSource[] }) {
 
 function NoteRow({ item }: { item: NoteWithSource }) {
   const { note, source } = item;
-  // Show first ~180 chars of body for the index preview.
-  const preview = note.body.slice(0, 240);
+  // Strip [[q:id]] tokens from the preview so raw refs don't leak. Full
+  // resolved embeds live on the source page.
+  const preview = note.body
+    .replace(/\[\[q:[0-9a-fA-F-]{8,36}\]\]/g, "(인용)")
+    .slice(0, 240);
 
   return (
     <article className="border border-line bg-paper p-4 hover:border-ink transition-colors">

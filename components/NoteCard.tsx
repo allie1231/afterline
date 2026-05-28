@@ -2,16 +2,22 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Markdown } from "./Markdown";
+import { NoteBody } from "./NoteBody";
 import { NoteEditInline } from "./NoteEditor";
 import { deleteNoteAction } from "@/app/notes/actions";
-import type { Note } from "@/lib/data/types";
+import type { Note, Quote, Source } from "@/lib/data/types";
 
 function fmtDate(iso: string) {
   return iso.slice(0, 10).replace(/-/g, ".");
 }
 
-export function NoteCard({ note }: { note: Note }) {
+export function NoteCard({
+  note,
+  quotesById,
+}: {
+  note: Note;
+  quotesById?: Map<string, { quote: Quote; source: Source | null }>;
+}) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [pending, start] = useTransition();
@@ -79,7 +85,7 @@ export function NoteCard({ note }: { note: Note }) {
         </h3>
       )}
 
-      <Markdown source={note.body} />
+      <NoteBody body={note.body} quotesById={quotesById} />
     </article>
   );
 }

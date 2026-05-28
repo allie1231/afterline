@@ -764,6 +764,44 @@ export async function deleteNote(id: string): Promise<void> {
   if (error) throw error;
 }
 
+// Fetch quotes by IDs in one round trip, with their parent source attached.
+// Used to resolve [[q:id]] references embedded in note bodies. IDs that
+// don't exist (or that the user can't see via RLS) are silently dropped.
+export async function getQuotesWithSourceByIds(
+  ids: string[],
+): Promise<Map<string, { quote: Quote; source: Source | null }>> {
+  if (ids.length === 0) return new Map();
+  const supabase = await createClient();
+  const { data: quotes } = await supabase
+    .from("quotes")
+    .select("*")
+    .in("id", ids);
+  const quoteList = (quotes ?? []) as Quote[];
+  const sourceIds = Array.from(
+    new Set(
+      quoteList.map((q) => q.source_id).filter((s): s is string => !!s),
+    ),
+  );
+  let sourcesById = new Map<string, Source>();
+  if (sourceIds.length > 0) {
+    const { data: sources } = await supabase
+      .from("sources")
+      .select("*")
+      .in("id", sourceIds);
+    sourcesById = new Map(
+      ((sources ?? []) as Source[]).map((s) => [s.id, s]),
+    );
+  }
+  const map = new Map<string, { quote: Quote; source: Source | null }>();
+  for (const q of quoteList) {
+    map.set(q.id, {
+      quote: q,
+      source: q.source_id ? (sourcesById.get(q.source_id) ?? null) : null,
+    });
+  }
+  return map;
+}
+
 // ─────────────────────────────────────────────────────────────────────
 // People — surface every source by a single creator together
 // ─────────────────────────────────────────────────────────────────────
