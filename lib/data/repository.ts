@@ -540,3 +540,52 @@ export async function getMoodTagsWithCounts(): Promise<
     .map(([tag, count]) => ({ tag, count }))
     .sort((a, b) => b.count - a.count);
 }
+
+// ---------------------------------------------------------------------
+// Personal API tokens (extension / external clients)
+// ---------------------------------------------------------------------
+
+function generateApiToken(): string {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return `afterline_${Buffer.from(bytes).toString("base64url")}`;
+}
+
+export async function getOrCreateApiToken(): Promise<string> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const { data: existing } = await supabase
+    .from("api_tokens")
+    .select("token")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (existing?.token) return existing.token as string;
+
+  const token = generateApiToken();
+  const { error } = await supabase
+    .from("api_tokens")
+    .insert({ user_id: user.id, token });
+  if (error) throw error;
+  return token;
+}
+
+export async function regenerateApiToken(): Promise<string> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  await supabase.from("api_tokens").delete().eq("user_id", user.id);
+  const token = generateApiToken();
+  const { error } = await supabase
+    .from("api_tokens")
+    .insert({ user_id: user.id, token });
+  if (error) throw error;
+  return token;
+}

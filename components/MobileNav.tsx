@@ -12,6 +12,7 @@ const NAV = [
   { href: "/mood", en: "TAGS", ko: "태그" },
   { href: "/stats", en: "STATS", ko: "통계" },
   { href: "/data", en: "DATA", ko: "데이터" },
+  { href: "/settings", en: "SETTINGS", ko: "설정" },
 ];
 
 export function MobileNav() {
