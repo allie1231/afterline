@@ -6,12 +6,12 @@ export default async function EntrancePage() {
   const pool = await getRandomLinePool(200);
 
   return (
-    <section className="min-h-[calc(100vh-77px)] flex flex-col justify-between px-8 py-16">
+    <section className="min-h-[calc(100vh-77px)] flex flex-col justify-between px-8 py-16 gap-16">
       <div className="font-mono text-[10px] tracking-[0.25em] text-muted">
         VOL. 01 / PERSONAL EDITORIAL ARCHIVE
       </div>
 
-      <div className="flex flex-col gap-8 max-w-3xl">
+      <div className="flex flex-col gap-8 max-w-3xl mt-8 md:mt-16">
         <h1 className="font-serif text-[clamp(80px,14vw,200px)] leading-[0.9] tracking-tight">
           After<span className="italic">line</span>
         </h1>

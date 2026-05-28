@@ -229,7 +229,40 @@ export function EditSourceDialog({
                   aria-label={`spine ${c}`}
                 />
               ))}
+              <label
+                className="w-7 h-7 border border-ink/60 cursor-pointer relative overflow-hidden"
+                title="픽커로 직접 고르기"
+                style={{
+                  background:
+                    spineColor && /^#[0-9a-f]{3,8}$/i.test(spineColor)
+                      ? spineColor
+                      : "conic-gradient(from 0deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00)",
+                }}
+              >
+                <input
+                  type="color"
+                  value={
+                    spineColor && /^#[0-9a-f]{6,8}$/i.test(spineColor)
+                      ? spineColor.slice(0, 7)
+                      : "#888888"
+                  }
+                  onChange={(e) => setSpineColor(e.target.value)}
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  aria-label="custom color"
+                />
+              </label>
+              <input
+                type="text"
+                value={spineColor ?? ""}
+                onChange={(e) => setSpineColor(e.target.value || null)}
+                placeholder="#hex"
+                className="font-mono text-xs border border-ink bg-paper px-2 py-1 w-24"
+              />
             </div>
+            <p className="font-mono text-[10px] text-muted mt-2 leading-relaxed">
+              6색 프리셋 / 무지개 픽커 / 직접 #hex 입력 중 아무거나.
+              AUTO를 누르면 ID 해시로 자동 배정돼요.
+            </p>
           </Field>
 
           {error && (
