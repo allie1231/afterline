@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>Afterline Collector — Options</title>
+    <style>
+      :root {
+        --paper: #f5f1e8;
+        --ink: #111;
+        --muted: #777;
+        --line: #d8d2c2;
+      }
+      body {
+        margin: 0;
+        padding: 40px 32px;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: ui-monospace, "IBM Plex Mono", Menlo, monospace;
+        max-width: 620px;
+      }
+      .stamp {
+        font-size: 10px;
+        letter-spacing: 0.3em;
+        color: var(--muted);
+        margin-bottom: 12px;
+      }
+      h1 {
+        font-family: "Cormorant Garamond", Georgia, serif;
+        font-weight: 500;
+        font-size: 48px;
+        line-height: 1;
+        margin: 0 0 12px;
+        letter-spacing: -0.01em;
+      }
+      .lede {
+        font-family: "Cormorant Garamond", Georgia, serif;
+        font-size: 18px;
+        color: var(--muted);
+        margin: 0 0 32px;
+      }
+      label {
+        display: block;
+        font-size: 10px;
+        letter-spacing: 0.3em;
+        color: var(--muted);
+        margin: 24px 0 8px;
+      }
+      input {
+        width: 100%;
+        box-sizing: border-box;
+        font-family: ui-monospace, monospace;
+        font-size: 13px;
+        background: #fff;
+        color: var(--ink);
+        border: 1px solid var(--ink);
+        padding: 12px 14px;
+      }
+      input:focus {
+        outline: none;
+        box-shadow: 2px 2px 0 var(--ink);
+      }
+      .row {
+        margin-top: 24px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      button {
+        font-family: ui-monospace, monospace;
+        font-size: 10px;
+        letter-spacing: 0.3em;
+        border: 1px solid var(--ink);
+        background: #fff;
+        color: var(--ink);
+        padding: 12px 22px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: var(--ink);
+        color: var(--paper);
+      }
+      .status {
+        font-size: 11px;
+        letter-spacing: 0.15em;
+        color: #4a6f3f;
+        min-height: 18px;
+      }
+      .hint {
+        font-size: 11px;
+        line-height: 1.6;
+        color: var(--muted);
+        margin-top: 40px;
+        padding-top: 24px;
+        border-top: 1px dashed var(--line);
+      }
+      .hint a {
+        color: var(--ink);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stamp">AFTERLINE / COLLECTOR / OPTIONS</div>
+    <h1>Options</h1>
+    <p class="lede">
+      웹에서 드래그한 문장을 Afterline으로 보내기 위해, Personal Token과
+      서버 주소를 설정합니다.
+    </p>
+
+    <label for="endpoint">AFTERLINE ENDPOINT</label>
+    <input
+      id="endpoint"
+      type="text"
+      placeholder="https://afterline-pi.vercel.app"
+      autocomplete="off"
+    />
+
+    <label for="token">PERSONAL TOKEN</label>
+    <input
+      id="token"
+      type="password"
+      placeholder="afterline_..."
+      autocomplete="off"
+    />
+
+    <div class="row">
+      <button id="save" type="button">[ SAVE ]</button>
+      <span class="status" id="status"></span>
+    </div>
+
+    <div class="hint">
+      토큰은 Afterline의
+      <a href="https://afterline-pi.vercel.app/settings" target="_blank"
+        >/settings</a
+      >
+      페이지에서 복사할 수 있어요. 노출됐다고 생각되면 거기서 REGENERATE 한
+      뒤 여기에 다시 붙여넣으세요.
+    </div>
+
+    <script src="options.js"></script>
+  </body>
+</html>
