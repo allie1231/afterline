@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   getCollectionNoteBySource,
+  getNotesBySource,
   getQuotesBySource,
   getRoomCategory,
   getSourceById,
@@ -10,6 +11,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { CoverEditor } from "@/components/CoverEditor";
 import { EditSourceButton } from "@/components/EditSourceButton";
 import { LibraryCard } from "@/components/LibraryCard";
+import { NoteList } from "@/components/NoteList";
 import { QuoteList } from "@/components/QuoteList";
 import { SaveCardButton } from "@/components/SaveCardButton";
 import { SourceFieldEditor } from "@/components/SourceFieldEditor";
@@ -41,10 +43,11 @@ export default async function SourcePage({
   const source = await getSourceById(id);
   if (!source) notFound();
 
-  const [quotes, note, category] = await Promise.all([
+  const [quotes, note, category, notes] = await Promise.all([
     getQuotesBySource(source.id),
     getCollectionNoteBySource(source.id),
     getRoomCategory(source.type),
+    getNotesBySource(source.id),
   ]);
 
   if (!category) notFound();
@@ -181,6 +184,19 @@ export default async function SourcePage({
           </Link>
         </div>
         <QuoteList quotes={quotes} source={source} />
+      </div>
+
+      {/* Long-form notes */}
+      <div id="notes" className="mb-16 scroll-mt-20">
+        <div className="flex items-baseline justify-between mb-6">
+          <div className="font-mono text-[10px] tracking-[0.25em] text-muted">
+            NOTES / 노트
+          </div>
+          <span className="font-mono text-[10px] tracking-[0.25em] text-muted">
+            {String(notes.length).padStart(2, "0")} ENTRIES
+          </span>
+        </div>
+        <NoteList notes={notes} sourceId={source.id} />
       </div>
 
       {/* Note as library card */}
