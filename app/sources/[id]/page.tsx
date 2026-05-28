@@ -123,7 +123,7 @@ export default async function SourcePage({
               placeholder="제목"
             />
           </h1>
-          <div className="font-serif text-lg text-muted mt-2">
+          <div className="font-serif text-lg text-muted mt-2 flex items-baseline gap-3 flex-wrap">
             <SourceFieldEditor
               sourceId={source.id}
               field="creator"
@@ -131,6 +131,14 @@ export default async function SourcePage({
               placeholder="+ 저자 / 출연자"
               emptyClassName="text-muted italic text-base"
             />
+            {source.creator && source.type !== "movie" && (
+              <Link
+                href={`/people/${encodeURIComponent(source.creator)}`}
+                className="font-mono text-[10px] tracking-[0.25em] text-muted hover:text-ink whitespace-nowrap"
+              >
+                → ALL FROM {source.creator.toUpperCase()}
+              </Link>
+            )}
           </div>
           <div className="font-mono text-[10px] tracking-[0.2em] text-muted mt-2 flex gap-4 flex-wrap">
             <SourceFieldEditor
