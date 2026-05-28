@@ -763,3 +763,118 @@ export async function deleteNote(id: string): Promise<void> {
   const { error } = await supabase.from("notes").delete().eq("id", id);
   if (error) throw error;
 }
+
+// ─────────────────────────────────────────────────────────────────────
+// People — surface every source by a single creator together
+// ─────────────────────────────────────────────────────────────────────
+
+// Movie's `creator` field stores the FORMAT (영화/드라마/애니메이션) — not a
+// person. Excluded from author/people aggregation so "영화" isn't a "person".
+const PEOPLE_EXCLUDED_TYPES = new Set<SourceType>(["movie"]);
+
+export interface CreatorSummary {
+  name: string;
+  sources: number;
+  lines: number;
+  types: SourceType[]; // distinct, sorted
+}
+
+export async function getAllCreators(): Promise<CreatorSummary[]> {
+  const supabase = await createClient();
+  const [{ data: sources }, { data: quotes }] = await Promise.all([
+    supabase.from("sources").select("id, type, creator"),
+    supabase.from("quotes").select("source_id"),
+  ]);
+  const linesBySource = new Map<string, number>();
+  for (const q of quotes ?? []) {
+    const sid = q.source_id as string | null;
+    if (!sid) continue;
+    linesBySource.set(sid, (linesBySource.get(sid) ?? 0) + 1);
+  }
+  const byName = new Map<
+    string,
+    { sources: number; lines: number; types: Set<SourceType> }
+  >();
+  for (const s of sources ?? []) {
+    const type = s.type as SourceType;
+    if (PEOPLE_EXCLUDED_TYPES.has(type)) continue;
+    const name = ((s.creator as string | null) ?? "").trim();
+    if (!name) continue;
+    const id = s.id as string;
+    const entry = byName.get(name) ?? {
+      sources: 0,
+      lines: 0,
+      types: new Set<SourceType>(),
+    };
+    entry.sources += 1;
+    entry.lines += linesBySource.get(id) ?? 0;
+    entry.types.add(type);
+    byName.set(name, entry);
+  }
+  return [...byName.entries()]
+    .map(([name, v]) => ({
+      name,
+      sources: v.sources,
+      lines: v.lines,
+      types: [...v.types].sort(),
+    }))
+    .sort((a, b) => b.lines - a.lines || b.sources - a.sources);
+}
+
+export interface PersonPage {
+  name: string;
+  sources: Source[];
+  lines: number;
+  notesCount: number;
+  recentQuotes: Array<{ quote: Quote; source: Source }>;
+}
+
+export async function getPersonPage(name: string): Promise<PersonPage | null> {
+  const supabase = await createClient();
+  // Sources where creator matches exactly (case-sensitive — names tend to be
+  // canonical from search results so this is fine for v1).
+  const { data: sources, error: sErr } = await supabase
+    .from("sources")
+    .select("*")
+    .eq("creator", name)
+    .order("created_at", { ascending: false });
+  if (sErr) throw sErr;
+  const sourceList = (sources ?? []) as Source[];
+  if (sourceList.length === 0) return null;
+
+  const ids = sourceList.map((s) => s.id);
+  const [{ data: quotes }, { count: notesCount }] = await Promise.all([
+    supabase
+      .from("quotes")
+      .select("*")
+      .in("source_id", ids)
+      .order("created_at", { ascending: false })
+      .limit(40),
+    supabase
+      .from("notes")
+      .select("*", { count: "exact", head: true })
+      .in("source_id", ids),
+  ]);
+  const quotesList = (quotes ?? []) as Quote[];
+  const sourceById = new Map(sourceList.map((s) => [s.id, s]));
+
+  const recentQuotes = quotesList
+    .filter((q) => q.source_id && sourceById.has(q.source_id))
+    .map((q) => ({ quote: q, source: sourceById.get(q.source_id!)! }));
+
+  // Best estimate of total line count: a separate count query would be exact,
+  // but the limit:40 above covers the displayed slice. Use total with a
+  // dedicated count query for the stats strip.
+  const { count: totalLines } = await supabase
+    .from("quotes")
+    .select("*", { count: "exact", head: true })
+    .in("source_id", ids);
+
+  return {
+    name,
+    sources: sourceList,
+    lines: totalLines ?? quotesList.length,
+    notesCount: notesCount ?? 0,
+    recentQuotes,
+  };
+}
