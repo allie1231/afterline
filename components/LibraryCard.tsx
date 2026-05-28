@@ -79,7 +79,7 @@ export function LibraryCard({
             </div>
             {showCover && (
               <div
-                className={`shrink-0 ${coverBox} border border-ink overflow-hidden flex items-center justify-center`}
+                className={`shrink-0 ${coverBox} border border-ink overflow-hidden`}
                 style={{ background: spineColor }}
               >
                 {source.cover_url && (
@@ -87,7 +87,7 @@ export function LibraryCard({
                   <img
                     src={source.cover_url}
                     alt=""
-                    className="max-w-full max-h-full object-contain"
+                    className="w-full h-full object-contain"
                     crossOrigin="anonymous"
                   />
                 )}

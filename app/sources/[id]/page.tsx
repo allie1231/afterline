@@ -60,14 +60,20 @@ export default async function SourcePage({
     .slice(-6)
     .toUpperCase()}`.replace(/[^\w가-힣.-]+/g, "_");
 
+  // Only treat the URL as an external link when it's clearly absolute —
+  // otherwise the browser resolves it against our own origin and 404s.
+  const externalUrl = /^https?:\/\//i.test(source.url ?? "")
+    ? source.url!.trim()
+    : null;
+
   return (
     <section className="px-6 py-10 max-w-5xl mx-auto">
-      {source.url ? (
+      {externalUrl ? (
         <a
-          href={source.url}
+          href={externalUrl}
           target="_blank"
           rel="noopener noreferrer"
-          title={source.url}
+          title={externalUrl}
           className="inline-flex items-baseline gap-2 font-mono text-[10px] tracking-[0.25em] text-muted hover:text-ink transition-colors mb-8"
         >
           <span>
