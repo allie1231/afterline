@@ -23,6 +23,7 @@ type Hit = {
   published_date?: string;
   isbn?: string;
   cover_url?: string;
+  genre?: string;
 };
 
 const SEARCHABLE: SourceType[] = ["book", "movie", "lyrics"];
@@ -49,6 +50,8 @@ async function search(type: SourceType, q: string): Promise<Hit[]> {
       release_date?: string;
       first_air_date?: string;
       poster_path?: string | null;
+      original_language?: string;
+      genre_ids?: number[];
     }>;
     return items
       .filter((it) => it.media_type === "movie" || it.media_type === "tv")
@@ -57,10 +60,22 @@ async function search(type: SourceType, q: string): Promise<Hit[]> {
         const title = (it.media_type === "movie" ? it.title : it.name) ?? "";
         const date =
           it.media_type === "movie" ? it.release_date : it.first_air_date;
+        const ko = it.original_language === "ko";
+        const isAnim = (it.genre_ids ?? []).includes(16);
+        const genre = isAnim
+          ? "애니메이션"
+          : it.media_type === "tv"
+            ? ko
+              ? "한국드라마"
+              : "외국드라마"
+            : ko
+              ? "한국영화"
+              : "외국영화";
         return {
           title,
           published_date: date?.slice(0, 4),
           cover_url: `https://image.tmdb.org/t/p/w500${it.poster_path}`,
+          genre,
         };
       });
   }
@@ -75,6 +90,7 @@ async function search(type: SourceType, q: string): Promise<Hit[]> {
       collectionName?: string;
       releaseDate?: string;
       artworkUrl100?: string;
+      primaryGenreName?: string;
     }>;
     return items
       .filter((it) => it.trackName)
@@ -87,6 +103,7 @@ async function search(type: SourceType, q: string): Promise<Hit[]> {
           /\/[0-9]+x[0-9]+bb\./,
           "/600x600bb.",
         ),
+        genre: it.primaryGenreName?.trim() || undefined,
       }));
   }
   return [];
@@ -102,6 +119,7 @@ export function CaptureForm({ existingSources }: { existingSources: Source[] }) 
   const [publishedDate, setPublishedDate] = useState("");
   const [isbn, setIsbn] = useState("");
   const [coverUrl, setCoverUrl] = useState("");
+  const [genre, setGenre] = useState("");
   const [existingId, setExistingId] = useState("");
   const [searchQ, setSearchQ] = useState("");
   const [hits, setHits] = useState<Hit[]>([]);
@@ -129,6 +147,7 @@ export function CaptureForm({ existingSources }: { existingSources: Source[] }) 
     if (h.published_date) setPublishedDate(h.published_date);
     if (h.isbn) setIsbn(h.isbn);
     if (h.cover_url) setCoverUrl(h.cover_url);
+    if (h.genre) setGenre(h.genre);
     setHits([]);
   }
 
@@ -365,6 +384,14 @@ export function CaptureForm({ existingSources }: { existingSources: Source[] }) 
                 className="border border-ink bg-paper px-3 py-3 font-serif text-base min-w-0"
               />
             </div>
+            <input
+              type="text"
+              name="genre"
+              value={genre}
+              onChange={(e) => setGenre(e.target.value)}
+              placeholder="장르 — 한국소설 / 한국영화 / K-Pop … (검색으로 자동입력)"
+              className="w-full border border-ink bg-paper px-3 py-3 font-serif text-base"
+            />
             <input type="hidden" name="isbn" value={isbn} />
             <input type="hidden" name="cover_url" value={coverUrl} />
             {coverUrl && (

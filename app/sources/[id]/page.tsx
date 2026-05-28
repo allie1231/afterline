@@ -129,7 +129,7 @@ export default async function SourcePage({
               emptyClassName="text-muted italic text-base"
             />
           </div>
-          <div className="font-mono text-[10px] tracking-[0.2em] text-muted mt-2 flex gap-4">
+          <div className="font-mono text-[10px] tracking-[0.2em] text-muted mt-2 flex gap-4 flex-wrap">
             <SourceFieldEditor
               sourceId={source.id}
               field="publisher"
@@ -144,6 +144,16 @@ export default async function SourcePage({
                 field="published_date"
                 initialValue={source.published_date ?? ""}
                 placeholder="+ 연도"
+              />
+            )}
+            {(source.type === "movie" ||
+              source.type === "book" ||
+              source.type === "lyrics") && (
+              <SourceFieldEditor
+                sourceId={source.id}
+                field="genre"
+                initialValue={source.genre ?? ""}
+                placeholder="+ 장르"
               />
             )}
           </div>

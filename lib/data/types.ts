@@ -21,6 +21,7 @@ export interface Source {
   isbn?: string;
   cover_url?: string;
   url?: string;
+  genre?: string | null;
   spine_color?: string | null;
   external_provider?: string;
   external_id?: string;

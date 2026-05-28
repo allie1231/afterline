@@ -9,6 +9,10 @@ import {
   MAX_COVER_BYTES,
 } from "@/lib/storage";
 import type { Source, SourceType } from "@/lib/data/types";
+import {
+  deriveLyricsGenre,
+  deriveMovieGenre,
+} from "@/lib/data/genre-derive";
 
 // ── Normalized result type used by all three providers ──────────────
 type CoverHit = {
@@ -25,6 +29,7 @@ type CoverHit = {
     publisher?: string;
     published_date?: string;
     isbn?: string;
+    genre?: string;
   };
 };
 
@@ -48,6 +53,7 @@ async function fetchHits(
         published_date?: string;
         isbn?: string;
         cover_url?: string;
+        genre?: string;
         source: "aladin" | "google";
       }>;
     };
@@ -55,7 +61,9 @@ async function fetchHits(
       id: b.id,
       title: b.title,
       creator: b.creator,
-      meta: [b.publisher, b.published_date].filter(Boolean).join(" · "),
+      meta: [b.publisher, b.published_date, b.genre]
+        .filter(Boolean)
+        .join(" · "),
       cover_url: b.cover_url,
       source: b.source.toUpperCase(),
       raw: {
@@ -64,6 +72,7 @@ async function fetchHits(
         publisher: b.publisher,
         published_date: b.published_date,
         isbn: b.isbn,
+        genre: b.genre,
       },
     }));
   }
@@ -84,6 +93,8 @@ async function fetchHits(
         release_date?: string;
         first_air_date?: string;
         poster_path?: string | null;
+        original_language?: string;
+        genre_ids?: number[];
       }>;
       return items
         .filter((it) => it.media_type === "movie" || it.media_type === "tv")
@@ -93,18 +104,18 @@ async function fetchHits(
           const date =
             it.media_type === "movie" ? it.release_date : it.first_air_date;
           const year = date?.slice(0, 4);
+          const genre = deriveMovieGenre({
+            media_type: it.media_type as "movie" | "tv",
+            original_language: it.original_language,
+            genre_ids: it.genre_ids,
+          });
           return {
             id: `${it.media_type}-${it.id}`,
             title,
-            meta: [
-              it.media_type === "tv" ? "TV" : "MOVIE",
-              year,
-            ]
-              .filter(Boolean)
-              .join(" · "),
+            meta: [genre, year].filter(Boolean).join(" · "),
             cover_url: `https://image.tmdb.org/t/p/w500${it.poster_path}`,
             source: "TMDB",
-            raw: { title, published_date: year },
+            raw: { title, published_date: year, genre },
           };
         });
     } catch {
@@ -125,16 +136,18 @@ async function fetchHits(
         collectionName?: string;
         releaseDate?: string;
         artworkUrl100?: string;
+        primaryGenreName?: string;
       }>;
       return items
         .filter((it) => it.trackName)
         .map<CoverHit>((it) => {
           const year = it.releaseDate?.slice(0, 4);
+          const genre = deriveLyricsGenre(it.primaryGenreName);
           return {
             id: `itunes-${it.trackId ?? Math.random()}`,
             title: it.trackName ?? "",
             creator: it.artistName,
-            meta: [it.collectionName, year]
+            meta: [it.collectionName, year, genre]
               .filter(Boolean)
               .join(" · "),
             cover_url: it.artworkUrl100?.replace(
@@ -147,6 +160,7 @@ async function fetchHits(
               creator: it.artistName,
               publisher: it.collectionName,
               published_date: year,
+              genre,
             },
           };
         });
@@ -250,6 +264,8 @@ export function ChangeCoverDialog({
         );
       if (raw.isbn?.trim())
         updates.push(updateSourceTextAction(source.id, "isbn", raw.isbn));
+      if (raw.genre?.trim())
+        updates.push(updateSourceTextAction(source.id, "genre", raw.genre));
       await Promise.all(updates);
       router.refresh();
       onClose();

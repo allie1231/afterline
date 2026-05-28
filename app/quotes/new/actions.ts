@@ -46,6 +46,7 @@ export async function createQuoteAction(formData: FormData): Promise<void> {
       isbn: str(formData, "isbn"),
       cover_url: str(formData, "cover_url"),
       url: str(formData, "url"),
+      genre: str(formData, "genre"),
       spine_color,
     });
     sourceId = newSource.id;

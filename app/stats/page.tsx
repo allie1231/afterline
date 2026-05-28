@@ -92,6 +92,86 @@ export default async function StatsPage() {
         </ul>
       </section>
 
+      {/* Genres by room */}
+      <section className="mb-12">
+        <h2 className="font-serif text-2xl tracking-tight mb-1">
+          Genres by Room
+        </h2>
+        <div className="font-mono text-xs tracking-[0.2em] text-muted mb-5">
+          룸별 세부 장르 — 검색 자동매핑 / 수동 입력 기준
+        </div>
+        {(() => {
+          const roomsWithGenre = ROOM_CATEGORIES.filter(
+            (cat) => (stats.genresByType[cat.type] ?? []).length > 0,
+          );
+          if (roomsWithGenre.length === 0) {
+            return (
+              <div className="font-mono text-xs text-muted">
+                NO GENRE DATA YET — 검색으로 표지를 가져오면 자동으로 채워져요.
+              </div>
+            );
+          }
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {roomsWithGenre.map((cat) => {
+                const list = stats.genresByType[cat.type] ?? [];
+                const maxLines = Math.max(1, ...list.map((g) => g.lines));
+                return (
+                  <div key={cat.type}>
+                    <div className="flex items-baseline justify-between mb-3 border-b border-line pb-2">
+                      <div className="flex items-baseline gap-2">
+                        <span
+                          className="w-2 h-2 inline-block"
+                          style={{ background: cat.accent }}
+                        />
+                        <span className="font-serif text-base">{cat.en}</span>
+                        <span className="font-mono text-[10px] tracking-[0.2em] text-muted">
+                          {cat.ko}
+                        </span>
+                      </div>
+                      <span className="font-mono text-[9px] tracking-[0.25em] text-muted">
+                        {list.length} 종
+                      </span>
+                    </div>
+                    <ul className="flex flex-col gap-2">
+                      {list.slice(0, 8).map((g) => {
+                        const pct = Math.round((g.lines / maxLines) * 100);
+                        return (
+                          <li
+                            key={g.genre}
+                            className="grid grid-cols-[1fr_60px_70px] gap-3 items-center"
+                          >
+                            <div
+                              className="font-serif text-sm leading-tight truncate"
+                              title={g.genre}
+                            >
+                              {g.genre}
+                            </div>
+                            <div className="h-2 bg-line/40 relative">
+                              <div
+                                className="h-full"
+                                style={{
+                                  width: `${pct}%`,
+                                  background: cat.accent,
+                                }}
+                              />
+                            </div>
+                            <div className="text-right font-mono text-[9px] tracking-[0.2em] text-muted">
+                              {String(g.lines).padStart(2, "0")} ·{" "}
+                              {String(g.sources).padStart(2, "0")}
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
+      </section>
+
       {/* Activity last 30 days */}
       <section className="mb-12">
         <h2 className="font-serif text-2xl tracking-tight mb-1">

@@ -10,7 +10,8 @@ type Field =
   | "published_date"
   | "isbn"
   | "url"
-  | "cover_url";
+  | "cover_url"
+  | "genre";
 
 export function SourceFieldEditor({
   sourceId,
