@@ -109,11 +109,19 @@ async function search(type: SourceType, q: string): Promise<Hit[]> {
   return [];
 }
 
-export function CaptureForm({ existingSources }: { existingSources: Source[] }) {
+export function CaptureForm({
+  existingSources,
+  defaultText = "",
+  defaultTitle = "",
+}: {
+  existingSources: Source[];
+  defaultText?: string;
+  defaultTitle?: string;
+}) {
   const [type, setType] = useState<SourceType>("book");
   const [mode, setMode] = useState<"new" | "existing">("new");
-  const [text, setText] = useState("");
-  const [title, setTitle] = useState("");
+  const [text, setText] = useState(defaultText);
+  const [title, setTitle] = useState(defaultTitle);
   const [creator, setCreator] = useState("");
   const [publisher, setPublisher] = useState("");
   const [publishedDate, setPublishedDate] = useState("");

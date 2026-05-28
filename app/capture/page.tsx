@@ -2,8 +2,26 @@ import { getAllSources } from "@/lib/data/repository";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { CaptureForm } from "./CaptureForm";
 
-export default async function CapturePage() {
-  const sources = await getAllSources();
+export const dynamic = "force-dynamic";
+
+export default async function CapturePage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    text?: string;
+    title?: string;
+    url?: string;
+  }>;
+}) {
+  const [sources, sp] = await Promise.all([
+    getAllSources(),
+    searchParams,
+  ]);
+
+  // PWA share_target / quick-link pre-fill. Other apps can send `text`
+  // (selected passage), `title` (page title), and `url` (page URL).
+  const sharedText = [sp.text, sp.url].filter(Boolean).join("\n\n");
+  const sharedTitle = sp.title ?? "";
 
   return (
     <section className="px-4 py-6 max-w-xl mx-auto">
@@ -21,7 +39,11 @@ export default async function CapturePage() {
         모바일에서 빠르게 — 붙여넣고, 검색하고, 저장.
       </p>
 
-      <CaptureForm existingSources={sources} />
+      <CaptureForm
+        existingSources={sources}
+        defaultText={sharedText}
+        defaultTitle={sharedTitle}
+      />
     </section>
   );
 }
