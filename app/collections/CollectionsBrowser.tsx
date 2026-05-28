@@ -192,7 +192,11 @@ function FilterChip({
 }
 
 // Types whose cards stay typographic — no thumbnail block on the left.
-const NO_THUMB_TYPES = new Set<SourceType>(["article", "conversation"]);
+const NO_THUMB_TYPES = new Set<SourceType>([
+  "article",
+  "conversation",
+  "other",
+]);
 
 function CollectionCard({ item }: { item: CollectionsItem }) {
   const cat = ROOM_CATEGORIES.find((c) => c.type === item.source.type)!;

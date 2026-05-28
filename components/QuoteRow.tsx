@@ -146,7 +146,9 @@ export function QuoteRow({
         {String(index + 1).padStart(2, "0")}
       </div>
       <div>
-        <p className="font-serif text-2xl leading-snug">{quote.text}</p>
+        <p className="font-serif text-2xl leading-snug whitespace-pre-line">
+          {quote.text}
+        </p>
         {quote.page && (
           <div className="font-mono text-[10px] tracking-[0.25em] text-muted mt-2">
             p. {quote.page}
