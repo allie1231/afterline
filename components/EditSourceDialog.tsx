@@ -10,6 +10,13 @@ import type { Source, SourceType } from "@/lib/data/types";
 const SHOW_PUBLISHER = new Set<SourceType>(["book", "lyrics", "movie"]);
 const SHOW_YEAR = new Set<SourceType>(["book", "lyrics", "movie", "article"]);
 const SHOW_ISBN = new Set<SourceType>(["book"]);
+const SHOW_GENRE = new Set<SourceType>(["book", "lyrics", "movie"]);
+
+const GENRE_HINT: Partial<Record<SourceType, string>> = {
+  book: "한국소설 / 에세이 / …",
+  movie: "한국영화 / 한국드라마 / 애니메이션 / …",
+  lyrics: "K-Pop / Hip-Hop/Rap / J-Pop / …",
+};
 const SHOW_URL = new Set<SourceType>([
   "article",
   "book",
@@ -43,6 +50,7 @@ export function EditSourceDialog({
   const [publisher, setPublisher] = useState(source.publisher ?? "");
   const [publishedDate, setPublishedDate] = useState(source.published_date ?? "");
   const [isbn, setIsbn] = useState(source.isbn ?? "");
+  const [genre, setGenre] = useState(source.genre ?? "");
   const [url, setUrl] = useState(source.url ?? "");
   const [spineColor, setSpineColor] = useState<string | null>(
     source.spine_color ?? null,
@@ -62,6 +70,7 @@ export function EditSourceDialog({
           publisher: SHOW_PUBLISHER.has(source.type) ? publisher : undefined,
           published_date: SHOW_YEAR.has(source.type) ? publishedDate : undefined,
           isbn: SHOW_ISBN.has(source.type) ? isbn : undefined,
+          genre: SHOW_GENRE.has(source.type) ? genre : undefined,
           url: SHOW_URL.has(source.type) ? url : undefined,
           spine_color: spineColor,
         });
@@ -187,6 +196,18 @@ export function EditSourceDialog({
                 type="text"
                 value={isbn}
                 onChange={(e) => setIsbn(e.target.value)}
+                className="w-full border border-ink bg-paper px-3 py-2 font-serif text-base focus:outline-none focus:border-blue"
+              />
+            </Field>
+          )}
+
+          {SHOW_GENRE.has(source.type) && (
+            <Field label="GENRE / 장르">
+              <input
+                type="text"
+                value={genre}
+                onChange={(e) => setGenre(e.target.value)}
+                placeholder={GENRE_HINT[source.type] ?? "장르"}
                 className="w-full border border-ink bg-paper px-3 py-2 font-serif text-base focus:outline-none focus:border-blue"
               />
             </Field>

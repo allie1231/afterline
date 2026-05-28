@@ -96,7 +96,8 @@ type SourceTextField =
   | "published_date"
   | "isbn"
   | "url"
-  | "cover_url";
+  | "cover_url"
+  | "genre";
 
 export async function updateSourceTextAction(
   sourceId: string,
@@ -136,6 +137,7 @@ export interface EditSourceFields {
   published_date?: string | null;
   isbn?: string | null;
   url?: string | null;
+  genre?: string | null;
   spine_color?: string | null;
 }
 

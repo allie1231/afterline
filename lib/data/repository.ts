@@ -198,6 +198,7 @@ export interface CreateSourceInput {
   isbn?: string;
   cover_url?: string;
   url?: string;
+  genre?: string | null;
   spine_color?: string | null;
 }
 
@@ -428,6 +429,12 @@ export interface StatsData {
   topTags: { tag: string; count: number }[];
   // Top tags grouped by source type — empty array when a room has no tagged quotes.
   tagsByType: Record<SourceType, { tag: string; count: number }[]>;
+  // Genre × type buckets — built from sources.genre (auto-filled or manual).
+  // Map: SourceType → array of {genre, sources, lines} sorted by line count desc.
+  genresByType: Record<
+    SourceType,
+    { genre: string; sources: number; lines: number }[]
+  >;
   topSources: { source: Source; lines: number }[];
   activity: { date: string; count: number }[]; // last 30 days, oldest → newest
   latestLineAt: string | null;
@@ -508,6 +515,32 @@ export async function getStatsData(): Promise<StatsData> {
       .slice(0, 10);
   }
 
+  // Genres × type — count source records and total lines per (type, genre).
+  const genreCountsByType = new Map<
+    SourceType,
+    Map<string, { sources: number; lines: number }>
+  >();
+  for (const cat of ROOM_CATEGORIES) genreCountsByType.set(cat.type, new Map());
+  for (const s of allSources) {
+    const g = (s.genre ?? "").trim();
+    if (!g) continue;
+    const bucket = genreCountsByType.get(s.type)!;
+    const prev = bucket.get(g) ?? { sources: 0, lines: 0 };
+    bucket.set(g, {
+      sources: prev.sources + 1,
+      lines: prev.lines + (linesBySourceId.get(s.id) ?? 0),
+    });
+  }
+  const genresByType = {} as Record<
+    SourceType,
+    { genre: string; sources: number; lines: number }[]
+  >;
+  for (const [type, bucket] of genreCountsByType.entries()) {
+    genresByType[type] = [...bucket.entries()]
+      .map(([genre, v]) => ({ genre, ...v }))
+      .sort((a, b) => b.lines - a.lines || b.sources - a.sources);
+  }
+
   const topSources = [...linesBySourceId.entries()]
     .map(([sourceId, lines]) => ({
       source: allSources.find((s) => s.id === sourceId)!,
@@ -537,6 +570,7 @@ export async function getStatsData(): Promise<StatsData> {
     sourcesByType,
     topTags,
     tagsByType,
+    genresByType,
     topSources,
     activity,
     latestLineAt,

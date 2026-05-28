@@ -13,8 +13,25 @@ export type BookSearchResult = {
   published_date?: string;
   isbn?: string;
   cover_url?: string;
+  genre?: string;
   source: "aladin" | "google";
 };
+
+// Pick a reasonable subgenre label from Aladin's nested category string.
+// Example input:  "국내도서>소설/시/희곡>한국소설"
+//             →  "한국소설"
+// Falls back to the second segment when the leaf is generic ("전체" etc.).
+function aladinCategoryToGenre(raw?: string): string | undefined {
+  if (!raw) return undefined;
+  const parts = raw
+    .split(">")
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0);
+  if (parts.length === 0) return undefined;
+  const last = parts[parts.length - 1];
+  if (last && last !== "전체") return last;
+  return parts[parts.length - 2];
+}
 
 function cleanAuthor(raw?: string): string | undefined {
   if (!raw) return undefined;
@@ -61,6 +78,7 @@ async function searchAladin(query: string): Promise<BookSearchResult[]> {
       isbn?: string;
       isbn13?: string;
       cover?: string;
+      categoryName?: string;
     }>;
     return items
       .map<BookSearchResult>((it) => ({
@@ -71,6 +89,7 @@ async function searchAladin(query: string): Promise<BookSearchResult[]> {
         published_date: it.pubDate?.slice(0, 4),
         isbn: it.isbn13 || it.isbn,
         cover_url: it.cover,
+        genre: aladinCategoryToGenre(it.categoryName),
         source: "aladin",
       }))
       .filter((r) => r.title.length > 0);
@@ -94,6 +113,7 @@ async function searchGoogleBooks(query: string): Promise<BookSearchResult[]> {
         publishedDate?: string;
         industryIdentifiers?: { type: string; identifier: string }[];
         imageLinks?: { thumbnail?: string; smallThumbnail?: string };
+        categories?: string[];
       };
     }>;
     return items
@@ -112,6 +132,7 @@ async function searchGoogleBooks(query: string): Promise<BookSearchResult[]> {
           published_date: v.publishedDate?.slice(0, 4),
           isbn: isbn13?.identifier ?? isbn10?.identifier,
           cover_url: cover,
+          genre: v.categories?.[0],
           source: "google",
         };
       })

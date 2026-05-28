@@ -68,6 +68,7 @@ type BookResult = {
   published_date?: string;
   isbn?: string;
   cover_url?: string;
+  genre?: string;
   source: "aladin" | "google";
 };
 
@@ -88,6 +89,7 @@ type MovieResult = {
   cover_url?: string;
   media_type: "movie" | "tv";
   format_guess: MovieFormatGuess;
+  genre?: string;
 };
 
 const TMDB_ANIMATION_GENRE_IDS = new Set([16]); // 16 = Animation in both movie and tv
@@ -100,6 +102,7 @@ type LyricsResult = {
   publisher?: string;
   published_date?: string;
   cover_url?: string;
+  genre?: string;
 };
 
 async function searchITunes(query: string): Promise<LyricsResult[]> {
@@ -115,6 +118,7 @@ async function searchITunes(query: string): Promise<LyricsResult[]> {
       collectionName?: string;
       releaseDate?: string;
       artworkUrl100?: string;
+      primaryGenreName?: string;
     }>;
     return items
       .filter((it) => it.trackName)
@@ -131,6 +135,7 @@ async function searchITunes(query: string): Promise<LyricsResult[]> {
           publisher: it.collectionName,
           published_date: it.releaseDate?.slice(0, 4),
           cover_url: cover,
+          genre: it.primaryGenreName?.trim() || undefined,
         };
       });
   } catch {
@@ -154,6 +159,7 @@ async function searchTmdb(query: string): Promise<MovieResult[]> {
     first_air_date?: string; // tv
     poster_path?: string | null;
     genre_ids?: number[];
+    original_language?: string;
   }>;
   return items
     .filter((it) => it.media_type === "movie" || it.media_type === "tv")
@@ -173,6 +179,16 @@ async function searchTmdb(query: string): Promise<MovieResult[]> {
         : it.media_type === "tv"
           ? "드라마"
           : "영화";
+      const ko = it.original_language === "ko";
+      const genre = hasAnimation
+        ? "애니메이션"
+        : it.media_type === "tv"
+          ? ko
+            ? "한국드라마"
+            : "외국드라마"
+          : ko
+            ? "한국영화"
+            : "외국영화";
       return {
         id: `${it.media_type}-${it.id}`,
         title,
@@ -180,6 +196,7 @@ async function searchTmdb(query: string): Promise<MovieResult[]> {
         cover_url: cover,
         media_type: it.media_type as "movie" | "tv",
         format_guess,
+        genre,
       };
     })
     .filter((r) => r.title.length > 0);
@@ -217,6 +234,7 @@ export function NewQuoteForm({
   const [publishedDate, setPublishedDate] = useState("");
   const [isbn, setIsbn] = useState("");
   const [coverUrl, setCoverUrl] = useState("");
+  const [genre, setGenre] = useState("");
 
   // Spine color
   const [spineColor, setSpineColor] = useState<string>("auto");
@@ -259,6 +277,7 @@ export function NewQuoteForm({
     setPublishedDate(b.published_date ?? "");
     setIsbn(b.isbn ?? "");
     setCoverUrl(b.cover_url ?? "");
+    if (b.genre) setGenre(b.genre);
     setBookResults([]);
   }
 
@@ -286,6 +305,7 @@ export function NewQuoteForm({
     // Auto-pick the FORMAT radio based on TMDb media_type + genre.
     // User can immediately re-click another radio to override.
     setCreator(m.format_guess);
+    if (m.genre) setGenre(m.genre);
     setMovieResults([]);
   }
 
@@ -312,6 +332,7 @@ export function NewQuoteForm({
     setPublisher(l.publisher ?? "");
     setPublishedDate(l.published_date ?? "");
     setCoverUrl(l.cover_url ?? "");
+    if (l.genre) setGenre(l.genre);
     setLyricsResults([]);
   }
 
@@ -784,6 +805,29 @@ export function NewQuoteForm({
                     name="isbn"
                     value={isbn}
                     onChange={(e) => setIsbn(e.target.value)}
+                    className="w-full border border-ink bg-paper px-4 py-3 font-serif text-lg focus:outline-none focus:border-blue"
+                  />
+                </Field>
+              )}
+
+              {/* Genre — auto-filled from search, editable */}
+              {(type === "book" || type === "movie" || type === "lyrics") && (
+                <Field
+                  labelEn="GENRE"
+                  labelKo={
+                    type === "book"
+                      ? "장르 — 한국소설 / 에세이 …"
+                      : type === "movie"
+                        ? "장르 — 한국영화 / 한국드라마 / 애니메이션 …"
+                        : "장르 — K-Pop / Hip-Hop/Rap / J-Pop …"
+                  }
+                >
+                  <input
+                    type="text"
+                    name="genre"
+                    value={genre}
+                    onChange={(e) => setGenre(e.target.value)}
+                    placeholder="검색 결과를 USE 하면 자동 입력돼요"
                     className="w-full border border-ink bg-paper px-4 py-3 font-serif text-lg focus:outline-none focus:border-blue"
                   />
                 </Field>
