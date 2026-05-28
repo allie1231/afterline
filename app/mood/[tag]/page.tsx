@@ -51,7 +51,7 @@ export default async function TagPage({
               </div>
               <div>
                 <blockquote className="font-serif text-2xl leading-snug">
-                  &ldquo;{quote.text}&rdquo;
+                  {quote.text}
                 </blockquote>
                 {source && (
                   <div className="mt-3 font-mono text-[10px] tracking-[0.25em] text-muted flex gap-3 items-baseline flex-wrap">

@@ -1,17 +1,7 @@
 import Link from "next/link";
+import { isLightSpineColor, resolveSpineColor } from "@/lib/data/spineColor";
 import type { Source, SourceType } from "@/lib/data/types";
 
-const PALETTE = [
-  "var(--blue)",
-  "var(--red)",
-  "var(--green)",
-  "var(--yellow)",
-  "var(--orange)",
-  "var(--cyan)",
-];
-
-// All spines share the same book-spine dimensions. Type only affects the
-// small label printed at the top of the spine.
 const SPINE_SIZE = { width: "w-12", height: "h-[360px]" };
 const SPINE_LABEL: Record<SourceType, string> = {
   book: "BK",
@@ -25,42 +15,13 @@ const SPINE_LABEL: Record<SourceType, string> = {
 export function SourceSpine({
   source,
   lines,
-  index,
 }: {
   source: Source;
   lines: number;
-  index: number;
 }) {
-  // User-picked color wins; otherwise rotate through the default palette.
-  // Values that would render invisible against the paper background — or
-  // stale values from older imports — are treated as "use the default."
-  const INVISIBLE_BGS = new Set([
-    "",
-    "auto",
-    "transparent",
-    "none",
-    "var(--paper)",
-    "var(--white)",
-    "var(--bg)",
-    "#f5f1e8",
-    "#ffffff",
-    "#fff",
-  ]);
-  const raw = (source.spine_color ?? "").trim().toLowerCase();
-  const bg =
-    raw && !INVISIBLE_BGS.has(raw)
-      ? source.spine_color!.trim()
-      : PALETTE[index % PALETTE.length];
+  const bg = resolveSpineColor(source);
   const label = SPINE_LABEL[source.type];
-  // Light backgrounds need dark ink; everything else gets white text.
-  const LIGHT_BGS = new Set([
-    "var(--yellow)",
-    "var(--cyan)",
-    "var(--paper)",
-    "var(--white)",
-    "#e8a08e", // salmon
-  ]);
-  const isLight = LIGHT_BGS.has(bg);
+  const isLight = isLightSpineColor(bg);
   const fg = isLight ? "var(--ink)" : "var(--white)";
   const fgMuted = isLight ? "rgba(17,17,17,0.55)" : "rgba(255,255,255,0.7)";
 

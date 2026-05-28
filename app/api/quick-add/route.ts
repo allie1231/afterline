@@ -74,7 +74,8 @@ export async function POST(req: NextRequest) {
   }
   const userId = tokenRow.user_id as string;
 
-  // 2) Find or create the source by URL (article-type by default).
+  // 2) Find or create the source by URL. Extension defaults to the
+  //    "other" room — the user can re-file from inside the app.
   let sourceId: string | undefined;
   const pageUrl = body.page_url?.trim() || null;
   if (pageUrl) {
@@ -93,7 +94,7 @@ export async function POST(req: NextRequest) {
       .from("sources")
       .insert({
         user_id: userId,
-        type: "article",
+        type: "other",
         title,
         creator: body.page_creator?.trim() || null,
         url: pageUrl,
