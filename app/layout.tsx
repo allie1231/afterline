@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Inter, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { AppHeader } from "@/components/AppHeader";
@@ -24,6 +24,18 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "Afterline",
   description: "Lines that stayed after reading. 읽고 난 뒤에도 남은 문장들.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "Afterline",
+    statusBarStyle: "default",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#f5f1e8",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default async function RootLayout({

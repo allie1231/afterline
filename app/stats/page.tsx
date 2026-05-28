@@ -200,6 +200,69 @@ export default async function StatsPage() {
         </section>
       </div>
 
+      {/* Tags by room */}
+      {ROOM_CATEGORIES.some((c) => (stats.tagsByType[c.type] ?? []).length > 0) && (
+        <section className="mb-12">
+          <h2 className="font-serif text-2xl tracking-tight mb-1">
+            Tags by Room
+          </h2>
+          <div className="font-mono text-xs tracking-[0.2em] text-muted mb-5">
+            방 안에서 자주 쓰인 태그
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
+            {ROOM_CATEGORIES.map((cat) => {
+              const tags = stats.tagsByType[cat.type] ?? [];
+              if (tags.length === 0) return null;
+              const max = Math.max(1, ...tags.map((t) => t.count));
+              return (
+                <div key={cat.type}>
+                  <div className="flex items-baseline justify-between mb-3 border-b border-line pb-2">
+                    <Link
+                      href={`/rooms/${cat.type}`}
+                      className="font-serif text-lg tracking-tight hover:underline"
+                    >
+                      {cat.en}
+                    </Link>
+                    <span
+                      className="font-mono text-[9px] tracking-[0.3em]"
+                      style={{ color: cat.accent }}
+                    >
+                      {cat.ko}
+                    </span>
+                  </div>
+                  <ul className="flex flex-col gap-1.5">
+                    {tags.map((t) => {
+                      const pct = Math.round((t.count / max) * 100);
+                      return (
+                        <li key={t.tag}>
+                          <Link
+                            href={`/mood/${encodeURIComponent(t.tag)}`}
+                            className="grid grid-cols-[1fr_90px_36px] gap-2 items-center group"
+                          >
+                            <span className="font-serif text-sm truncate group-hover:underline">
+                              {t.tag}
+                            </span>
+                            <span className="h-1.5 bg-line/40 relative">
+                              <span
+                                className="absolute inset-y-0 left-0"
+                                style={{ width: `${pct}%`, background: cat.accent }}
+                              />
+                            </span>
+                            <span className="text-right font-mono text-[10px] tracking-[0.2em] text-muted">
+                              {String(t.count).padStart(2, "0")}
+                            </span>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       <footer className="border-t border-line pt-5 font-mono text-[10px] tracking-[0.25em] text-muted">
         LATEST LINE · {fmtDate(stats.latestLineAt)}
       </footer>
