@@ -9,6 +9,7 @@ import {
 import { CoverEditor } from "@/components/CoverEditor";
 import { LibraryCard } from "@/components/LibraryCard";
 import { QuoteList } from "@/components/QuoteList";
+import { SaveCardButton } from "@/components/SaveCardButton";
 import { SourceFieldEditor } from "@/components/SourceFieldEditor";
 import { DeleteSourceButton } from "@/components/DeleteSourceButton";
 import { SourceTypeChanger } from "@/components/SourceTypeChanger";
@@ -44,6 +45,16 @@ export default async function SourcePage({
 
   const showCover = !NO_COVER_TYPES.has(source.type);
   const noteLabel = NOTE_LABEL[source.type];
+
+  // Unique mood tags pulled from every quote on this source — the card shows
+  // them as the source's collected tag set.
+  const allTags = Array.from(
+    new Set(quotes.flatMap((q) => q.mood_tags ?? [])),
+  ).sort();
+
+  const cardFileName = `afterline-${source.title}-${source.id
+    .slice(-6)
+    .toUpperCase()}`.replace(/[^\w가-힣.-]+/g, "_");
 
   return (
     <section className="px-6 py-10 max-w-5xl mx-auto">
@@ -131,14 +142,22 @@ export default async function SourcePage({
 
       {/* Note as library card */}
       <div>
-        <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-4">
-          {noteLabel.en} / {noteLabel.ko}
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <div className="font-mono text-[10px] tracking-[0.25em] text-muted">
+            {noteLabel.en} / {noteLabel.ko}
+          </div>
+          <SaveCardButton
+            targetId={`library-card-${source.id}`}
+            fileName={cardFileName}
+          />
         </div>
         <LibraryCard
           note={note}
           source={source}
           lineCount={quotes.length}
           noteLabel={noteLabel}
+          tags={allTags}
+          accentColor={category.accent}
         />
       </div>
 
