@@ -5,6 +5,7 @@ import {
   getRoomCategory,
   getSourcesByType,
 } from "@/lib/data/repository";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { RoomShelf } from "@/components/RoomShelf";
 import type { SourceType } from "@/lib/data/types";
 
@@ -38,13 +39,14 @@ export default async function RoomPage({
 
   return (
     <section className="px-6 py-10">
-      <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-3">
-        <Link href="/rooms" className="hover:text-ink">
-          ← ROOMS
-        </Link>
-        {"  /  "}
-        {category.en}
-      </div>
+      <Breadcrumb
+        backHref="/rooms"
+        crumbs={[
+          { label: "ROOMS", href: "/rooms" },
+          { label: category.en },
+        ]}
+        className="mb-3"
+      />
 
       <div className="flex items-baseline justify-between mb-12 border-b border-line pb-6">
         <h2 className="font-serif text-4xl md:text-5xl tracking-tight">{category.en}</h2>

@@ -1,14 +1,19 @@
 import Link from "next/link";
 import { getMoodTagsWithCounts } from "@/lib/data/repository";
+import { Breadcrumb } from "@/components/Breadcrumb";
 
 export default async function MoodPage() {
   const tags = await getMoodTagsWithCounts();
 
   return (
     <section className="px-6 py-10 max-w-4xl">
-      <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-3">
-        AFTERLINE / TAGS
-      </div>
+      <Breadcrumb
+        crumbs={[
+          { label: "AFTERLINE", href: "/" },
+          { label: "TAGS" },
+        ]}
+        className="mb-3"
+      />
       <h2 className="font-serif text-4xl md:text-5xl tracking-tight leading-none">
         Tags
       </h2>

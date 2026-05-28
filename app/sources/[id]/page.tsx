@@ -6,6 +6,7 @@ import {
   getRoomCategory,
   getSourceById,
 } from "@/lib/data/repository";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { CoverEditor } from "@/components/CoverEditor";
 import { EditSourceButton } from "@/components/EditSourceButton";
 import { LibraryCard } from "@/components/LibraryCard";
@@ -69,24 +70,30 @@ export default async function SourcePage({
 
   return (
     <section className="px-6 py-10 max-w-5xl mx-auto">
-      {externalUrl ? (
-        <a
-          href={externalUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          title={externalUrl}
-          className="inline-flex items-baseline gap-2 font-mono text-[10px] tracking-[0.25em] text-muted hover:text-ink transition-colors mb-8"
-        >
-          <span>
-            AFTERLINE / {source.type.toUpperCase()} / COLLECTION NOTE
-          </span>
-          <span aria-hidden>↗</span>
-        </a>
-      ) : (
-        <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-8">
-          AFTERLINE / {source.type.toUpperCase()} / COLLECTION NOTE
-        </div>
-      )}
+      <div className="flex items-baseline gap-3 mb-8">
+        <Breadcrumb
+          crumbs={[
+            { label: "AFTERLINE", href: "/" },
+            { label: "ROOMS", href: "/rooms" },
+            {
+              label: source.type.toUpperCase(),
+              href: `/rooms/${source.type}`,
+            },
+            { label: "COLLECTION NOTE" },
+          ]}
+        />
+        {externalUrl && (
+          <a
+            href={externalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={externalUrl}
+            className="font-mono text-[10px] tracking-[0.25em] text-muted hover:text-ink transition-colors"
+          >
+            ↗ VISIT
+          </a>
+        )}
+      </div>
 
       {/* Header — title/creator/publisher all inline-editable */}
       <header
