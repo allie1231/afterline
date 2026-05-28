@@ -1,4 +1,5 @@
 import { getAllSources } from "@/lib/data/repository";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { CaptureForm } from "./CaptureForm";
 
 export default async function CapturePage() {
@@ -6,9 +7,13 @@ export default async function CapturePage() {
 
   return (
     <section className="px-4 py-6 max-w-xl mx-auto">
-      <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-2">
-        AFTERLINE / CAPTURE
-      </div>
+      <Breadcrumb
+        crumbs={[
+          { label: "AFTERLINE", href: "/" },
+          { label: "CAPTURE" },
+        ]}
+        className="mb-2"
+      />
       <h1 className="font-serif text-3xl tracking-tight leading-tight">
         Quick Capture
       </h1>

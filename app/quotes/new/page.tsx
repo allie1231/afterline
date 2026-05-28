@@ -1,5 +1,6 @@
 import { getAllSources, getAllTags } from "@/lib/data/repository";
 import type { SourceType } from "@/lib/data/types";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { NewQuoteForm } from "./NewQuoteForm";
 
 const VALID_TYPES: SourceType[] = [
@@ -29,9 +30,13 @@ export default async function NewQuotePage({
 
   return (
     <section className="px-6 py-10 max-w-3xl mx-auto">
-      <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-3">
-        AFTERLINE / NEW LINE
-      </div>
+      <Breadcrumb
+        crumbs={[
+          { label: "AFTERLINE", href: "/" },
+          { label: "NEW LINE" },
+        ]}
+        className="mb-3"
+      />
       <h1 className="font-serif text-4xl tracking-tight leading-none">
         New Line
       </h1>

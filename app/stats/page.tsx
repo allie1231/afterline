@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getStatsData } from "@/lib/data/repository";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { ROOM_CATEGORIES } from "@/lib/data/categories";
 import type { SourceType } from "@/lib/data/types";
 
@@ -23,9 +24,13 @@ export default async function StatsPage() {
 
   return (
     <section className="px-6 py-10 max-w-5xl mx-auto">
-      <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-3">
-        AFTERLINE / STATS
-      </div>
+      <Breadcrumb
+        crumbs={[
+          { label: "AFTERLINE", href: "/" },
+          { label: "STATS" },
+        ]}
+        className="mb-3"
+      />
       <h1 className="font-serif text-4xl md:text-5xl tracking-tight leading-none">
         Stats
       </h1>

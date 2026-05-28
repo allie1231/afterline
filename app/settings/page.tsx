@@ -1,4 +1,5 @@
 import { getOrCreateApiToken } from "@/lib/data/repository";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { RegenerateTokenButton } from "@/components/RegenerateTokenButton";
 
 export const dynamic = "force-dynamic";
@@ -8,9 +9,13 @@ export default async function SettingsPage() {
 
   return (
     <section className="px-6 py-12 max-w-2xl mx-auto">
-      <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-8">
-        AFTERLINE / SETTINGS
-      </div>
+      <Breadcrumb
+        crumbs={[
+          { label: "AFTERLINE", href: "/" },
+          { label: "SETTINGS" },
+        ]}
+        className="mb-8"
+      />
 
       <h1 className="font-serif text-5xl tracking-tight leading-none">
         Settings

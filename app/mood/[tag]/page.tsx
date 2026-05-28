@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getQuotesByTag } from "@/lib/data/repository";
 import { ROOM_CATEGORIES } from "@/lib/data/categories";
 import type { SourceType } from "@/lib/data/types";
+import { Breadcrumb } from "@/components/Breadcrumb";
 
 const CAT_BY_TYPE = Object.fromEntries(
   ROOM_CATEGORIES.map((c) => [c.type, c]),
@@ -22,13 +23,15 @@ export default async function TagPage({
 
   return (
     <section className="px-6 py-10 max-w-4xl mx-auto">
-      <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-3">
-        <Link href="/mood" className="hover:text-ink">
-          ← TAGS
-        </Link>
-        {"  /  "}
-        {tag}
-      </div>
+      <Breadcrumb
+        backHref="/mood"
+        crumbs={[
+          { label: "AFTERLINE", href: "/" },
+          { label: "TAGS", href: "/mood" },
+          { label: tag },
+        ]}
+        className="mb-3"
+      />
 
       <h1 className="font-serif text-4xl md:text-5xl tracking-tight leading-none break-words">
         {tag}
