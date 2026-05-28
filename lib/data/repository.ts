@@ -764,6 +764,52 @@ export async function deleteNote(id: string): Promise<void> {
   if (error) throw error;
 }
 
+// Sources currently in 'reading' state — surfaced on the home page as a
+// "Now Reading" pulse. Includes line counts so the panel can show progress.
+export interface ReadingPulseItem {
+  source: Source;
+  lines: number;
+  started_at: string | null;
+}
+
+export async function getReadingPulse(): Promise<ReadingPulseItem[]> {
+  const supabase = await createClient();
+  const { data: notes } = await supabase
+    .from("collection_notes")
+    .select("source_id, started_at")
+    .eq("status", "reading");
+  const list = (notes ?? []) as Array<{
+    source_id: string;
+    started_at: string | null;
+  }>;
+  if (list.length === 0) return [];
+  const sourceIds = list.map((n) => n.source_id);
+  const [{ data: sources }, { data: quotes }] = await Promise.all([
+    supabase.from("sources").select("*").in("id", sourceIds),
+    supabase.from("quotes").select("source_id").in("source_id", sourceIds),
+  ]);
+  const linesBySource = new Map<string, number>();
+  for (const q of quotes ?? []) {
+    const sid = q.source_id as string;
+    linesBySource.set(sid, (linesBySource.get(sid) ?? 0) + 1);
+  }
+  const startedBySource = new Map<string, string | null>(
+    list.map((n) => [n.source_id, n.started_at]),
+  );
+  return ((sources ?? []) as Source[])
+    .map((s) => ({
+      source: s,
+      lines: linesBySource.get(s.id) ?? 0,
+      started_at: startedBySource.get(s.id) ?? null,
+    }))
+    .sort((a, b) => {
+      // Most recently started first (nulls last)
+      const av = a.started_at ?? "";
+      const bv = b.started_at ?? "";
+      return bv.localeCompare(av);
+    });
+}
+
 // Fetch quotes by IDs in one round trip, with their parent source attached.
 // Used to resolve [[q:id]] references embedded in note bodies. IDs that
 // don't exist (or that the user can't see via RLS) are silently dropped.
