@@ -272,12 +272,12 @@ export function RoomShelf({
 
       <div className="border-y-2 border-ink">
         <div className="flex items-end gap-3 py-6 overflow-x-auto">
-          {sourceCounts.map(({ source, lines }, i) => {
+          {sourceCounts.map(({ source, lines }) => {
             const currentColor = source.spine_color?.trim();
             const isAuto = !currentColor;
             return (
               <div key={source.id} className="relative">
-                <SourceSpine source={source} lines={lines} index={i} />
+                <SourceSpine source={source} lines={lines} />
                 {editMode && (
                   // Two-zone overlay: top toggles selection, bottom opens picker.
                   <div className="absolute inset-0 z-20 flex flex-col items-stretch pointer-events-none">

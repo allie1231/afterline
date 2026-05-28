@@ -24,7 +24,11 @@ const NOTE_LABEL: Record<SourceType, { en: string; ko: string }> = {
   other: { en: "COLLECTION NOTE", ko: "수집노트" },
 };
 
-const NO_COVER_TYPES = new Set<SourceType>(["article", "conversation"]);
+const NO_COVER_TYPES = new Set<SourceType>([
+  "article",
+  "conversation",
+  "other",
+]);
 
 export default async function SourcePage({
   params,
@@ -58,9 +62,24 @@ export default async function SourcePage({
 
   return (
     <section className="px-6 py-10 max-w-5xl mx-auto">
-      <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-8">
-        AFTERLINE / {source.type.toUpperCase()} / COLLECTION NOTE
-      </div>
+      {source.url ? (
+        <a
+          href={source.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={source.url}
+          className="inline-flex items-baseline gap-2 font-mono text-[10px] tracking-[0.25em] text-muted hover:text-ink transition-colors mb-8"
+        >
+          <span>
+            AFTERLINE / {source.type.toUpperCase()} / COLLECTION NOTE
+          </span>
+          <span aria-hidden>↗</span>
+        </a>
+      ) : (
+        <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-8">
+          AFTERLINE / {source.type.toUpperCase()} / COLLECTION NOTE
+        </div>
+      )}
 
       {/* Header — title/creator/publisher all inline-editable */}
       <header
@@ -157,7 +176,6 @@ export default async function SourcePage({
           lineCount={quotes.length}
           noteLabel={noteLabel}
           tags={allTags}
-          accentColor={category.accent}
         />
       </div>
 

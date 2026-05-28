@@ -1,4 +1,5 @@
-import type { CollectionNote, Source } from "@/lib/data/types";
+import type { CollectionNote, Source, SourceType } from "@/lib/data/types";
+import { resolveSpineColor } from "@/lib/data/spineColor";
 import { StarRating } from "./StarRating";
 import { StatusPicker } from "./StatusPicker";
 import { DateField } from "./DateField";
@@ -9,31 +10,17 @@ function fmtDate(iso?: string) {
   return iso.slice(0, 10).replace(/-/g, ".");
 }
 
-// Source types that get a cover image area inside the card. The rest (article,
-// conversation, other) identify themselves with just the spine-color square in
-// the header.
-const COVERED_TYPES = new Set(["book", "movie", "lyrics"]);
+// Source types that show a cover area inside the card. "other" is excluded —
+// per request, no image area at all.
+const COVERED_TYPES = new Set<SourceType>(["book", "movie", "lyrics"]);
 
-// Mirrors SourceSpine: spine_color values that would render invisible against
-// the paper background fall back to the room's accent color.
-const INVISIBLE_BGS = new Set([
-  "",
-  "auto",
-  "transparent",
-  "none",
-  "var(--paper)",
-  "var(--white)",
-  "var(--bg)",
-  "#f5f1e8",
-  "#ffffff",
-  "#fff",
-]);
-
-function resolveSpineColor(source: Source, fallback: string) {
-  const raw = (source.spine_color ?? "").trim().toLowerCase();
-  if (raw && !INVISIBLE_BGS.has(raw)) return source.spine_color!.trim();
-  return fallback;
-}
+// Aspect of the cover area per type. Books and movies are portrait (poster
+// shape); lyrics are a square album cover.
+const COVER_BOX: Partial<Record<SourceType, string>> = {
+  book: "w-[72px] h-[96px]",
+  movie: "w-[72px] h-[96px]",
+  lyrics: "w-[88px] h-[88px]",
+};
 
 export function LibraryCard({
   note,
@@ -41,18 +28,17 @@ export function LibraryCard({
   lineCount,
   noteLabel,
   tags,
-  accentColor,
 }: {
   note: CollectionNote | null;
   source: Source;
   lineCount: number;
   noteLabel: { en: string; ko: string };
   tags: string[];
-  accentColor: string;
 }) {
   const filedDate = fmtDate(source.created_at);
-  const spineColor = resolveSpineColor(source, accentColor);
+  const spineColor = resolveSpineColor(source);
   const showCover = COVERED_TYPES.has(source.type);
+  const coverBox = COVER_BOX[source.type] ?? "w-20 h-20";
 
   return (
     <article
@@ -75,7 +61,7 @@ export function LibraryCard({
         </div>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_180px]">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_210px]">
         <div className="px-6 py-6 border-r border-ink/0 md:border-ink">
           <div className="flex items-start gap-4">
             <div className="flex-1 min-w-0">
@@ -92,19 +78,17 @@ export function LibraryCard({
               )}
             </div>
             {showCover && (
-              <div className="shrink-0 w-20 h-20 border border-ink overflow-hidden bg-paper">
-                {source.cover_url ? (
+              <div
+                className={`shrink-0 ${coverBox} border border-ink overflow-hidden flex items-center justify-center`}
+                style={{ background: spineColor }}
+              >
+                {source.cover_url && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={source.cover_url}
                     alt=""
-                    className="w-full h-full object-cover"
+                    className="max-w-full max-h-full object-contain"
                     crossOrigin="anonymous"
-                  />
-                ) : (
-                  <div
-                    className="w-full h-full"
-                    style={{ background: spineColor }}
                   />
                 )}
               </div>
@@ -165,7 +149,7 @@ export function LibraryCard({
           )}
         </div>
 
-        <aside className="border-t md:border-t-0 border-ink px-6 py-6 flex flex-col gap-5">
+        <aside className="border-t md:border-t-0 border-ink px-5 py-6 flex flex-col gap-5">
           <StarRating
             sourceId={source.id}
             initialRating={note?.rating ?? null}

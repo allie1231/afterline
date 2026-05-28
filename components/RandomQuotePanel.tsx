@@ -72,7 +72,7 @@ export function RandomQuotePanel({ pool }: { pool: RandomLine[] }) {
       </div>
 
       <blockquote className="font-serif text-[clamp(20px,2.6vw,32px)] leading-snug max-w-3xl">
-        &ldquo;{line.text}&rdquo;
+        {line.text}
       </blockquote>
 
       <div className="mt-5 flex items-baseline justify-between flex-wrap gap-3">

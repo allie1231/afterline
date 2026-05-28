@@ -34,7 +34,7 @@ export function DateField({
         value={dateValue}
         onChange={handleChange}
         disabled={pending}
-        className="font-mono text-sm tracking-[0.1em] mt-1 bg-transparent border-b border-line focus:border-ink focus:outline-none disabled:opacity-50 w-full"
+        className="font-mono text-sm tracking-normal mt-1 bg-transparent border-b border-line focus:border-ink focus:outline-none disabled:opacity-50 w-full"
       />
     </div>
   );
