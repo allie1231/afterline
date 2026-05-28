@@ -39,38 +39,6 @@ export default async function SettingsPage() {
 
       <div className="mt-10">
         <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-3">
-          EMBED WIDGETS / 임베드
-        </div>
-        <p className="font-serif text-base leading-relaxed">
-          노션·블로그·다른 사이트에 iframe으로 박을 수 있는 작은 위젯들이에요.
-          토큰이 URL에 들어가니, 공개하는 위치라면 노출 가능성을 염두에 두세요.
-        </p>
-
-        <div className="mt-5">
-          <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-1">
-            TODAY / 오늘의 한 줄 보기
-          </div>
-          <pre className="font-mono text-[11px] leading-relaxed bg-paper border border-line p-3 overflow-x-auto">
-            {`https://afterline-pi.vercel.app/embed/today?token=${token}`}
-          </pre>
-        </div>
-
-        <div className="mt-4">
-          <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-1">
-            QUICK ADD / 빠른 추가 폼
-          </div>
-          <pre className="font-mono text-[11px] leading-relaxed bg-paper border border-line p-3 overflow-x-auto">
-            {`https://afterline-pi.vercel.app/embed/add?token=${token}`}
-          </pre>
-          <p className="font-mono text-[10px] text-muted mt-2 leading-relaxed">
-            기본 inbox 이름은 "Quick Notes". URL 끝에{" "}
-            <code>&title=다른이름</code>을 붙이면 그 이름의 소스에 모여요.
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-10">
-        <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-3">
           API / 직접 호출 (스크립트·단축어)
         </div>
         <p className="font-serif text-base leading-relaxed">
