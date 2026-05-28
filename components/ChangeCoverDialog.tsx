@@ -18,6 +18,14 @@ type CoverHit = {
   meta?: string; // year / album / publisher / etc.
   cover_url?: string;
   source: string; // "ALADIN" | "GOOGLE" | "TMDB" | "ITUNES"
+  // Raw values used to auto-fill the source's text fields when USE is clicked.
+  raw?: {
+    title?: string;
+    creator?: string;
+    publisher?: string;
+    published_date?: string;
+    isbn?: string;
+  };
 };
 
 async function fetchHits(
@@ -38,6 +46,7 @@ async function fetchHits(
         creator?: string;
         publisher?: string;
         published_date?: string;
+        isbn?: string;
         cover_url?: string;
         source: "aladin" | "google";
       }>;
@@ -49,6 +58,13 @@ async function fetchHits(
       meta: [b.publisher, b.published_date].filter(Boolean).join(" · "),
       cover_url: b.cover_url,
       source: b.source.toUpperCase(),
+      raw: {
+        title: b.title,
+        creator: b.creator,
+        publisher: b.publisher,
+        published_date: b.published_date,
+        isbn: b.isbn,
+      },
     }));
   }
 
@@ -76,17 +92,19 @@ async function fetchHits(
           const title = (it.media_type === "movie" ? it.title : it.name) ?? "";
           const date =
             it.media_type === "movie" ? it.release_date : it.first_air_date;
+          const year = date?.slice(0, 4);
           return {
             id: `${it.media_type}-${it.id}`,
             title,
             meta: [
               it.media_type === "tv" ? "TV" : "MOVIE",
-              date?.slice(0, 4),
+              year,
             ]
               .filter(Boolean)
               .join(" · "),
             cover_url: `https://image.tmdb.org/t/p/w500${it.poster_path}`,
             source: "TMDB",
+            raw: { title, published_date: year },
           };
         });
     } catch {
@@ -110,19 +128,28 @@ async function fetchHits(
       }>;
       return items
         .filter((it) => it.trackName)
-        .map<CoverHit>((it) => ({
-          id: `itunes-${it.trackId ?? Math.random()}`,
-          title: it.trackName ?? "",
-          creator: it.artistName,
-          meta: [it.collectionName, it.releaseDate?.slice(0, 4)]
-            .filter(Boolean)
-            .join(" · "),
-          cover_url: it.artworkUrl100?.replace(
-            /\/[0-9]+x[0-9]+bb\./,
-            "/600x600bb.",
-          ),
-          source: "ITUNES",
-        }));
+        .map<CoverHit>((it) => {
+          const year = it.releaseDate?.slice(0, 4);
+          return {
+            id: `itunes-${it.trackId ?? Math.random()}`,
+            title: it.trackName ?? "",
+            creator: it.artistName,
+            meta: [it.collectionName, year]
+              .filter(Boolean)
+              .join(" · "),
+            cover_url: it.artworkUrl100?.replace(
+              /\/[0-9]+x[0-9]+bb\./,
+              "/600x600bb.",
+            ),
+            source: "ITUNES",
+            raw: {
+              title: it.trackName,
+              creator: it.artistName,
+              publisher: it.collectionName,
+              published_date: year,
+            },
+          };
+        });
     } catch {
       return [];
     }
@@ -192,6 +219,38 @@ export function ChangeCoverDialog({
   function apply(coverUrl: string) {
     startTransition(async () => {
       await updateSourceTextAction(source.id, "cover_url", coverUrl);
+      router.refresh();
+      onClose();
+    });
+  }
+
+  function applyHit(h: CoverHit) {
+    if (!h.cover_url) return;
+    startTransition(async () => {
+      const updates: Array<Promise<void>> = [
+        updateSourceTextAction(source.id, "cover_url", h.cover_url!),
+      ];
+      const raw = h.raw ?? {};
+      // Only overwrite fields we got values for — never blank out existing data.
+      if (raw.title?.trim())
+        updates.push(updateSourceTextAction(source.id, "title", raw.title));
+      if (raw.creator?.trim())
+        updates.push(updateSourceTextAction(source.id, "creator", raw.creator));
+      if (raw.publisher?.trim())
+        updates.push(
+          updateSourceTextAction(source.id, "publisher", raw.publisher),
+        );
+      if (raw.published_date?.trim())
+        updates.push(
+          updateSourceTextAction(
+            source.id,
+            "published_date",
+            raw.published_date,
+          ),
+        );
+      if (raw.isbn?.trim())
+        updates.push(updateSourceTextAction(source.id, "isbn", raw.isbn));
+      await Promise.all(updates);
       router.refresh();
       onClose();
     });
@@ -338,7 +397,7 @@ export function ChangeCoverDialog({
                       </div>
                       <button
                         type="button"
-                        onClick={() => h.cover_url && apply(h.cover_url)}
+                        onClick={() => applyHit(h)}
                         disabled={!h.cover_url || pending}
                         className="font-mono text-[10px] tracking-[0.3em] border border-ink px-3 py-2 hover:bg-ink hover:text-paper transition-colors shrink-0 disabled:opacity-40"
                       >
