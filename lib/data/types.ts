@@ -29,6 +29,17 @@ export interface Source {
   updated_at: string;
 }
 
+export interface Note {
+  id: string;
+  user_id: string;
+  source_id: string | null;
+  kind?: string | null;
+  title?: string | null;
+  body: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Quote {
   id: string;
   user_id: string;

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ROOM_CATEGORIES } from "./categories";
 import type {
   CollectionNote,
+  Note,
   Quote,
   RoomCategory,
   Source,
@@ -641,4 +642,124 @@ export async function regenerateApiToken(): Promise<string> {
     .insert({ user_id: user.id, token });
   if (error) throw error;
   return token;
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Notes — long-form journal entries attached to a source
+// ─────────────────────────────────────────────────────────────────────
+
+export async function getNotesBySource(sourceId: string): Promise<Note[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("notes")
+    .select("*")
+    .eq("source_id", sourceId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as Note[];
+}
+
+export async function getNoteById(id: string): Promise<Note | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("notes")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as Note | null) ?? null;
+}
+
+export interface NoteWithSource {
+  note: Note;
+  source: Source | null;
+}
+
+export async function getAllNotesWithSource(): Promise<NoteWithSource[]> {
+  const supabase = await createClient();
+  const { data: notes, error } = await supabase
+    .from("notes")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  const noteList = (notes ?? []) as Note[];
+
+  const sourceIds = Array.from(
+    new Set(
+      noteList
+        .map((n) => n.source_id)
+        .filter((id): id is string => !!id),
+    ),
+  );
+  let sourcesById = new Map<string, Source>();
+  if (sourceIds.length > 0) {
+    const { data: sources } = await supabase
+      .from("sources")
+      .select("*")
+      .in("id", sourceIds);
+    sourcesById = new Map(
+      ((sources ?? []) as Source[]).map((s) => [s.id, s]),
+    );
+  }
+  return noteList.map((n) => ({
+    note: n,
+    source: n.source_id ? (sourcesById.get(n.source_id) ?? null) : null,
+  }));
+}
+
+export interface CreateNoteInput {
+  source_id: string | null;
+  kind?: string | null;
+  title?: string | null;
+  body: string;
+}
+
+export async function createNote(input: CreateNoteInput): Promise<Note> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const payload = {
+    user_id: user.id,
+    source_id: input.source_id,
+    kind: input.kind?.trim() || null,
+    title: input.title?.trim() || null,
+    body: input.body,
+  };
+  const { data, error } = await supabase
+    .from("notes")
+    .insert(payload)
+    .select()
+    .single();
+  if (error) throw error;
+  return data as Note;
+}
+
+export interface UpdateNoteInput {
+  kind?: string | null;
+  title?: string | null;
+  body?: string;
+}
+
+export async function updateNote(
+  id: string,
+  fields: UpdateNoteInput,
+): Promise<void> {
+  const supabase = await createClient();
+  const patch: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+  if (fields.kind !== undefined) patch.kind = fields.kind?.trim() || null;
+  if (fields.title !== undefined) patch.title = fields.title?.trim() || null;
+  if (fields.body !== undefined) patch.body = fields.body;
+  const { error } = await supabase.from("notes").update(patch).eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteNote(id: string): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("notes").delete().eq("id", id);
+  if (error) throw error;
 }
