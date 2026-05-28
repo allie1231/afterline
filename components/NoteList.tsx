@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { NoteCard } from "./NoteCard";
 import { NoteCreateForm } from "./NoteEditor";
-import type { Note } from "@/lib/data/types";
+import type { Note, Quote, Source } from "@/lib/data/types";
 
 // Inline notes list for the source detail page.
 // Shows a "+ NEW NOTE" trigger that expands the create form, then a
@@ -11,9 +11,11 @@ import type { Note } from "@/lib/data/types";
 export function NoteList({
   notes,
   sourceId,
+  quotesById,
 }: {
   notes: Note[];
   sourceId: string;
+  quotesById?: Map<string, { quote: Quote; source: Source | null }>;
 }) {
   const [composing, setComposing] = useState(false);
 
@@ -36,7 +38,9 @@ export function NoteList({
           NO NOTES YET / 아직 작성된 노트가 없어요.
         </div>
       ) : (
-        notes.map((n) => <NoteCard key={n.id} note={n} />)
+        notes.map((n) => (
+          <NoteCard key={n.id} note={n} quotesById={quotesById} />
+        ))
       )}
     </div>
   );

@@ -25,6 +25,7 @@ export function QuoteRow({
   const [tags, setTags] = useState(quote.mood_tags.join(", "));
   const [favorite, setFavorite] = useState(quote.is_favorite);
   const [pending, startTransition] = useTransition();
+  const [copiedRef, setCopiedRef] = useState(false);
 
   function reset() {
     setText(quote.text);
@@ -195,6 +196,23 @@ export function QuoteRow({
           className="font-mono text-[10px] tracking-[0.3em] border border-ink px-2 py-1 bg-paper hover:bg-ink hover:text-paper transition-colors"
         >
           EDIT
+        </button>
+        <button
+          type="button"
+          onClick={async () => {
+            const token = `[[q:${quote.id}]]`;
+            try {
+              await navigator.clipboard.writeText(token);
+              setCopiedRef(true);
+              setTimeout(() => setCopiedRef(false), 1400);
+            } catch {
+              prompt("이 토큰을 노트 본문에 붙여넣으세요:", token);
+            }
+          }}
+          className="font-mono text-[10px] tracking-[0.3em] border border-line text-muted px-2 py-1 bg-paper hover:border-ink hover:text-ink transition-colors"
+          title="노트에 인용 — [[q:id]] 토큰 복사"
+        >
+          {copiedRef ? "✓" : "↗"}
         </button>
         <button
           type="button"

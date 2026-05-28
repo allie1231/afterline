@@ -199,7 +199,7 @@ function NoteFormCore({
           PREVIEW / 미리보기
         </TabBtn>
         <div className="ml-auto font-mono text-[9px] tracking-[0.25em] text-muted self-end pb-2 pr-1">
-          MD 지원 — **굵게** · # 제목 · - 리스트
+          MD 지원 — **굵게** · # 제목 · - 리스트 · [[q:문장-ID]]
         </div>
       </div>
 

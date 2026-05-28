@@ -4,9 +4,11 @@ import {
   getCollectionNoteBySource,
   getNotesBySource,
   getQuotesBySource,
+  getQuotesWithSourceByIds,
   getRoomCategory,
   getSourceById,
 } from "@/lib/data/repository";
+import { extractQuoteRefs } from "@/lib/note-refs";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { CoverEditor } from "@/components/CoverEditor";
 import { EditSourceButton } from "@/components/EditSourceButton";
@@ -49,6 +51,12 @@ export default async function SourcePage({
     getRoomCategory(source.type),
     getNotesBySource(source.id),
   ]);
+
+  // Resolve [[q:id]] references across all notes in one round trip.
+  const refIds = Array.from(
+    new Set(notes.flatMap((n) => extractQuoteRefs(n.body))),
+  );
+  const quotesById = await getQuotesWithSourceByIds(refIds);
 
   if (!category) notFound();
 
@@ -204,7 +212,11 @@ export default async function SourcePage({
             {String(notes.length).padStart(2, "0")} ENTRIES
           </span>
         </div>
-        <NoteList notes={notes} sourceId={source.id} />
+        <NoteList
+          notes={notes}
+          sourceId={source.id}
+          quotesById={quotesById}
+        />
       </div>
 
       {/* Note as library card */}
