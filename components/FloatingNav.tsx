@@ -72,7 +72,7 @@ function Btn({
       onClick={onClick}
       title={title}
       aria-label={title}
-      className="w-11 h-11 flex items-center justify-center bg-paper text-ink border border-ink font-mono text-base leading-none shadow-[3px_3px_0_var(--ink)] hover:bg-ink hover:text-paper hover:shadow-[1px_1px_0_var(--ink)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+      className="w-11 h-11 flex items-center justify-center bg-paper text-ink border border-ink font-mono text-base leading-none hover:bg-ink hover:text-paper transition-colors"
     >
       {label}
     </button>
