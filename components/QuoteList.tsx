@@ -2,14 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { QuoteRow } from "./QuoteRow";
-import type { Quote } from "@/lib/data/types";
+import type { Quote, Source } from "@/lib/data/types";
 
 export function QuoteList({
   quotes,
-  sourceId,
+  source,
 }: {
   quotes: Quote[];
-  sourceId: string;
+  source: Source;
 }) {
   const [query, setQuery] = useState("");
   const [favOnly, setFavOnly] = useState(false);
@@ -126,7 +126,7 @@ export function QuoteList({
 
       <ol className="flex flex-col gap-8">
         {filtered.map((q, i) => (
-          <QuoteRow key={q.id} quote={q} index={i} sourceId={sourceId} />
+          <QuoteRow key={q.id} quote={q} index={i} source={source} />
         ))}
         {quotes.length === 0 && (
           <li className="font-mono text-xs text-muted">
