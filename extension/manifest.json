@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Afterline Collector",
+  "version": "0.1.0",
+  "description": "Highlight any line on the web and send it to your Afterline archive.",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://afterline-pi.vercel.app/*",
+    "http://localhost:3000/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "options_page": "options.html",
+  "action": {
+    "default_title": "Afterline Collector — click for options"
+  }
+}
