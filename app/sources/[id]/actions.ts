@@ -129,6 +129,40 @@ export async function deleteSourceAction(
   redirect(`/rooms/${type}`);
 }
 
+export interface EditSourceFields {
+  title?: string;
+  creator?: string | null;
+  publisher?: string | null;
+  published_date?: string | null;
+  isbn?: string | null;
+  url?: string | null;
+  spine_color?: string | null;
+}
+
+export async function updateSourceBulkAction(
+  sourceId: string,
+  fields: EditSourceFields,
+): Promise<void> {
+  const supabase = await createClient();
+  const update: Record<string, string | null> = {};
+  for (const [k, v] of Object.entries(fields)) {
+    if (v === undefined) continue;
+    const t = typeof v === "string" ? v.trim() : v;
+    update[k] = t === "" ? null : (t as string | null);
+  }
+  if ("title" in update && (update.title === null || !update.title)) {
+    throw new Error("title cannot be empty");
+  }
+  update.updated_at = new Date().toISOString();
+  const { error } = await supabase
+    .from("sources")
+    .update(update)
+    .eq("id", sourceId);
+  if (error) throw error;
+  revalidatePath(`/sources/${sourceId}`);
+  revalidatePath("/rooms");
+}
+
 export async function updateSourceSpineColorAction(
   sourceId: string,
   color: string | null,

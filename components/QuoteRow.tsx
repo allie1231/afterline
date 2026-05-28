@@ -5,17 +5,19 @@ import {
   deleteQuoteAction,
   updateQuoteAction,
 } from "@/app/sources/[id]/actions";
-import type { Quote } from "@/lib/data/types";
+import { SaveQuoteButton } from "./SaveQuoteButton";
+import type { Quote, Source } from "@/lib/data/types";
 
 export function QuoteRow({
   quote,
   index,
-  sourceId,
+  source,
 }: {
   quote: Quote;
   index: number;
-  sourceId: string;
+  source: Source;
 }) {
+  const sourceId = source.id;
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(quote.text);
   const [page, setPage] = useState(quote.page ?? "");
@@ -179,6 +181,10 @@ export function QuoteRow({
             ★ FAVORITE
           </div>
         )}
+
+        <div className="mt-3">
+          <SaveQuoteButton quote={quote} source={source} />
+        </div>
 
         {/* Hover actions */}
         <div className="absolute top-1 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

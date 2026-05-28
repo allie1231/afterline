@@ -7,6 +7,7 @@ import {
   getSourceById,
 } from "@/lib/data/repository";
 import { CoverEditor } from "@/components/CoverEditor";
+import { EditSourceButton } from "@/components/EditSourceButton";
 import { LibraryCard } from "@/components/LibraryCard";
 import { QuoteList } from "@/components/QuoteList";
 import { SaveCardButton } from "@/components/SaveCardButton";
@@ -98,11 +99,12 @@ export default async function SourcePage({
         {showCover && <CoverEditor source={source} category={category} />}
 
         <div className="flex flex-col justify-end">
-          <div className="mb-2">
+          <div className="mb-2 flex items-center gap-3 flex-wrap">
             <SourceTypeChanger
               sourceId={source.id}
               currentType={source.type}
             />
+            <EditSourceButton source={source} />
           </div>
           <h1 className="font-serif text-[clamp(28px,4vw,48px)] leading-[1.05] tracking-tight break-words">
             <SourceFieldEditor
@@ -162,7 +164,7 @@ export default async function SourcePage({
             + NEW LINE
           </Link>
         </div>
-        <QuoteList quotes={quotes} sourceId={source.id} />
+        <QuoteList quotes={quotes} source={source} />
       </div>
 
       {/* Note as library card */}
