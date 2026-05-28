@@ -426,6 +426,8 @@ export interface StatsData {
   linesByType: Record<SourceType, number>;
   sourcesByType: Record<SourceType, number>;
   topTags: { tag: string; count: number }[];
+  // Top tags grouped by source type — empty array when a room has no tagged quotes.
+  tagsByType: Record<SourceType, { tag: string; count: number }[]>;
   topSources: { source: Source; lines: number }[];
   activity: { date: string; count: number }[]; // last 30 days, oldest → newest
   latestLineAt: string | null;
@@ -459,14 +461,18 @@ export async function getStatsData(): Promise<StatsData> {
 
   const linesBySourceId = new Map<string, number>();
   const tagCounts = new Map<string, number>();
+  const tagCountsByType = new Map<SourceType, Map<string, number>>();
+  for (const cat of ROOM_CATEGORIES) tagCountsByType.set(cat.type, new Map());
   const activityByDay = new Map<string, number>();
   let favoriteLines = 0;
   let latestLineAt: string | null = null;
 
   for (const q of allQuotes) {
+    const sType = q.source_id
+      ? sourceTypeById.get(q.source_id as string)
+      : undefined;
     if (q.source_id) {
-      const t = sourceTypeById.get(q.source_id as string);
-      if (t) linesByType[t] = (linesByType[t] ?? 0) + 1;
+      if (sType) linesByType[sType] = (linesByType[sType] ?? 0) + 1;
       linesBySourceId.set(
         q.source_id as string,
         (linesBySourceId.get(q.source_id as string) ?? 0) + 1,
@@ -482,6 +488,10 @@ export async function getStatsData(): Promise<StatsData> {
     for (const tag of (q.mood_tags ?? []) as string[]) {
       if (!tag.trim()) continue;
       tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+      if (sType) {
+        const bucket = tagCountsByType.get(sType)!;
+        bucket.set(tag, (bucket.get(tag) ?? 0) + 1);
+      }
     }
   }
 
@@ -489,6 +499,14 @@ export async function getStatsData(): Promise<StatsData> {
     .map(([tag, count]) => ({ tag, count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
+
+  const tagsByType = {} as Record<SourceType, { tag: string; count: number }[]>;
+  for (const [type, bucket] of tagCountsByType.entries()) {
+    tagsByType[type] = [...bucket.entries()]
+      .map(([tag, count]) => ({ tag, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+  }
 
   const topSources = [...linesBySourceId.entries()]
     .map(([sourceId, lines]) => ({
@@ -518,6 +536,7 @@ export async function getStatsData(): Promise<StatsData> {
     linesByType,
     sourcesByType,
     topTags,
+    tagsByType,
     topSources,
     activity,
     latestLineAt,
