@@ -4,6 +4,23 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
+// Supabase 에러 메시지를 재영이 읽기 쉬운 한국어로 바꿔준다.
+function friendlyError(message: string) {
+  if (message.includes("Invalid login credentials")) {
+    return "이메일 또는 비밀번호가 맞지 않아요.";
+  }
+  if (message.includes("Email not confirmed")) {
+    return "이메일 인증이 아직 안 됐어요. 메일함의 확인 링크를 눌러주세요.";
+  }
+  if (message.includes("User already registered")) {
+    return "이미 가입된 이메일이에요. SIGN IN으로 들어가세요.";
+  }
+  if (message.includes("Password should be at least")) {
+    return "비밀번호는 6자 이상이어야 해요.";
+  }
+  return message;
+}
+
 export default function LoginPage() {
   const router = useRouter();
 
@@ -33,7 +50,7 @@ export default function LoginPage() {
       });
 
       if (err) {
-        setError(err.message);
+        setError(friendlyError(err.message));
         setStatus("error");
         return;
       }
@@ -44,19 +61,27 @@ export default function LoginPage() {
       return;
     }
 
-    const { error: err } = await supabase.auth.signUp({
+    const { data, error: err } = await supabase.auth.signUp({
       email,
       password,
     });
 
     if (err) {
-      setError(err.message);
+      setError(friendlyError(err.message));
       setStatus("error");
       return;
     }
 
+    // 이메일 확인이 꺼져 있으면 가입과 동시에 세션이 생긴다 → 바로 들어간다.
+    if (data.session) {
+      setStatus("success");
+      router.push("/");
+      router.refresh();
+      return;
+    }
+
     setStatus("success");
-    setMessage("계정이 만들어졌어요. 이제 SIGN IN으로 들어가보세요.");
+    setMessage("계정이 만들어졌어요. 메일함의 확인 링크를 누른 뒤 SIGN IN으로 들어가세요.");
     setMode("signin");
   }
 
