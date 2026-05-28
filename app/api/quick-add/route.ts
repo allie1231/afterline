@@ -74,10 +74,20 @@ export async function POST(req: NextRequest) {
   }
   const userId = tokenRow.user_id as string;
 
-  // 2) Find or create the source by URL. Extension defaults to the
-  //    "other" room — the user can re-file from inside the app.
+  // 2) Find or create the source. Extension defaults to the "other" room —
+  //    the user can re-file from inside the app.
+  //
+  //    Match rules:
+  //      - if page_url is given, find an existing source by url (extension
+  //        flow — all clippings from the same page group together);
+  //      - otherwise, find an existing url-less "other" source with the
+  //        same title (embed/add or bookmarklet flow — many quick-notes
+  //        under one Quick Notes inbox source).
   let sourceId: string | undefined;
   const pageUrl = body.page_url?.trim() || null;
+  const title =
+    (body.page_title?.trim() || pageUrl || "Untitled").slice(0, 200);
+
   if (pageUrl) {
     const { data: existing } = await sb
       .from("sources")
@@ -86,10 +96,19 @@ export async function POST(req: NextRequest) {
       .eq("url", pageUrl)
       .maybeSingle();
     if (existing?.id) sourceId = existing.id as string;
+  } else {
+    const { data: existing } = await sb
+      .from("sources")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("type", "other")
+      .eq("title", title)
+      .is("url", null)
+      .maybeSingle();
+    if (existing?.id) sourceId = existing.id as string;
   }
+
   if (!sourceId) {
-    const title =
-      (body.page_title?.trim() || pageUrl || "Untitled").slice(0, 200);
     const { data: created, error: srcErr } = await sb
       .from("sources")
       .insert({
