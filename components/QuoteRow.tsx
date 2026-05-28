@@ -63,12 +63,12 @@ export function QuoteRow({
         <div className="font-mono text-[10px] tracking-[0.2em] text-muted pt-2">
           {String(index + 1).padStart(2, "0")}
         </div>
-        <div className="flex flex-col gap-3 border border-ink p-4 bg-paper">
+        <div className="flex flex-col gap-3 border border-ink p-5 bg-paper">
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            rows={3}
-            className="w-full border border-line bg-paper px-3 py-2 font-serif text-xl leading-snug focus:outline-none focus:border-blue resize-y"
+            rows={6}
+            className="w-full border border-line bg-paper px-4 py-3 font-serif text-xl leading-relaxed focus:outline-none focus:border-blue resize-y min-h-[180px]"
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
@@ -143,12 +143,12 @@ export function QuoteRow({
   }
 
   return (
-    <li className="group grid grid-cols-[40px_1fr] gap-6 relative">
+    <li className="group grid grid-cols-[40px_1fr_auto] gap-6">
       <div className="font-mono text-[10px] tracking-[0.2em] text-muted pt-2">
         {String(index + 1).padStart(2, "0")}
       </div>
-      <div>
-        <p className="font-serif text-2xl leading-snug whitespace-pre-line">
+      <div className="min-w-0">
+        <p className="font-serif text-2xl leading-snug whitespace-pre-line break-words">
           {quote.text}
         </p>
         {quote.page && (
@@ -185,26 +185,26 @@ export function QuoteRow({
         <div className="mt-3">
           <SaveQuoteButton quote={quote} source={source} />
         </div>
+      </div>
 
-        {/* Hover actions */}
-        <div className="absolute top-1 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            type="button"
-            onClick={() => setEditing(true)}
-            className="font-mono text-[10px] tracking-[0.3em] border border-ink px-2 py-1 bg-paper hover:bg-ink hover:text-paper transition-colors"
-          >
-            EDIT
-          </button>
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={pending}
-            className="font-mono text-[10px] tracking-[0.3em] border border-line text-muted px-2 py-1 bg-paper hover:border-red hover:text-red transition-colors disabled:opacity-50"
-            title="Delete"
-          >
-            ×
-          </button>
-        </div>
+      {/* Side actions — stacked vertically, never overlap the text */}
+      <div className="flex flex-col gap-1 pt-1 opacity-40 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          className="font-mono text-[10px] tracking-[0.3em] border border-ink px-2 py-1 bg-paper hover:bg-ink hover:text-paper transition-colors"
+        >
+          EDIT
+        </button>
+        <button
+          type="button"
+          onClick={handleDelete}
+          disabled={pending}
+          className="font-mono text-[10px] tracking-[0.3em] border border-line text-muted px-2 py-1 bg-paper hover:border-red hover:text-red transition-colors disabled:opacity-50"
+          title="Delete"
+        >
+          ×
+        </button>
       </div>
     </li>
   );

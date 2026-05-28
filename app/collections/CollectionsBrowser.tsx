@@ -4,8 +4,11 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ROOM_CATEGORIES } from "@/lib/data/categories";
 import { SourceCover } from "@/components/SourceCover";
+import { SourceSpine } from "@/components/SourceSpine";
 import type { CollectionsItem } from "@/lib/data/repository";
 import type { SourceType } from "@/lib/data/types";
+
+type ViewMode = "spines" | "cards";
 
 const STATUS_LABEL: Record<string, string> = {
   to_read: "TO READ",
@@ -23,7 +26,14 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: "lines", label: "MOST LINES / 라인 많은" },
 ];
 
-export function CollectionsBrowser({ items }: { items: CollectionsItem[] }) {
+export function CollectionsBrowser({
+  items,
+  defaultView = "spines",
+}: {
+  items: CollectionsItem[];
+  defaultView?: ViewMode;
+}) {
+  const [view, setView] = useState<ViewMode>(defaultView);
   const [type, setType] = useState<SourceType | "all">("all");
   const [favOnly, setFavOnly] = useState(false);
   const [query, setQuery] = useState("");
@@ -127,15 +137,32 @@ export function CollectionsBrowser({ items }: { items: CollectionsItem[] }) {
         </select>
       </div>
 
-      <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-4">
-        {String(filtered.length).padStart(3, "0")} ITEMS
+      <div className="flex items-center justify-between mb-4">
+        <div className="font-mono text-[10px] tracking-[0.3em] text-muted">
+          {String(filtered.length).padStart(3, "0")} ITEMS
+        </div>
+        <div className="flex border border-ink">
+          <ViewToggle
+            active={view === "spines"}
+            onClick={() => setView("spines")}
+            label="SPINES"
+            ko="책등"
+          />
+          <ViewToggle
+            active={view === "cards"}
+            onClick={() => setView("cards")}
+            label="CARDS"
+            ko="카드"
+          />
+        </div>
       </div>
 
-      {/* Card grid */}
       {filtered.length === 0 ? (
         <div className="font-mono text-xs tracking-[0.2em] text-muted py-20 text-center">
           NO ITEMS / 조건에 맞는 출처가 없습니다.
         </div>
+      ) : view === "spines" ? (
+        <Bookshelf items={filtered} />
       ) : (
         <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-line border border-line">
           {filtered.map((it) => (
@@ -143,6 +170,43 @@ export function CollectionsBrowser({ items }: { items: CollectionsItem[] }) {
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+function ViewToggle({
+  active,
+  onClick,
+  label,
+  ko,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  ko: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`font-mono text-[10px] tracking-[0.3em] px-3 py-2 transition-colors ${
+        active ? "bg-ink text-paper" : "bg-paper hover:bg-line/40"
+      }`}
+      title={ko}
+    >
+      {label}
+    </button>
+  );
+}
+
+function Bookshelf({ items }: { items: CollectionsItem[] }) {
+  return (
+    <div className="border-y-2 border-ink">
+      <div className="flex items-end gap-3 py-6 overflow-x-auto">
+        {items.map((it) => (
+          <SourceSpine key={it.source.id} source={it.source} lines={it.lines} />
+        ))}
+      </div>
     </div>
   );
 }

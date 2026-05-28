@@ -104,7 +104,6 @@ export default async function SourcePage({
               sourceId={source.id}
               currentType={source.type}
             />
-            <EditSourceButton source={source} />
           </div>
           <h1 className="font-serif text-[clamp(28px,4vw,48px)] leading-[1.05] tracking-tight break-words">
             <SourceFieldEditor
@@ -187,18 +186,21 @@ export default async function SourcePage({
         />
       </div>
 
-      <div className="mt-16 flex items-center justify-between">
+      <div className="mt-16 flex items-center justify-between gap-4 flex-wrap">
         <Link
           href={`/rooms/${source.type}`}
           className="font-mono text-[10px] tracking-[0.25em] text-muted hover:text-ink"
         >
           ← BACK TO {source.type.toUpperCase()} ROOM
         </Link>
-        <DeleteSourceButton
-          sourceId={source.id}
-          type={source.type}
-          title={source.title}
-        />
+        <div className="flex items-center gap-3">
+          <EditSourceButton source={source} />
+          <DeleteSourceButton
+            sourceId={source.id}
+            type={source.type}
+            title={source.title}
+          />
+        </div>
       </div>
     </section>
   );
