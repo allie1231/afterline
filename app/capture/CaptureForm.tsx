@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { createQuoteAction } from "@/app/quotes/new/actions";
 import { ROOM_CATEGORIES } from "@/lib/data/categories";
 import type { Source, SourceType } from "@/lib/data/types";
@@ -168,6 +168,44 @@ export function CaptureForm({
     }
   }
 
+  // ── Photo OCR (Tesseract.js, dynamic-imported on first use) ─────────
+  const ocrInputRef = useRef<HTMLInputElement>(null);
+  const [ocring, setOcring] = useState(false);
+  const [ocrProgress, setOcrProgress] = useState(0);
+
+  async function handleOcr(file: File) {
+    setOcring(true);
+    setOcrProgress(0);
+    try {
+      // Dynamic import — Tesseract is heavy (~2 MB). Only loaded when the
+      // user actually presses the photo button.
+      const Tesseract = (await import("tesseract.js")).default;
+      const { data } = await Tesseract.recognize(file, "kor+eng", {
+        logger: (m: { status: string; progress: number }) => {
+          if (m.status === "recognizing text") {
+            setOcrProgress(Math.round(m.progress * 100));
+          }
+        },
+      });
+      const cleaned = (data.text ?? "")
+        .replace(/[ \t]+\n/g, "\n")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+      if (cleaned) {
+        setText((prev) => (prev ? `${prev}\n\n${cleaned}` : cleaned));
+      } else {
+        alert("이미지에서 글자를 읽지 못했어요. 더 또렷한 사진으로 시도해 보세요.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("OCR 실패. 다시 시도하거나 직접 입력해 주세요.");
+    } finally {
+      setOcring(false);
+      setOcrProgress(0);
+      if (ocrInputRef.current) ocrInputRef.current.value = "";
+    }
+  }
+
   return (
     <form action={createQuoteAction} className="flex flex-col gap-5">
       <input type="hidden" name="type" value={type} />
@@ -176,17 +214,40 @@ export function CaptureForm({
 
       {/* THE LINE — pulled to top for thumb-reach */}
       <div>
-        <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-center justify-between mb-1.5 gap-2 flex-wrap">
           <span className="font-mono text-[10px] tracking-[0.3em]">
             LINE / 문장 *
           </span>
-          <button
-            type="button"
-            onClick={pasteFromClipboard}
-            className="font-mono text-[10px] tracking-[0.3em] border border-ink px-2 py-1 hover:bg-ink hover:text-paper transition-colors"
-          >
-            📋 PASTE
-          </button>
+          <div className="flex items-center gap-1.5">
+            <input
+              ref={ocrInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleOcr(f);
+              }}
+              className="sr-only"
+              disabled={ocring}
+            />
+            <button
+              type="button"
+              onClick={() => ocrInputRef.current?.click()}
+              disabled={ocring}
+              className="font-mono text-[10px] tracking-[0.3em] border border-ink px-2 py-1 hover:bg-ink hover:text-paper transition-colors disabled:opacity-60"
+              title="책 페이지를 찍으면 글자를 읽어요 (한 · 영)"
+            >
+              {ocring ? `OCR ${ocrProgress}%` : "📷 PHOTO"}
+            </button>
+            <button
+              type="button"
+              onClick={pasteFromClipboard}
+              className="font-mono text-[10px] tracking-[0.3em] border border-ink px-2 py-1 hover:bg-ink hover:text-paper transition-colors"
+            >
+              📋 PASTE
+            </button>
+          </div>
         </div>
         <textarea
           name="text"
