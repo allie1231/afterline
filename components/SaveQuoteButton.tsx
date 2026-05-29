@@ -4,6 +4,14 @@ import { useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import type { Quote, Source } from "@/lib/data/types";
 
+const PAPER = "#f5f1e8";
+const INK = "#111111";
+const MUTED = "#8a857a";
+const LINE = "#d9d3c5";
+
+const SERIF = '"Cormorant Garamond", Georgia, "Times New Roman", serif';
+const MONO = '"IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace';
+
 // Per-quote save / share. Renders a hidden Afterline-styled card off-screen
 // and captures it on demand.
 export function SaveQuoteButton({
@@ -24,11 +32,43 @@ export function SaveQuoteButton({
   async function render(): Promise<string> {
     const el = cardRef.current;
     if (!el) throw new Error("card not ready");
-    return await toPng(el, {
-      pixelRatio: 2,
-      backgroundColor: "#f5f1e8",
-      cacheBust: true,
-    });
+    // Wait for in-progress font loads so text isn't captured mid-swap.
+    if (typeof document !== "undefined" && document.fonts?.ready) {
+      try {
+        await document.fonts.ready;
+      } catch {
+        /* ignore */
+      }
+    }
+    // Briefly move the capture target into the viewport (still invisible via
+    // opacity:0 + z-index:-1) so html-to-image's layout pass sees real values.
+    // Some versions of the library mis-measure elements positioned far off
+    // canvas (left:-10000px), which is the most common cause of "background
+    // only, text missing" output.
+    const prev = {
+      left: el.style.left,
+      top: el.style.top,
+      opacity: el.style.opacity,
+      zIndex: el.style.zIndex,
+    };
+    el.style.left = "0px";
+    el.style.top = "0px";
+    el.style.opacity = "0";
+    el.style.zIndex = "-1";
+    try {
+      return await toPng(el, {
+        pixelRatio: 2,
+        backgroundColor: PAPER,
+        cacheBust: true,
+        // Skip embedding @font-face — we provide system fallbacks inline.
+        skipFonts: true,
+      });
+    } finally {
+      el.style.left = prev.left;
+      el.style.top = prev.top;
+      el.style.opacity = prev.opacity;
+      el.style.zIndex = prev.zIndex;
+    }
   }
 
   function triggerDownload(dataUrl: string) {
@@ -71,8 +111,9 @@ export function SaveQuoteButton({
 
   return (
     <>
-      {/* Off-screen capture target. position:fixed + far left keeps it in the
-          DOM with real layout while being invisible to the user. */}
+      {/* Off-screen capture target. Explicit inline styles instead of Tailwind
+          classes so html-to-image never relies on CSS-variable resolution at
+          serialization time. */}
       <div
         ref={cardRef}
         aria-hidden
@@ -84,26 +125,80 @@ export function SaveQuoteButton({
           pointerEvents: "none",
         }}
       >
-        <div className="bg-paper text-ink p-12 border border-ink">
-          <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-10">
+        <div
+          style={{
+            background: PAPER,
+            color: INK,
+            padding: 48,
+            border: `1px solid ${INK}`,
+            fontFamily: SERIF,
+          }}
+        >
+          <div
+            style={{
+              fontFamily: MONO,
+              fontSize: 10,
+              letterSpacing: "0.3em",
+              color: MUTED,
+              marginBottom: 40,
+            }}
+          >
             AFTERLINE / {source.type.toUpperCase()}
           </div>
-          <blockquote className="font-serif text-[38px] leading-[1.25] whitespace-pre-line">
+          <blockquote
+            style={{
+              fontFamily: SERIF,
+              fontSize: 38,
+              lineHeight: 1.25,
+              color: INK,
+              margin: 0,
+              whiteSpace: "pre-line",
+            }}
+          >
             {quote.text}
           </blockquote>
-          <div className="mt-10 pt-6 border-t border-line">
-            <div className="font-serif text-lg">{source.title}</div>
+          <div
+            style={{
+              marginTop: 40,
+              paddingTop: 24,
+              borderTop: `1px solid ${LINE}`,
+            }}
+          >
+            <div style={{ fontFamily: SERIF, fontSize: 18, color: INK }}>
+              {source.title}
+            </div>
             {source.creator && (
-              <div className="font-serif text-base text-muted mt-1">
+              <div
+                style={{
+                  fontFamily: SERIF,
+                  fontSize: 16,
+                  color: MUTED,
+                  marginTop: 4,
+                }}
+              >
                 — {source.creator}
               </div>
             )}
             {quote.mood_tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-4">
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 8,
+                  marginTop: 16,
+                }}
+              >
                 {quote.mood_tags.map((t) => (
                   <span
                     key={t}
-                    className="font-mono text-[9px] tracking-[0.2em] border border-ink px-2 py-0.5"
+                    style={{
+                      fontFamily: MONO,
+                      fontSize: 9,
+                      letterSpacing: "0.2em",
+                      border: `1px solid ${INK}`,
+                      padding: "2px 8px",
+                      color: INK,
+                    }}
                   >
                     #{t.toUpperCase()}
                   </span>
@@ -111,7 +206,15 @@ export function SaveQuoteButton({
               </div>
             )}
           </div>
-          <div className="mt-12 font-mono text-[9px] tracking-[0.3em] text-muted">
+          <div
+            style={{
+              marginTop: 48,
+              fontFamily: MONO,
+              fontSize: 9,
+              letterSpacing: "0.3em",
+              color: MUTED,
+            }}
+          >
             AFTERLINE — LINES THAT STAYED
           </div>
         </div>
