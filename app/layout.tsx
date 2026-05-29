@@ -3,6 +3,7 @@ import { Cormorant_Garamond, Inter, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { AppHeader } from "@/components/AppHeader";
 import { FloatingNav } from "@/components/FloatingNav";
+import { SideNav } from "@/components/SideNav";
 import { createClient } from "@/lib/supabase/server";
 
 const cormorant = Cormorant_Garamond({
@@ -57,6 +58,7 @@ export default async function RootLayout({
       <body className="min-h-screen bg-paper text-ink">
         {user && <AppHeader />}
         <main>{children}</main>
+        {user && <SideNav />}
         {user && <FloatingNav />}
       </body>
     </html>

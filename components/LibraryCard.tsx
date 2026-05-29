@@ -88,7 +88,6 @@ export function LibraryCard({
                     src={source.cover_url}
                     alt=""
                     className="w-full h-full object-contain"
-                    crossOrigin="anonymous"
                   />
                 )}
               </div>
