@@ -16,6 +16,13 @@ export function SaveCardButton({
   async function render(): Promise<string> {
     const el = document.getElementById(targetId);
     if (!el) throw new Error("library card element not found");
+    if (typeof document !== "undefined" && document.fonts?.ready) {
+      try {
+        await document.fonts.ready;
+      } catch {
+        /* ignore */
+      }
+    }
     return await toPng(el, {
       pixelRatio: 2,
       backgroundColor: "#f5f1e8",
