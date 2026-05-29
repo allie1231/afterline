@@ -81,7 +81,7 @@ export function CollectionsBrowser({
   return (
     <div>
       {/* Type filter row */}
-      <div className="flex flex-wrap gap-px bg-ink border border-ink mb-4">
+      <div className="inline-flex flex-wrap gap-px bg-ink border border-ink mb-4 max-w-full w-fit">
         <FilterChip
           active={type === "all"}
           onClick={() => setType("all")}
