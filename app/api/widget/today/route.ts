@@ -1,16 +1,96 @@
-// Alias of /api/today for the iOS Scriptable widget.
-//
-// Why a separate path: when the original /api/today route was missing /
-// broken during an earlier deploy attempt, iOS NSURLCache on at least
-// one device cached the fallback HTML response and kept serving it back
-// to Scriptable even after the route started returning JSON. Cache
-// busters in the query string didn't escape the cached entry. A fresh
-// path with no NSURLCache history is the cleanest cure.
-//
-// Behavior is identical to /api/today — both can coexist indefinitely.
+// Alias of /api/today for the iOS Scriptable widget — same logic,
+// fresh path. We can't just re-export GET from the original module
+// because Next.js's route detection inspects the source file directly
+// at build time and won't pick up an imported handler.
 
-import { GET as today } from "@/app/api/today/route";
+import { NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
-export { today as GET };
+const HEADERS = {
+  "Content-Type": "application/json; charset=utf-8",
+  "Access-Control-Allow-Origin": "*",
+  "Cache-Control": "no-store, max-age=0",
+};
+
+function json(body: unknown, status = 200) {
+  return new NextResponse(JSON.stringify(body), { status, headers: HEADERS });
+}
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const token = (searchParams.get("token") ?? "").trim();
+    if (!token) return json({ error: "missing token" }, 401);
+
+    let sb;
+    try {
+      sb = createAdminClient();
+    } catch (e) {
+      return json(
+        { error: e instanceof Error ? e.message : "service not configured" },
+        500,
+      );
+    }
+
+    const { data: tokenRow, error: tokenErr } = await sb
+      .from("api_tokens")
+      .select("user_id")
+      .eq("token", token)
+      .maybeSingle();
+    if (tokenErr) return json({ error: `db: ${tokenErr.message}` }, 500);
+    if (!tokenRow) return json({ error: "invalid token" }, 401);
+    const userId = tokenRow.user_id as string;
+
+    const { data: quotes, error: qErr } = await sb
+      .from("quotes")
+      .select("id, text, page, source_id")
+      .eq("user_id", userId)
+      .limit(200)
+      .order("created_at", { ascending: false });
+    if (qErr) return json({ error: `db: ${qErr.message}` }, 500);
+    if (!quotes || quotes.length === 0) return json({ text: null });
+
+    const today = new Date();
+    const dayOfYear = Math.floor(
+      (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) /
+        86400000,
+    );
+    const pick = quotes[dayOfYear % quotes.length] as {
+      id: string;
+      text: string;
+      page: string | null;
+      source_id: string | null;
+    };
+
+    let source_title: string | null = null;
+    let source_creator: string | null = null;
+    let source_type: string | null = null;
+    if (pick.source_id) {
+      const { data: s } = await sb
+        .from("sources")
+        .select("title, creator, type")
+        .eq("id", pick.source_id)
+        .maybeSingle();
+      source_title = (s?.title as string | null) ?? null;
+      source_creator = (s?.creator as string | null) ?? null;
+      source_type = (s?.type as string | null) ?? null;
+    }
+
+    return json({
+      id: pick.id,
+      text: pick.text,
+      page: pick.page,
+      source_title,
+      source_creator,
+      source_type,
+      day: today.toISOString().slice(0, 10),
+    });
+  } catch (e) {
+    return json(
+      { error: e instanceof Error ? e.message : "unknown" },
+      500,
+    );
+  }
+}
