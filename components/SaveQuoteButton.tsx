@@ -1,7 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { toPng } from "html-to-image";
+// modern-screenshot is the actively maintained fork of html-to-image that
+// fixes the SVG/foreignObject quirks (Korean text, custom fonts, off-canvas
+// layout) that were dropping our quote text out of the captured PNG.
+import { domToPng } from "modern-screenshot";
 import type { Quote, Source } from "@/lib/data/types";
 
 const PAPER = "#f5f1e8";
@@ -12,8 +15,6 @@ const LINE = "#d9d3c5";
 const SERIF = '"Cormorant Garamond", Georgia, "Times New Roman", serif';
 const MONO = '"IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace';
 
-// Per-quote save / share. Renders a hidden Afterline-styled card off-screen
-// and captures it on demand.
 export function SaveQuoteButton({
   quote,
   source,
@@ -23,6 +24,7 @@ export function SaveQuoteButton({
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
 
   const fileName = `afterline-${source.title}-${quote.id.slice(-6)}`.replace(
     /[^\w가-힣.-]+/g,
@@ -32,7 +34,6 @@ export function SaveQuoteButton({
   async function render(): Promise<string> {
     const el = cardRef.current;
     if (!el) throw new Error("card not ready");
-    // Wait for in-progress font loads so text isn't captured mid-swap.
     if (typeof document !== "undefined" && document.fonts?.ready) {
       try {
         await document.fonts.ready;
@@ -40,34 +41,35 @@ export function SaveQuoteButton({
         /* ignore */
       }
     }
-    // Briefly move the capture target into the viewport (still invisible via
-    // opacity:0 + z-index:-1) so html-to-image's layout pass sees real values.
-    // Some versions of the library mis-measure elements positioned far off
-    // canvas (left:-10000px), which is the most common cause of "background
-    // only, text missing" output.
+    // Bring the capture target fully into the viewport (invisible via
+    // opacity:0) so layout is real. Off-canvas (left:-10000) can confuse
+    // some screenshot libraries about the element's dimensions.
     const prev = {
       left: el.style.left,
       top: el.style.top,
       opacity: el.style.opacity,
       zIndex: el.style.zIndex,
+      pointerEvents: el.style.pointerEvents,
     };
     el.style.left = "0px";
     el.style.top = "0px";
     el.style.opacity = "0";
     el.style.zIndex = "-1";
+    el.style.pointerEvents = "none";
     try {
-      return await toPng(el, {
-        pixelRatio: 2,
+      return await domToPng(el, {
+        scale: 2,
         backgroundColor: PAPER,
-        cacheBust: true,
-        // Skip embedding @font-face — we provide system fallbacks inline.
-        skipFonts: true,
+        // Skip remote font embedding — we supply system font fallbacks
+        // inline on every text node.
+        font: false,
       });
     } finally {
       el.style.left = prev.left;
       el.style.top = prev.top;
       el.style.opacity = prev.opacity;
       el.style.zIndex = prev.zIndex;
+      el.style.pointerEvents = prev.pointerEvents;
     }
   }
 
@@ -81,9 +83,12 @@ export function SaveQuoteButton({
   async function handleSave() {
     if (busy) return;
     setBusy(true);
+    setErr("");
     try {
       const dataUrl = await render();
       triggerDownload(dataUrl);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "이미지를 만들지 못했어요.");
     } finally {
       setBusy(false);
     }
@@ -92,6 +97,7 @@ export function SaveQuoteButton({
   async function handleShare() {
     if (busy) return;
     setBusy(true);
+    setErr("");
     try {
       const dataUrl = await render();
       const blob = await (await fetch(dataUrl)).blob();
@@ -104,6 +110,7 @@ export function SaveQuoteButton({
       }
     } catch (e) {
       if (e instanceof Error && e.name === "AbortError") return;
+      setErr(e instanceof Error ? e.message : "공유에 실패했어요.");
     } finally {
       setBusy(false);
     }
@@ -111,9 +118,8 @@ export function SaveQuoteButton({
 
   return (
     <>
-      {/* Off-screen capture target. Explicit inline styles instead of Tailwind
-          classes so html-to-image never relies on CSS-variable resolution at
-          serialization time. */}
+      {/* Off-screen capture target with every visual attribute set inline so
+          serialization never depends on Tailwind utility resolution. */}
       <div
         ref={cardRef}
         aria-hidden
@@ -132,6 +138,8 @@ export function SaveQuoteButton({
             padding: 48,
             border: `1px solid ${INK}`,
             fontFamily: SERIF,
+            boxSizing: "border-box",
+            width: 640,
           }}
         >
           <div
@@ -152,7 +160,8 @@ export function SaveQuoteButton({
               lineHeight: 1.25,
               color: INK,
               margin: 0,
-              whiteSpace: "pre-line",
+              whiteSpace: "pre-wrap",
+              wordBreak: "keep-all",
             }}
           >
             {quote.text}
@@ -220,25 +229,32 @@ export function SaveQuoteButton({
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={busy}
-          className="font-mono text-[9px] tracking-[0.25em] text-muted hover:text-ink transition-colors disabled:opacity-50"
-          title="이미지로 저장"
-        >
-          {busy ? "…" : "SAVE"}
-        </button>
-        <button
-          type="button"
-          onClick={handleShare}
-          disabled={busy}
-          className="font-mono text-[9px] tracking-[0.25em] text-muted hover:text-ink transition-colors disabled:opacity-50"
-          title="공유"
-        >
-          {busy ? "…" : "SHARE"}
-        </button>
+      <div className="flex flex-col items-end gap-1">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={busy}
+            className="font-mono text-[9px] tracking-[0.25em] text-muted hover:text-ink transition-colors disabled:opacity-50"
+            title="이미지로 저장"
+          >
+            {busy ? "…" : "SAVE"}
+          </button>
+          <button
+            type="button"
+            onClick={handleShare}
+            disabled={busy}
+            className="font-mono text-[9px] tracking-[0.25em] text-muted hover:text-ink transition-colors disabled:opacity-50"
+            title="공유"
+          >
+            {busy ? "…" : "SHARE"}
+          </button>
+        </div>
+        {err && (
+          <div className="font-mono text-[9px] text-red max-w-[260px] text-right">
+            {err}
+          </div>
+        )}
       </div>
     </>
   );
