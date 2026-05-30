@@ -764,6 +764,141 @@ export async function deleteNote(id: string): Promise<void> {
   if (error) throw error;
 }
 
+// ─────────────────────────────────────────────────────────────────────
+// Home panels — On This Day + Rediscover a favorite
+// ─────────────────────────────────────────────────────────────────────
+
+export interface PastLine {
+  id: string;
+  text: string;
+  page: string | null;
+  is_favorite: boolean;
+  created_at: string;
+  source_id: string | null;
+  source_title: string | null;
+  source_creator: string | null;
+  source_type: SourceType | null;
+}
+
+async function attachSources(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  rows: Array<{
+    id: string;
+    text: string;
+    page: string | null;
+    is_favorite: boolean;
+    created_at: string;
+    source_id: string | null;
+  }>,
+): Promise<PastLine[]> {
+  const ids = Array.from(
+    new Set(rows.map((r) => r.source_id).filter((s): s is string => !!s)),
+  );
+  let sources = new Map<
+    string,
+    { title: string; creator: string | null; type: SourceType }
+  >();
+  if (ids.length > 0) {
+    const { data } = await supabase
+      .from("sources")
+      .select("id, title, creator, type")
+      .in("id", ids);
+    sources = new Map(
+      ((data ?? []) as Array<{
+        id: string;
+        title: string;
+        creator: string | null;
+        type: SourceType;
+      }>).map((s) => [
+        s.id,
+        { title: s.title, creator: s.creator, type: s.type },
+      ]),
+    );
+  }
+  return rows.map((r) => {
+    const s = r.source_id ? sources.get(r.source_id) : undefined;
+    return {
+      id: r.id,
+      text: r.text,
+      page: r.page,
+      is_favorite: r.is_favorite,
+      created_at: r.created_at,
+      source_id: r.source_id,
+      source_title: s?.title ?? null,
+      source_creator: s?.creator ?? null,
+      source_type: s?.type ?? null,
+    };
+  });
+}
+
+/**
+ * Lines collected on the same calendar month-day in past years.
+ * The "newspaper archive" panel on the home page.
+ */
+export async function getOnThisDay(): Promise<PastLine[]> {
+  const supabase = await createClient();
+  const today = new Date();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+  // Postgres has to_char on timestamptz — but supabase-js doesn't expose raw
+  // SQL nicely. Instead we fetch enough recent quotes to scan in-memory.
+  // For an archive of < ~5k lines this is fine; revisit if it grows.
+  const { data, error } = await supabase
+    .from("quotes")
+    .select("id, text, page, is_favorite, created_at, source_id");
+  if (error) throw error;
+  const sameDay = ((data ?? []) as Array<{
+    id: string;
+    text: string;
+    page: string | null;
+    is_favorite: boolean;
+    created_at: string;
+    source_id: string | null;
+  }>)
+    .filter((q) => {
+      const d = new Date(q.created_at);
+      const qm = String(d.getMonth() + 1).padStart(2, "0");
+      const qd = String(d.getDate()).padStart(2, "0");
+      // Exclude today's own collections — focus on past years.
+      if (qm !== mm || qd !== dd) return false;
+      const sameYear = d.getFullYear() === today.getFullYear();
+      return !sameYear;
+    })
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+  return attachSources(supabase, sameDay);
+}
+
+/**
+ * One favorite the user hasn't collected recently — surfaced as a quiet
+ * "remember this?" prompt. Picks at random from favorites older than 30
+ * days; falls back to any favorite if there aren't enough old ones.
+ */
+export async function getRediscoveredFavorite(): Promise<PastLine | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("quotes")
+    .select("id, text, page, is_favorite, created_at, source_id")
+    .eq("is_favorite", true);
+  if (error) throw error;
+  const favorites = (data ?? []) as Array<{
+    id: string;
+    text: string;
+    page: string | null;
+    is_favorite: boolean;
+    created_at: string;
+    source_id: string | null;
+  }>;
+  if (favorites.length === 0) return null;
+  const thirtyDaysAgo = Date.now() - 30 * 86_400_000;
+  const stale = favorites.filter(
+    (q) => new Date(q.created_at).getTime() < thirtyDaysAgo,
+  );
+  const pool = stale.length > 0 ? stale : favorites;
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  const [withSource] = await attachSources(supabase, [pick]);
+  return withSource ?? null;
+}
+
 // Sources currently in 'reading' state — surfaced on the home page as a
 // "Now Reading" pulse. Includes line counts so the panel can show progress.
 export interface ReadingPulseItem {

@@ -1,17 +1,31 @@
 import Link from "next/link";
-import { getRandomLinePool, getReadingPulse } from "@/lib/data/repository";
+import {
+  getOnThisDay,
+  getRandomLinePool,
+  getReadingPulse,
+  getRediscoveredFavorite,
+} from "@/lib/data/repository";
 import { RandomQuotePanel } from "@/components/RandomQuotePanel";
 import { SourceSpine } from "@/components/SourceSpine";
+import type { PastLine } from "@/lib/data/repository";
 
 function fmtDate(iso: string | null) {
   if (!iso) return null;
   return iso.slice(0, 10).replace(/-/g, ".");
 }
 
+function yearOf(iso: string): string {
+  return iso.slice(0, 4);
+}
+
+export const dynamic = "force-dynamic";
+
 export default async function EntrancePage() {
-  const [pool, reading] = await Promise.all([
+  const [pool, reading, onThisDay, rediscovered] = await Promise.all([
     getRandomLinePool(200),
     getReadingPulse(),
+    getOnThisDay(),
+    getRediscoveredFavorite(),
   ]);
 
   return (
@@ -59,7 +73,43 @@ export default async function EntrancePage() {
         </section>
       )}
 
+      {onThisDay.length > 0 && (
+        <section className="border-y border-line py-6">
+          <div className="flex items-baseline justify-between mb-5">
+            <div className="font-mono text-[10px] tracking-[0.3em] text-muted">
+              ON THIS DAY / 같은 날의 기록
+            </div>
+            <span className="font-mono text-[10px] tracking-[0.25em] text-muted">
+              {String(onThisDay.length).padStart(2, "0")} ENTRIES
+            </span>
+          </div>
+          <ol className="flex flex-col gap-6">
+            {onThisDay.slice(0, 4).map((q) => (
+              <li key={q.id} className="grid grid-cols-[60px_1fr] gap-6">
+                <div className="font-mono text-[11px] tracking-[0.2em] text-muted pt-1">
+                  {yearOf(q.created_at)}
+                </div>
+                <PastQuoteBody q={q} />
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
       <RandomQuotePanel pool={pool} />
+
+      {rediscovered && (
+        <section className="border-y border-line py-6">
+          <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-4">
+            REDISCOVER / 잊혔던 한 줄
+          </div>
+          <PastQuoteBody q={rediscovered} large />
+          <div className="font-mono text-[9px] tracking-[0.25em] text-muted mt-4">
+            COLLECTED {fmtDate(rediscovered.created_at)}
+            {rediscovered.is_favorite && " · ★ FAVORITE"}
+          </div>
+        </section>
+      )}
 
       <div className="flex items-end justify-between">
         <Link
@@ -79,5 +129,34 @@ export default async function EntrancePage() {
         </div>
       </div>
     </section>
+  );
+}
+
+function PastQuoteBody({ q, large = false }: { q: PastLine; large?: boolean }) {
+  return (
+    <div>
+      <p
+        className={`font-serif ${
+          large ? "text-3xl md:text-4xl" : "text-xl"
+        } leading-snug whitespace-pre-line`}
+      >
+        &ldquo;{q.text}&rdquo;
+      </p>
+      {(q.source_title || q.source_id) && (
+        <div className="mt-3 font-mono text-[10px] tracking-[0.25em] text-muted">
+          {q.source_id ? (
+            <Link href={`/sources/${q.source_id}`} className="hover:text-ink">
+              {q.source_title}
+              {q.source_creator ? ` — ${q.source_creator}` : ""}
+            </Link>
+          ) : (
+            <>
+              {q.source_title}
+              {q.source_creator ? ` — ${q.source_creator}` : ""}
+            </>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
