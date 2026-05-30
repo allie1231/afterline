@@ -13,13 +13,24 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
-const CORS_HEADERS = {
+// iOS clients (Safari, Scriptable) don't always auto-detect UTF-8 on
+// JSON responses lacking an explicit charset — Korean bytes get rendered
+// as garbled CJK on the iPhone. Spell it out.
+const COMMON_HEADERS = {
+  "Content-Type": "application/json; charset=utf-8",
   "Access-Control-Allow-Origin": "*",
   "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
 };
 
+function jsonResponse(body: unknown, status = 200) {
+  return new NextResponse(JSON.stringify(body), {
+    status,
+    headers: COMMON_HEADERS,
+  });
+}
+
 function jsonError(message: string, status: number) {
-  return NextResponse.json({ error: message }, { status, headers: CORS_HEADERS });
+  return jsonResponse({ error: message }, status);
 }
 
 export async function GET(request: Request) {
@@ -59,7 +70,7 @@ export async function GET(request: Request) {
       .order("created_at", { ascending: false });
     if (qErr) return jsonError(`db: ${qErr.message}`, 500);
     if (!quotes || quotes.length === 0) {
-      return NextResponse.json({ text: null }, { headers: CORS_HEADERS });
+      return jsonResponse({ text: null });
     }
 
     const today = new Date();
@@ -88,18 +99,15 @@ export async function GET(request: Request) {
       source_type = (s?.type as string | null) ?? null;
     }
 
-    return NextResponse.json(
-      {
-        id: pick.id,
-        text: pick.text,
-        page: pick.page,
-        source_title,
-        source_creator,
-        source_type,
-        day: today.toISOString().slice(0, 10),
-      },
-      { headers: CORS_HEADERS },
-    );
+    return jsonResponse({
+      id: pick.id,
+      text: pick.text,
+      page: pick.page,
+      source_title,
+      source_creator,
+      source_type,
+      day: today.toISOString().slice(0, 10),
+    });
   } catch (e) {
     return jsonError(e instanceof Error ? e.message : "unknown", 500);
   }
