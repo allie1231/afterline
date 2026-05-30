@@ -24,15 +24,31 @@ const LINE = new Color("#d9d3c5");
 
 // ── FETCH ─────────────────────────────────────────────────────────────
 async function fetchLine() {
+  if (
+    !AFTERLINE_TOKEN ||
+    AFTERLINE_TOKEN === "PASTE_YOUR_TOKEN_HERE"
+  ) {
+    return { error: "토큰 미설정 — 스크립트 상단 AFTERLINE_TOKEN 교체" };
+  }
   const url = `${AFTERLINE_BASE}/api/today?token=${encodeURIComponent(
     AFTERLINE_TOKEN,
   )}`;
   const req = new Request(url);
   req.timeoutInterval = 8;
+  // First fetch as plain text so we can show server errors verbatim even
+  // when the response isn't valid JSON (e.g. an HTML error page slipping
+  // through). Then parse.
   try {
-    return await req.loadJSON();
+    const raw = await req.loadString();
+    try {
+      return JSON.parse(raw);
+    } catch {
+      // Non-JSON response — surface a short hint of what came back.
+      const hint = raw.slice(0, 80).replace(/\s+/g, " ").trim();
+      return { error: `not JSON: ${hint || "(empty)"}` };
+    }
   } catch (e) {
-    return { error: String(e) };
+    return { error: `네트워크: ${String(e)}` };
   }
 }
 
