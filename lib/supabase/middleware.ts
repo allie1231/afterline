@@ -34,8 +34,17 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
+  // Routes that authenticate via their own mechanism (URL token, public
+  // UUID, etc.) and therefore must not be redirected to the login page
+  // when no Supabase session cookie is present.
   const isPublic =
-    path.startsWith("/login") || path.startsWith("/auth");
+    path.startsWith("/login") ||
+    path.startsWith("/auth") ||
+    path.startsWith("/embed") || // iframe widgets — token in URL
+    path.startsWith("/q/") || // public single-quote share pages
+    path.startsWith("/api/quick-add") || // Personal Token POST
+    path.startsWith("/api/today") || // legacy widget JSON endpoint
+    path.startsWith("/api/widget"); // iOS widget JSON endpoint
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
