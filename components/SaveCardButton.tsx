@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { domToPng } from "modern-screenshot";
 
 export function SaveCardButton({
   targetId,
@@ -23,10 +22,16 @@ export function SaveCardButton({
         /* ignore */
       }
     }
-    return await domToPng(el, {
-      scale: 2,
+    // html2canvas-pro: canvas raster (not SVG foreignObject) — far more
+    // reliable for Korean text on macOS Chrome.
+    const html2canvas = (await import("html2canvas-pro")).default;
+    const canvas = await html2canvas(el, {
       backgroundColor: "#f5f1e8",
+      scale: 2,
+      useCORS: true,
+      logging: false,
     });
+    return canvas.toDataURL("image/png");
   }
 
   function triggerDownload(dataUrl: string) {
