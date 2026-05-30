@@ -54,17 +54,17 @@ export async function buildQuoteCardPng(
 }
 
 function buildCardElement(quote: Quote, source: Source): HTMLDivElement {
-  // The host is positioned at top-left, fully transparent, behind everything.
-  // It must remain in normal flow so html2canvas can measure it.
+  // Park the host above the viewport — fully rendered, just out of sight.
+  // We can't use opacity:0 here: html2canvas honors inherited opacity, which
+  // would render every child fully transparent and leave us with only the
+  // canvas's backgroundColor fill (which was the previous bug).
   const host = document.createElement("div");
   Object.assign(host.style, {
     position: "fixed",
     left: "0",
-    top: "0",
+    top: "-10000px",
     width: "640px",
     pointerEvents: "none",
-    opacity: "0",
-    zIndex: "-1",
   } as Partial<CSSStyleDeclaration>);
 
   const card = document.createElement("div");
