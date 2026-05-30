@@ -13,6 +13,7 @@ export function SaveQuoteButton({
 }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [copied, setCopied] = useState(false);
 
   const fileName = `afterline-${source.title}-${quote.id.slice(-6)}`.replace(
     /[^\w가-힣.-]+/g,
@@ -38,6 +39,19 @@ export function SaveQuoteButton({
       setErr(e instanceof Error ? e.message : "이미지를 만들지 못했어요.");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function handleCopyLink() {
+    if (busy) return;
+    setErr("");
+    const url = `${window.location.origin}/q/${quote.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {
+      prompt("이 링크를 복사하세요:", url);
     }
   }
 
@@ -81,9 +95,17 @@ export function SaveQuoteButton({
           onClick={handleShare}
           disabled={busy}
           className="font-mono text-[9px] tracking-[0.25em] text-muted hover:text-ink transition-colors disabled:opacity-50"
-          title="공유"
+          title="이미지 공유"
         >
           {busy ? "…" : "SHARE"}
+        </button>
+        <button
+          type="button"
+          onClick={handleCopyLink}
+          className="font-mono text-[9px] tracking-[0.25em] text-muted hover:text-ink transition-colors"
+          title="공개 링크 복사 — 받는 사람은 로그인 없이 이 문장을 봅니다"
+        >
+          {copied ? "COPIED" : "LINK"}
         </button>
       </div>
       {err && (
