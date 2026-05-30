@@ -52,18 +52,29 @@ export async function GET(request: Request) {
     if (qErr) return json({ error: `db: ${qErr.message}` }, 500);
     if (!quotes || quotes.length === 0) return json({ text: null });
 
-    const today = new Date();
-    // Default: deterministic per-day pick so the widget shows the same line
-    // all day. With ?random=1 every call gets a fresh random line — used by
-    // the iOS widget's tap-to-refresh.
+    const now = Date.now();
+    // Selection strategy:
+    //   ?random=1        → pure random (one-shot tap-to-refresh)
+    //   ?period=hour     → deterministic per hour-of-epoch
+    //   (default)        → deterministic per day-of-year
+    // All three return the same line for any call within the same bucket,
+    // so iOS widget refreshes within a bucket don't thrash.
     const random = searchParams.get("random") === "1";
-    const index = random
-      ? Math.floor(Math.random() * quotes.length)
-      : Math.floor(
+    const period = searchParams.get("period");
+    let index: number;
+    if (random) {
+      index = Math.floor(Math.random() * quotes.length);
+    } else if (period === "hour") {
+      index = Math.floor(now / 3_600_000) % quotes.length;
+    } else {
+      const today = new Date(now);
+      index =
+        Math.floor(
           (today.getTime() -
             new Date(today.getFullYear(), 0, 0).getTime()) /
-            86400000,
+            86_400_000,
         ) % quotes.length;
+    }
     const pick = quotes[index] as {
       id: string;
       text: string;
@@ -92,7 +103,7 @@ export async function GET(request: Request) {
       source_title,
       source_creator,
       source_type,
-      day: today.toISOString().slice(0, 10),
+      day: new Date(now).toISOString().slice(0, 10),
     });
   } catch (e) {
     return json(
