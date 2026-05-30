@@ -812,6 +812,201 @@ export async function deleteNote(id: string): Promise<void> {
 }
 
 // ─────────────────────────────────────────────────────────────────────
+// Year in Review — annual editorial digest
+// ─────────────────────────────────────────────────────────────────────
+
+export interface YearInReview {
+  year: number;
+  totalLines: number;
+  totalSources: number;
+  totalNotes: number;
+  favoriteCount: number;
+  byType: Record<SourceType, number>;
+  byMonth: { month: number; count: number }[]; // 12 entries, oldest → newest
+  busiestMonth: { month: number; count: number } | null;
+  topSources: { source: Source; lines: number }[]; // top 5
+  topTags: { tag: string; count: number }[]; // top 10
+  topGenres: { genre: string; count: number }[]; // top 8
+  topPeople: { name: string; lines: number }[]; // top 8 creators
+  firstLine: { quote: Quote; source: Source | null } | null;
+  latestLine: { quote: Quote; source: Source | null } | null;
+  favorites: { quote: Quote; source: Source | null }[]; // up to 5 random favorites
+}
+
+export async function getYearInReview(year: number): Promise<YearInReview> {
+  const supabase = await createClient();
+  const start = `${year}-01-01T00:00:00.000Z`;
+  const end = `${year + 1}-01-01T00:00:00.000Z`;
+  const [
+    { data: quotes },
+    { data: sources },
+    { data: notes },
+  ] = await Promise.all([
+    supabase
+      .from("quotes")
+      .select("*")
+      .gte("created_at", start)
+      .lt("created_at", end)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("sources")
+      .select("*")
+      .gte("created_at", start)
+      .lt("created_at", end),
+    supabase
+      .from("notes")
+      .select("id, created_at")
+      .gte("created_at", start)
+      .lt("created_at", end),
+  ]);
+  const quoteList = (quotes ?? []) as Quote[];
+  const sourceList = (sources ?? []) as Source[];
+  const noteList = notes ?? [];
+
+  // We also need full sources for any quote source_id that isn't in this
+  // year's new sources (a line collected this year from an older source).
+  const allSourceIds = Array.from(
+    new Set(
+      quoteList.map((q) => q.source_id).filter((s): s is string => !!s),
+    ),
+  );
+  const knownIds = new Set(sourceList.map((s) => s.id));
+  const missingIds = allSourceIds.filter((id) => !knownIds.has(id));
+  let extraSources: Source[] = [];
+  if (missingIds.length > 0) {
+    const { data } = await supabase
+      .from("sources")
+      .select("*")
+      .in("id", missingIds);
+    extraSources = (data ?? []) as Source[];
+  }
+  const sourceById = new Map(
+    [...sourceList, ...extraSources].map((s) => [s.id, s]),
+  );
+
+  // Buckets
+  const byType = {} as Record<SourceType, number>;
+  for (const cat of ROOM_CATEGORIES) byType[cat.type] = 0;
+  const byMonthMap = new Map<number, number>();
+  const linesBySource = new Map<string, number>();
+  const tagCounts = new Map<string, number>();
+  const genreCounts = new Map<string, number>();
+  const peopleCounts = new Map<string, number>();
+  let favoriteCount = 0;
+
+  for (const q of quoteList) {
+    if (q.is_favorite) favoriteCount += 1;
+    const m = new Date(q.created_at).getMonth() + 1;
+    byMonthMap.set(m, (byMonthMap.get(m) ?? 0) + 1);
+    const s = q.source_id ? sourceById.get(q.source_id) : null;
+    if (s) {
+      byType[s.type] = (byType[s.type] ?? 0) + 1;
+      linesBySource.set(s.id, (linesBySource.get(s.id) ?? 0) + 1);
+      const g = (s.genre ?? "").trim();
+      if (g) genreCounts.set(g, (genreCounts.get(g) ?? 0) + 1);
+      const creator = (s.creator ?? "").trim();
+      if (creator && s.type !== "movie") {
+        peopleCounts.set(creator, (peopleCounts.get(creator) ?? 0) + 1);
+      }
+    }
+    for (const t of q.mood_tags ?? []) {
+      if (t.trim()) tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
+    }
+  }
+
+  const byMonth: { month: number; count: number }[] = [];
+  for (let i = 1; i <= 12; i++) {
+    byMonth.push({ month: i, count: byMonthMap.get(i) ?? 0 });
+  }
+  const busiestMonth = byMonth.reduce<{ month: number; count: number } | null>(
+    (best, cur) =>
+      cur.count > 0 && (!best || cur.count > best.count) ? cur : best,
+    null,
+  );
+
+  const topSources = [...linesBySource.entries()]
+    .map(([id, lines]) => ({ source: sourceById.get(id)!, lines }))
+    .filter((x) => !!x.source)
+    .sort((a, b) => b.lines - a.lines)
+    .slice(0, 5);
+
+  const topTags = [...tagCounts.entries()]
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
+
+  const topGenres = [...genreCounts.entries()]
+    .map(([genre, count]) => ({ genre, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 8);
+
+  const topPeople = [...peopleCounts.entries()]
+    .map(([name, lines]) => ({ name, lines }))
+    .sort((a, b) => b.lines - a.lines)
+    .slice(0, 8);
+
+  const firstQ = quoteList[0] ?? null;
+  const lastQ = quoteList[quoteList.length - 1] ?? null;
+  const firstLine = firstQ
+    ? {
+        quote: firstQ,
+        source: firstQ.source_id
+          ? (sourceById.get(firstQ.source_id) ?? null)
+          : null,
+      }
+    : null;
+  const latestLine = lastQ
+    ? {
+        quote: lastQ,
+        source: lastQ.source_id
+          ? (sourceById.get(lastQ.source_id) ?? null)
+          : null,
+      }
+    : null;
+
+  const favList = quoteList.filter((q) => q.is_favorite);
+  // Shuffle deterministically by id hash so the page is stable per refresh.
+  favList.sort((a, b) => a.id.localeCompare(b.id));
+  const favorites = favList.slice(0, 5).map((q) => ({
+    quote: q,
+    source: q.source_id ? (sourceById.get(q.source_id) ?? null) : null,
+  }));
+
+  return {
+    year,
+    totalLines: quoteList.length,
+    totalSources: sourceList.length,
+    totalNotes: noteList.length,
+    favoriteCount,
+    byType,
+    byMonth,
+    busiestMonth,
+    topSources,
+    topTags,
+    topGenres,
+    topPeople,
+    firstLine,
+    latestLine,
+    favorites,
+  };
+}
+
+// List of years that have at least one collected line — used by the
+// /review index to render shortcut links.
+export async function getCollectedYears(): Promise<number[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("quotes")
+    .select("created_at")
+    .order("created_at", { ascending: false });
+  const years = new Set<number>();
+  for (const q of (data ?? []) as Array<{ created_at: string }>) {
+    years.add(new Date(q.created_at).getFullYear());
+  }
+  return [...years].sort((a, b) => b - a);
+}
+
+// ─────────────────────────────────────────────────────────────────────
 // Home panels — On This Day + Rediscover a favorite
 // ─────────────────────────────────────────────────────────────────────
 
