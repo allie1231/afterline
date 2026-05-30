@@ -53,11 +53,18 @@ export async function GET(request: Request) {
     if (!quotes || quotes.length === 0) return json({ text: null });
 
     const today = new Date();
-    const dayOfYear = Math.floor(
-      (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) /
-        86400000,
-    );
-    const pick = quotes[dayOfYear % quotes.length] as {
+    // Default: deterministic per-day pick so the widget shows the same line
+    // all day. With ?random=1 every call gets a fresh random line — used by
+    // the iOS widget's tap-to-refresh.
+    const random = searchParams.get("random") === "1";
+    const index = random
+      ? Math.floor(Math.random() * quotes.length)
+      : Math.floor(
+          (today.getTime() -
+            new Date(today.getFullYear(), 0, 0).getTime()) /
+            86400000,
+        ) % quotes.length;
+    const pick = quotes[index] as {
       id: string;
       text: string;
       page: string | null;
