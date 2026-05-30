@@ -439,16 +439,26 @@ export interface StatsData {
   topSources: { source: Source; lines: number }[];
   activity: { date: string; count: number }[]; // last 30 days, oldest → newest
   latestLineAt: string | null;
+  // Notes — aggregate of the long-form journal entries.
+  notes: {
+    total: number;
+    avgWords: number;
+    longest: number; // word count of the longest note
+    byType: Record<SourceType, number>;
+    byKind: { kind: string; count: number }[]; // sorted desc, capped at 10
+  };
 }
 
 export async function getStatsData(): Promise<StatsData> {
   const supabase = await createClient();
-  const [{ data: sources }, { data: quotes }] = await Promise.all([
-    supabase.from("sources").select("*"),
-    supabase
-      .from("quotes")
-      .select("id, source_id, mood_tags, is_favorite, created_at"),
-  ]);
+  const [{ data: sources }, { data: quotes }, { data: notesRaw }] =
+    await Promise.all([
+      supabase.from("sources").select("*"),
+      supabase
+        .from("quotes")
+        .select("id, source_id, mood_tags, is_favorite, created_at"),
+      supabase.from("notes").select("kind, body, source_id"),
+    ]);
 
   const allSources = (sources ?? []) as Source[];
   const allQuotes = quotes ?? [];
@@ -551,6 +561,42 @@ export async function getStatsData(): Promise<StatsData> {
     .sort((a, b) => b.lines - a.lines)
     .slice(0, 5);
 
+  // Notes aggregate
+  const sourceTypeBySid = new Map<string, SourceType>();
+  for (const s of allSources) sourceTypeBySid.set(s.id, s.type);
+  const notesList = (notesRaw ?? []) as Array<{
+    kind: string | null;
+    body: string;
+    source_id: string | null;
+  }>;
+  const notesByType = {} as Record<SourceType, number>;
+  for (const cat of ROOM_CATEGORIES) notesByType[cat.type] = 0;
+  const notesByKind = new Map<string, number>();
+  let totalWords = 0;
+  let longestWords = 0;
+  for (const n of notesList) {
+    const wc = n.body.trim().split(/\s+/).filter(Boolean).length;
+    totalWords += wc;
+    if (wc > longestWords) longestWords = wc;
+    if (n.source_id) {
+      const t = sourceTypeBySid.get(n.source_id);
+      if (t) notesByType[t] = (notesByType[t] ?? 0) + 1;
+    }
+    const k = (n.kind ?? "").trim();
+    if (k) notesByKind.set(k, (notesByKind.get(k) ?? 0) + 1);
+  }
+  const notesAgg = {
+    total: notesList.length,
+    avgWords:
+      notesList.length > 0 ? Math.round(totalWords / notesList.length) : 0,
+    longest: longestWords,
+    byType: notesByType,
+    byKind: [...notesByKind.entries()]
+      .map(([kind, count]) => ({ kind, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10),
+  };
+
   // Build last-30-day activity array (oldest → newest), filling zeros for empty days.
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
@@ -575,6 +621,7 @@ export async function getStatsData(): Promise<StatsData> {
     topSources,
     activity,
     latestLineAt,
+    notes: notesAgg,
   };
 }
 

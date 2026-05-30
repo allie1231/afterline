@@ -39,9 +39,10 @@ export default async function StatsPage() {
       </p>
 
       {/* Big numbers */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-px bg-ink border border-ink mb-12">
+      <section className="grid grid-cols-2 md:grid-cols-5 gap-px bg-ink border border-ink mb-12">
         <BigNumber label="LINES" ko="문장" value={stats.totalLines} />
         <BigNumber label="SOURCES" ko="출처" value={stats.totalSources} />
+        <BigNumber label="NOTES" ko="노트" value={stats.notes.total} />
         <BigNumber label="TAGS" ko="태그" value={stats.totalTags} />
         <BigNumber label="FAVORITES" ko="즐겨찾기" value={stats.favoriteLines} />
       </section>
@@ -171,6 +172,122 @@ export default async function StatsPage() {
           );
         })()}
       </section>
+
+      {/* Notes aggregate */}
+      {stats.notes.total > 0 && (
+        <section className="mb-12">
+          <h2 className="font-serif text-2xl tracking-tight mb-1">Notes</h2>
+          <div className="font-mono text-xs tracking-[0.2em] text-muted mb-5">
+            긴 글로 적은 기록 — 노트 통계
+          </div>
+
+          <div className="grid grid-cols-3 gap-px bg-ink border border-ink mb-6">
+            <SmallNumber
+              label="ENTRIES"
+              ko="총 개수"
+              value={stats.notes.total}
+            />
+            <SmallNumber
+              label="AVG WORDS"
+              ko="평균 단어수"
+              value={stats.notes.avgWords}
+            />
+            <SmallNumber
+              label="LONGEST"
+              ko="가장 긴 노트"
+              value={stats.notes.longest}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-3 border-b border-line pb-2">
+                BY ROOM / 룸별
+              </div>
+              <ul className="flex flex-col gap-2">
+                {ROOM_CATEGORIES.filter(
+                  (cat) => (stats.notes.byType[cat.type] ?? 0) > 0,
+                ).map((cat) => {
+                  const v = stats.notes.byType[cat.type] ?? 0;
+                  const max = Math.max(
+                    1,
+                    ...Object.values(stats.notes.byType),
+                  );
+                  const pct = Math.round((v / max) * 100);
+                  return (
+                    <li
+                      key={cat.type}
+                      className="grid grid-cols-[120px_1fr_60px] gap-3 items-center"
+                    >
+                      <Link
+                        href={`/rooms/${cat.type}`}
+                        className="font-serif text-base hover:text-red transition-colors"
+                      >
+                        {cat.en}
+                      </Link>
+                      <div className="h-2 bg-line/40">
+                        <div
+                          className="h-full"
+                          style={{
+                            width: `${pct}%`,
+                            background: cat.accent,
+                          }}
+                        />
+                      </div>
+                      <div className="text-right font-mono text-[10px] tracking-[0.2em] text-muted">
+                        {String(v).padStart(2, "0")}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+              {Object.values(stats.notes.byType).every((v) => v === 0) && (
+                <div className="font-mono text-xs text-muted">
+                  NO NOTES TIED TO A ROOM
+                </div>
+              )}
+            </div>
+
+            <div>
+              <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-3 border-b border-line pb-2">
+                BY KIND / 종류별
+              </div>
+              {stats.notes.byKind.length === 0 ? (
+                <div className="font-mono text-xs text-muted">
+                  NO KIND LABELS YET
+                </div>
+              ) : (
+                <ul className="flex flex-col gap-2">
+                  {stats.notes.byKind.map((k) => {
+                    const max = Math.max(
+                      1,
+                      ...stats.notes.byKind.map((x) => x.count),
+                    );
+                    const pct = Math.round((k.count / max) * 100);
+                    return (
+                      <li
+                        key={k.kind}
+                        className="grid grid-cols-[120px_1fr_60px] gap-3 items-center"
+                      >
+                        <span className="font-serif text-base">{k.kind}</span>
+                        <div className="h-2 bg-line/40">
+                          <div
+                            className="h-full bg-ink"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <div className="text-right font-mono text-[10px] tracking-[0.2em] text-muted">
+                          {String(k.count).padStart(2, "0")}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Activity last 30 days */}
       <section className="mb-12">
@@ -373,6 +490,28 @@ function BigNumber({
         {value}
       </div>
       <div className="font-mono text-[10px] tracking-[0.25em] text-muted mt-2">
+        {ko}
+      </div>
+    </div>
+  );
+}
+
+function SmallNumber({
+  label,
+  ko,
+  value,
+}: {
+  label: string;
+  ko: string;
+  value: number;
+}) {
+  return (
+    <div className="bg-paper p-4">
+      <div className="font-mono text-[9px] tracking-[0.3em] text-muted">
+        {label}
+      </div>
+      <div className="font-serif text-3xl leading-none mt-1">{value}</div>
+      <div className="font-mono text-[9px] tracking-[0.25em] text-muted mt-1">
         {ko}
       </div>
     </div>
