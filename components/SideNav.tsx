@@ -15,6 +15,7 @@ const NAV = [
   { href: "/collections", en: "COLLECTIONS", ko: "수집노트" },
   { href: "/mood", en: "TAGS", ko: "태그" },
   { href: "/stats", en: "STATS", ko: "통계" },
+  { href: "/review", en: "REVIEW", ko: "연말 요약" },
   { href: "/data", en: "DATA", ko: "데이터" },
   { href: "/settings", en: "SETTINGS", ko: "설정" },
 ];
