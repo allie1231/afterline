@@ -3,7 +3,6 @@ import {
   getOnThisDay,
   getRandomLinePool,
   getReadingPulse,
-  getRediscoveredFavorite,
 } from "@/lib/data/repository";
 import { RandomQuotePanel } from "@/components/RandomQuotePanel";
 import { SourceSpine } from "@/components/SourceSpine";
@@ -21,11 +20,10 @@ function yearOf(iso: string): string {
 export const dynamic = "force-dynamic";
 
 export default async function EntrancePage() {
-  const [pool, reading, onThisDay, rediscovered] = await Promise.all([
+  const [pool, reading, onThisDay] = await Promise.all([
     getRandomLinePool(200),
     getReadingPulse(),
     getOnThisDay(),
-    getRediscoveredFavorite(),
   ]);
 
   return (
@@ -97,19 +95,6 @@ export default async function EntrancePage() {
       )}
 
       <RandomQuotePanel pool={pool} />
-
-      {rediscovered && (
-        <section className="border-y border-line py-6">
-          <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-4">
-            REDISCOVER / 잊혔던 한 줄
-          </div>
-          <PastQuoteBody q={rediscovered} large />
-          <div className="font-mono text-[9px] tracking-[0.25em] text-muted mt-4">
-            COLLECTED {fmtDate(rediscovered.created_at)}
-            {rediscovered.is_favorite && " · ★ FAVORITE"}
-          </div>
-        </section>
-      )}
 
       <div className="flex items-end justify-between">
         <Link
