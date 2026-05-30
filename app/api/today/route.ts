@@ -16,10 +16,16 @@ export const dynamic = "force-dynamic";
 // iOS clients (Safari, Scriptable) don't always auto-detect UTF-8 on
 // JSON responses lacking an explicit charset — Korean bytes get rendered
 // as garbled CJK on the iPhone. Spell it out.
+//
+// We also disable any CDN/client caching here. The endpoint is tiny and
+// hit at most a few times a day per user, so cache wins are negligible
+// versus the cost of stuck cached error responses (which is exactly the
+// kind of "Scriptable shows HTML but Safari shows JSON" bug a stale edge
+// cache can produce after a deploy).
 const COMMON_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
   "Access-Control-Allow-Origin": "*",
-  "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+  "Cache-Control": "no-store, max-age=0",
 };
 
 function jsonResponse(body: unknown, status = 200) {
