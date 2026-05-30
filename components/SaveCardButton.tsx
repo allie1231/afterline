@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { toPng } from "html-to-image";
+import { domToPng } from "modern-screenshot";
 
 export function SaveCardButton({
   targetId,
@@ -23,10 +23,9 @@ export function SaveCardButton({
         /* ignore */
       }
     }
-    return await toPng(el, {
-      pixelRatio: 2,
+    return await domToPng(el, {
+      scale: 2,
       backgroundColor: "#f5f1e8",
-      cacheBust: true,
     });
   }
 
