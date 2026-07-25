@@ -28,8 +28,8 @@ export async function searchAction(rawQuery: string): Promise<SearchHit[]> {
   const supabase = await createClient();
   const pattern = `%${escapeLikePattern(q)}%`;
 
-  // 4 parallel queries: source title, source creator, quote text, quote note.
-  const [titleRes, creatorRes, textRes, noteRes] = await Promise.all([
+  // 5 parallel queries: source title, source creator, quote text, quote note, mood tags.
+  const [titleRes, creatorRes, textRes, noteRes, tagRes] = await Promise.all([
     supabase
       .from("sources")
       .select("id, title, creator, type")
@@ -50,6 +50,11 @@ export async function searchAction(rawQuery: string): Promise<SearchHit[]> {
       .select("id, text, note, mood_tags, source_id")
       .ilike("note", pattern)
       .limit(20),
+    supabase
+      .from("quotes")
+      .select("id, text, note, mood_tags, source_id")
+      .not("mood_tags", "eq", "{}")
+      .limit(500),
   ]);
 
   // Resolve source meta for quote-hits.
@@ -58,6 +63,9 @@ export async function searchAction(rawQuery: string): Promise<SearchHit[]> {
     if (q.source_id) quoteSourceIds.add(q.source_id as string);
   }
   for (const q of noteRes.data ?? []) {
+    if (q.source_id) quoteSourceIds.add(q.source_id as string);
+  }
+  for (const q of tagRes.data ?? []) {
     if (q.source_id) quoteSourceIds.add(q.source_id as string);
   }
   let sourceMap = new Map<
@@ -121,7 +129,7 @@ export async function searchAction(rawQuery: string): Promise<SearchHit[]> {
       mood_tags: string[] | null;
       source_id: string | null;
     },
-    matched_on: "text" | "note",
+    matched_on: "text" | "note" | "tag",
   ): SearchHit | null {
     if (!q.source_id) return null;
     const src = sourceMap.get(q.source_id);
@@ -157,6 +165,23 @@ export async function searchAction(rawQuery: string): Promise<SearchHit[]> {
   }>) {
     const h = fromQuote(q, "note");
     if (h) push(h);
+  }
+
+  // Mood tag matches — supabase-js can't do "array element ilike", so
+  // we fetched quotes with non-empty tags and filter client-side.
+  const lowQ = q.toLowerCase();
+  for (const qt of (tagRes.data ?? []) as Array<{
+    id: string;
+    text: string;
+    note: string | null;
+    mood_tags: string[] | null;
+    source_id: string | null;
+  }>) {
+    const tags = (qt.mood_tags ?? []) as string[];
+    if (tags.some((t) => t.toLowerCase().includes(lowQ))) {
+      const h = fromQuote(qt, "tag");
+      if (h) push(h);
+    }
   }
 
   return hits;

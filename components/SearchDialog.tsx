@@ -279,6 +279,21 @@ function ResultRow({
           </p>
         )}
 
+        {hit.matched_on === "tag" && hit.quote_tags && (
+          <div className="flex flex-wrap gap-1.5 mt-1.5">
+            {hit.quote_tags
+              .filter((t) => t.toLowerCase().includes(query.toLowerCase()))
+              .map((t) => (
+                <span
+                  key={t}
+                  className="font-mono text-[9px] tracking-[0.2em] px-1.5 py-0.5 bg-ink/8 border border-line"
+                >
+                  {highlight(t, query)}
+                </span>
+              ))}
+          </div>
+        )}
+
         <div className="font-mono text-[10px] tracking-[0.2em] text-muted mt-1.5 truncate">
           {hit.quote_text ? (
             <>
