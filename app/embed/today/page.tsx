@@ -93,7 +93,7 @@ export default async function EmbedTodayPage({
         {line.source_type ? ` / ${line.source_type.toUpperCase()}` : ""}
       </div>
 
-      <blockquote className="font-serif text-[clamp(18px,3.4vw,28px)] leading-snug whitespace-pre-line my-6">
+      <blockquote className="font-sans text-[clamp(14px,2.4vw,20px)] leading-relaxed whitespace-pre-line my-6">
         {line.text}
       </blockquote>
 

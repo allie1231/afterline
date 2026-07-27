@@ -149,7 +149,7 @@ export function QuoteRow({
         {String(index + 1).padStart(2, "0")}
       </div>
       <div className="min-w-0">
-        <p className="font-serif text-2xl leading-snug whitespace-pre-line break-words">
+        <p className="font-sans text-base leading-relaxed whitespace-pre-line break-words">
           {quote.text}
         </p>
         {quote.page && (

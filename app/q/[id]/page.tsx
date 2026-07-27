@@ -108,7 +108,7 @@ export default async function PublicQuotePage({
 
       <article className="flex-1 flex items-center px-6 sm:px-10 py-12 sm:py-24">
         <div className="max-w-2xl mx-auto">
-          <blockquote className="font-serif text-[clamp(28px,5vw,52px)] leading-[1.2] whitespace-pre-line">
+          <blockquote className="font-sans text-[clamp(18px,3vw,28px)] leading-relaxed whitespace-pre-line">
             &ldquo;{q.text}&rdquo;
           </blockquote>
 
