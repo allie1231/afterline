@@ -68,7 +68,7 @@ export default async function RoomsPage() {
                   className="h-px w-12 my-5"
                   style={{ background: divider }}
                 />
-                <div className="font-serif text-lg leading-snug max-w-[24ch]">
+                <div className="font-sans text-sm leading-relaxed max-w-[24ch]">
                   {cat.description}
                 </div>
               </div>

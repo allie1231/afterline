@@ -125,7 +125,7 @@ export function LibraryCard({
               field="personal_note"
               initialValue={note?.personal_note ?? ""}
               placeholder="+ 짧은 생각을 더해보세요"
-              textClassName="font-serif text-lg leading-snug"
+              textClassName="font-sans text-base leading-relaxed"
             />
           </div>
 

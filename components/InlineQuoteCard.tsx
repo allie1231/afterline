@@ -19,7 +19,7 @@ export function InlineQuoteCard({
   }
   return (
     <aside className="my-4 border-l-2 border-ink pl-4 py-2 bg-line/10">
-      <p className="font-serif text-lg leading-snug whitespace-pre-line">
+      <p className="font-sans text-base leading-relaxed whitespace-pre-line">
         &ldquo;{quote.text}&rdquo;
       </p>
       {(source || quote.page) && (

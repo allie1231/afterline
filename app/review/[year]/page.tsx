@@ -244,7 +244,7 @@ export default async function YearReviewPage({
                       {fmtDate(quote.created_at).slice(5)}
                     </div>
                     <div>
-                      <p className="font-serif text-xl leading-snug whitespace-pre-line">
+                      <p className="font-sans text-base leading-relaxed whitespace-pre-line">
                         &ldquo;{quote.text}&rdquo;
                       </p>
                       {source && (
@@ -365,7 +365,7 @@ function Anchor({
       <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-3">
         {label} · {fmtDate(item.quote.created_at)}
       </div>
-      <p className="font-serif text-xl leading-snug whitespace-pre-line">
+      <p className="font-sans text-base leading-relaxed whitespace-pre-line">
         &ldquo;{item.quote.text}&rdquo;
       </p>
       {item.source && (

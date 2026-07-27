@@ -270,7 +270,7 @@ function ResultRow({
         </div>
 
         {hit.quote_text ? (
-          <p className="font-serif text-base leading-snug line-clamp-2">
+          <p className="font-sans text-sm leading-relaxed line-clamp-2">
             {highlight(snippet(hit.quote_text, query), query)}
           </p>
         ) : (

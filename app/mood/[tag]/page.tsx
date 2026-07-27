@@ -53,7 +53,7 @@ export default async function TagPage({
                 {String(i + 1).padStart(2, "0")}
               </div>
               <div>
-                <blockquote className="font-serif text-2xl leading-snug whitespace-pre-line">
+                <blockquote className="font-sans text-base leading-relaxed whitespace-pre-line">
                   {quote.text}
                 </blockquote>
                 {source && (

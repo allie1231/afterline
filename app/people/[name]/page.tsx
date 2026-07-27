@@ -119,7 +119,7 @@ export default async function PersonPageView({
                   {fmtDate(quote.created_at).slice(5)}
                 </div>
                 <div>
-                  <p className="font-serif text-xl leading-snug whitespace-pre-line">
+                  <p className="font-sans text-base leading-relaxed whitespace-pre-line">
                     {quote.text}
                   </p>
                   <Link
