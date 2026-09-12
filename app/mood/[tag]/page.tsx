@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { getQuotesByTag } from "@/lib/data/repository";
 import { ROOM_CATEGORIES } from "@/lib/data/categories";

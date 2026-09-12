@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getCollectionsItems } from "@/lib/data/repository";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { CollectionsBrowser } from "../collections/CollectionsBrowser";

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { getStatsData } from "@/lib/data/repository";
 import { Breadcrumb } from "@/components/Breadcrumb";
