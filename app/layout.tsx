@@ -1,5 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Inter, IBM_Plex_Mono } from "next/font/google";
+import {
+  Cormorant_Garamond,
+  Inter,
+  IBM_Plex_Mono,
+  Gowun_Batang,
+  Noto_Sans_KR,
+} from "next/font/google";
 import "./globals.css";
 import { AppHeader } from "@/components/AppHeader";
 import { FloatingNav } from "@/components/FloatingNav";
@@ -20,6 +26,18 @@ const plexMono = IBM_Plex_Mono({
   subsets: ["latin"],
   weight: ["400", "500"],
   variable: "--font-plex-mono",
+});
+
+const gowunBatang = Gowun_Batang({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-gowun",
+});
+
+const notoSansKR = Noto_Sans_KR({
+  subsets: ["latin"],
+  weight: ["400", "500", "700", "900"],
+  variable: "--font-noto-sans-kr",
 });
 
 export const metadata: Metadata = {
@@ -47,7 +65,7 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${cormorant.variable} ${inter.variable} ${plexMono.variable}`}
+      className={`${cormorant.variable} ${inter.variable} ${plexMono.variable} ${gowunBatang.variable} ${notoSansKR.variable}`}
     >
       <body className="min-h-screen bg-paper text-ink">
         <AppHeader />

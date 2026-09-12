@@ -53,7 +53,7 @@ export default async function EntrancePage() {
               {String(reading.length).padStart(2, "0")} ACTIVE
             </span>
           </div>
-          <div className="flex flex-wrap items-end gap-x-3 gap-y-6">
+          <div className="flex flex-wrap items-end gap-y-5">
             {reading.map((r) => {
               const since = fmtDate(r.started_at);
               return (

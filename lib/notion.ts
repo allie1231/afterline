@@ -1,5 +1,6 @@
 import { Client } from "@notionhq/client";
 import { createHash } from "crypto";
+import sharp from "sharp";
 import type {
   PageObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints/common";
@@ -113,6 +114,35 @@ function virtualId(label: string, kind: string): string {
   ].join("-");
 }
 
+// ─── Cover color extraction ─────────────────────────────────────────
+
+async function extractDominantColor(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(3000) });
+    if (!res.ok) return null;
+    const buf = Buffer.from(await res.arrayBuffer());
+    const { dominant } = await sharp(buf).resize(64, 64, { fit: "cover" }).stats();
+    const hex = (n: number) => Math.round(n).toString(16).padStart(2, "0");
+    return `#${hex(dominant.r)}${hex(dominant.g)}${hex(dominant.b)}`;
+  } catch {
+    return null;
+  }
+}
+
+async function extractColorsForSources(sources: Source[]): Promise<void> {
+  const targets = sources.filter((s) => s.cover_url && !s.spine_color);
+  const BATCH = 3;
+  for (let i = 0; i < targets.length; i += BATCH) {
+    const batch = targets.slice(i, i + BATCH);
+    const colors = await Promise.all(
+      batch.map((s) => extractDominantColor(s.cover_url!)),
+    );
+    for (let j = 0; j < batch.length; j++) {
+      if (colors[j]) batch[j].spine_color = colors[j];
+    }
+  }
+}
+
 // ─── Paginated DB fetch ──────────────────────────────────────────────
 
 async function fetchAll(dbId: string): Promise<PageObjectResponse[]> {
@@ -190,6 +220,8 @@ async function load(): Promise<AllData> {
     }
   }
 
+  await extractColorsForSources(sources);
+
   const quotes: Quote[] = [];
   const vSources = new Map<string, Source>();
 
@@ -258,14 +290,16 @@ const TTL = 5 * 60_000;
 export async function getData(): Promise<AllData> {
   if (_cache && Date.now() < _cache.exp) return _cache.data;
   if (_inflight) return _inflight;
-  _inflight = load().then((data) => {
-    _cache = { data, exp: Date.now() + TTL };
-    _inflight = null;
-    return data;
-  }).catch((err) => {
-    _inflight = null;
-    throw err;
-  });
+  _inflight = load()
+    .then((data) => {
+      _cache = { data, exp: Date.now() + TTL };
+      _inflight = null;
+      return data;
+    })
+    .catch((err) => {
+      _inflight = null;
+      throw err;
+    });
   return _inflight;
 }
 

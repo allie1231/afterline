@@ -206,13 +206,26 @@ export function RoomShelf({
             </button>
           </>
         ) : (
-          <button
-            type="button"
-            onClick={() => setEditMode(true)}
-            className="font-mono text-[10px] tracking-[0.3em] text-muted hover:text-ink"
-          >
-            EDIT / 정리
-          </button>
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => {
+                fetch("/api/revalidate", { method: "POST" }).then(() =>
+                  window.location.reload(),
+                );
+              }}
+              className="font-mono text-[10px] tracking-[0.3em] text-muted hover:text-ink"
+            >
+              REFRESH / 새로고침
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditMode(true)}
+              className="font-mono text-[10px] tracking-[0.3em] text-muted hover:text-ink"
+            >
+              EDIT / 정리
+            </button>
+          </div>
         )}
       </div>
 
@@ -271,7 +284,7 @@ export function RoomShelf({
       )}
 
       <div className="border-y-2 border-ink">
-        <div className="flex flex-wrap items-end gap-x-3 gap-y-8 py-6">
+        <div className="flex flex-wrap items-end gap-y-5 py-6 pb-2">
           {sourceCounts.map(({ source, lines }) => {
             const currentColor = source.spine_color?.trim();
             const isAuto = !currentColor;
