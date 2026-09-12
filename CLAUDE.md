@@ -58,3 +58,13 @@
 - 카툰풍 문 그래픽 금지. 문은 "에디토리얼 패널처럼 동작하는 문".
 - 귀여운 다이어리 톤, 일반 노트앱 톤 금지.
 - 화면 코드가 Supabase 클라이언트를 직접 부르지 않게 — 항상 데이터 레이어 경유.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

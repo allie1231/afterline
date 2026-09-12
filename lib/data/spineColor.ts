@@ -52,6 +52,16 @@ export function resolveSpineColor(source: Pick<Source, "id" | "spine_color">): s
   return SPINE_PALETTE[paletteIndexFromId(source.id)];
 }
 
+function hexLuminance(hex: string): number | null {
+  const m = hex.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+  if (!m) return null;
+  const [r, g, b] = [parseInt(m[1], 16) / 255, parseInt(m[2], 16) / 255, parseInt(m[3], 16) / 255];
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
 export function isLightSpineColor(color: string): boolean {
-  return LIGHT_BGS.has(color);
+  if (LIGHT_BGS.has(color)) return true;
+  const lum = hexLuminance(color);
+  if (lum !== null) return lum > 0.55;
+  return false;
 }

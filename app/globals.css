@@ -34,6 +34,8 @@
   --font-serif: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
   --font-sans: var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, monospace;
+  --font-kr-serif: var(--font-gowun), "Gowun Batang", "Batang", serif;
+  --font-kr-sans: var(--font-noto-sans-kr), "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
 }
 
 html,
