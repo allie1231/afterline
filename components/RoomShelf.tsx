@@ -206,13 +206,26 @@ export function RoomShelf({
             </button>
           </>
         ) : (
-          <button
-            type="button"
-            onClick={() => setEditMode(true)}
-            className="font-mono text-[10px] tracking-[0.3em] text-muted hover:text-ink"
-          >
-            EDIT / 정리
-          </button>
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => {
+                fetch("/api/revalidate", { method: "POST" }).then(() =>
+                  window.location.reload(),
+                );
+              }}
+              className="font-mono text-[10px] tracking-[0.3em] text-muted hover:text-ink"
+            >
+              REFRESH / 새로고침
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditMode(true)}
+              className="font-mono text-[10px] tracking-[0.3em] text-muted hover:text-ink"
+            >
+              EDIT / 정리
+            </button>
+          </div>
         )}
       </div>
 
