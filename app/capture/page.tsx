@@ -35,7 +35,7 @@ export default async function CapturePage({
       <h1 className="font-sans text-3xl tracking-tight leading-tight">
         Quick Capture
       </h1>
-      <p className="font-mono text-[10px] tracking-[0.2em] text-muted mt-2 mb-6">
+      <p className="font-mono text-[11px] tracking-[0.2em] text-muted mt-2 mb-6">
         모바일에서 빠르게 — 붙여넣고, 검색하고, 저장.
       </p>
 

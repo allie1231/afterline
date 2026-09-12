@@ -75,7 +75,7 @@ export default async function PublicQuotePage({
       <header className="px-6 sm:px-10 py-6 border-b border-line">
         <Link
           href="/"
-          className="font-mono text-[10px] tracking-[0.3em] text-muted hover:text-ink transition-colors"
+          className="font-mono text-[11px] tracking-[0.3em] text-muted hover:text-ink transition-colors"
         >
           AFTERLINE
           {q.source_type ? ` / ${q.source_type.toUpperCase()}` : ""}
@@ -89,7 +89,7 @@ export default async function PublicQuotePage({
           </blockquote>
 
           {(q.source_title || q.source_creator || q.page) && (
-            <div className="mt-10 pt-6 border-t border-line font-mono text-[11px] tracking-[0.25em] text-muted flex flex-wrap gap-4">
+            <div className="mt-10 pt-6 border-t border-line font-mono text-xs tracking-[0.25em] text-muted flex flex-wrap gap-4">
               {q.source_title && <span>{q.source_title}</span>}
               {q.source_creator && <span>— {q.source_creator}</span>}
               {q.page && <span>· p.{q.page}</span>}
@@ -98,7 +98,7 @@ export default async function PublicQuotePage({
         </div>
       </article>
 
-      <footer className="px-6 sm:px-10 py-6 border-t border-line flex items-baseline justify-between font-mono text-[10px] tracking-[0.25em] text-muted">
+      <footer className="px-6 sm:px-10 py-6 border-t border-line flex items-baseline justify-between font-mono text-[11px] tracking-[0.25em] text-muted">
         <span>LINES THAT STAYED</span>
         <Link href="/" className="hover:text-ink transition-colors">
           afterline →

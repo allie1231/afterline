@@ -34,7 +34,7 @@ export default async function MoodPage() {
                 className="flex items-baseline justify-between py-4 px-2 -mx-2 hover:bg-line/40 transition-colors"
               >
                 <span className="font-sans text-3xl">{tag}</span>
-                <span className="font-mono text-[10px] tracking-[0.25em] text-muted">
+                <span className="font-mono text-[11px] tracking-[0.25em] text-muted">
                   {String(count).padStart(2, "0")} LINES
                 </span>
               </Link>

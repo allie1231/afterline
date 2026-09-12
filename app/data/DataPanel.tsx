@@ -163,7 +163,7 @@ export function DataPanel({
       {/* EXPORT */}
       <section>
         <h2 className="font-sans text-2xl tracking-tight border-b border-ink pb-3 mb-6">
-          <span className="font-mono text-[10px] tracking-[0.3em] text-muted mr-3">
+          <span className="font-mono text-[11px] tracking-[0.3em] text-muted mr-3">
             01
           </span>
           EXPORT / 내보내기
@@ -191,7 +191,7 @@ export function DataPanel({
       {/* IMPORT */}
       <section>
         <h2 className="font-sans text-2xl tracking-tight border-b border-ink pb-3 mb-6">
-          <span className="font-mono text-[10px] tracking-[0.3em] text-muted mr-3">
+          <span className="font-mono text-[11px] tracking-[0.3em] text-muted mr-3">
             02
           </span>
           IMPORT / 가져오기
@@ -228,7 +228,7 @@ export function DataPanel({
             <div className="font-sans text-2xl text-ink mt-3">
               CSV 파일을 끌어다 놓거나 클릭
             </div>
-            <div className="font-mono text-[10px] tracking-[0.25em] text-muted mt-3">
+            <div className="font-mono text-[11px] tracking-[0.25em] text-muted mt-3">
               Notion → Export → Markdown & CSV
             </div>
           </label>
@@ -238,10 +238,10 @@ export function DataPanel({
           <div className="flex flex-col gap-8">
             {/* Default room/type */}
             <div>
-              <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-2">
+              <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-2">
                 DEFAULT TYPE / 기본 출처 유형
               </div>
-              <p className="font-mono text-[10px] tracking-[0.2em] text-muted mb-3">
+              <p className="font-mono text-[11px] tracking-[0.2em] text-muted mb-3">
                 CSV 에 source_type 컬럼이 없거나 비어 있는 행은 이 유형으로 들어갑니다.
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px bg-ink border border-ink">
@@ -265,7 +265,7 @@ export function DataPanel({
                       <div className="font-sans text-base leading-none tracking-tight">
                         {cat.en}
                       </div>
-                      <div className="font-mono text-[9px] tracking-[0.25em] mt-1 opacity-70">
+                      <div className="font-mono text-[11px] tracking-[0.25em] mt-1 opacity-70">
                         {cat.ko}
                       </div>
                     </button>
@@ -275,7 +275,7 @@ export function DataPanel({
             </div>
 
             <div>
-              <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-3">
+              <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-3">
                 MAP COLUMNS / 컬럼 매핑 — CSV {csv.rows.length}행 감지됨
               </div>
               <div className="border border-ink divide-y divide-line">
@@ -308,7 +308,7 @@ export function DataPanel({
                           </option>
                         ))}
                       </select>
-                      <div className="font-mono text-[10px] tracking-[0.15em] text-muted truncate">
+                      <div className="font-mono text-[11px] tracking-[0.15em] text-muted truncate">
                         {examples.length > 0
                           ? `예: ${examples.join(" / ").slice(0, 80)}`
                           : "—"}
@@ -343,26 +343,26 @@ export function DataPanel({
 
             {/* Preview */}
             <div>
-              <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-3">
+              <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-3">
                 PREVIEW / 미리보기 — 첫 10행
               </div>
               <div className="border border-ink overflow-x-auto">
                 <table className="w-full text-left">
                   <thead className="bg-line/40 border-b border-ink">
                     <tr>
-                      <th className="font-mono text-[10px] tracking-[0.25em] text-muted px-3 py-2 w-16">
+                      <th className="font-mono text-[11px] tracking-[0.25em] text-muted px-3 py-2 w-16">
                         #
                       </th>
-                      <th className="font-mono text-[10px] tracking-[0.25em] text-muted px-3 py-2 w-20">
+                      <th className="font-mono text-[11px] tracking-[0.25em] text-muted px-3 py-2 w-20">
                         STATUS
                       </th>
-                      <th className="font-mono text-[10px] tracking-[0.25em] text-muted px-3 py-2">
+                      <th className="font-mono text-[11px] tracking-[0.25em] text-muted px-3 py-2">
                         TEXT
                       </th>
-                      <th className="font-mono text-[10px] tracking-[0.25em] text-muted px-3 py-2">
+                      <th className="font-mono text-[11px] tracking-[0.25em] text-muted px-3 py-2">
                         SOURCE
                       </th>
-                      <th className="font-mono text-[10px] tracking-[0.25em] text-muted px-3 py-2">
+                      <th className="font-mono text-[11px] tracking-[0.25em] text-muted px-3 py-2">
                         TYPE
                       </th>
                     </tr>
@@ -372,7 +372,7 @@ export function DataPanel({
                       const c = classifications[idx];
                       return (
                         <tr key={idx}>
-                          <td className="font-mono text-[10px] text-muted px-3 py-2">
+                          <td className="font-mono text-[11px] text-muted px-3 py-2">
                             {String(idx + 1).padStart(2, "0")}
                           </td>
                           <td className="px-3 py-2">
@@ -388,7 +388,7 @@ export function DataPanel({
                               <span className="text-muted italic">—</span>
                             )}
                           </td>
-                          <td className="font-mono text-[10px] text-muted px-3 py-2">
+                          <td className="font-mono text-[11px] text-muted px-3 py-2">
                             {(() => {
                               const t = (r.source_type ?? "")
                                 .toLowerCase()
@@ -417,7 +417,7 @@ export function DataPanel({
               <button
                 type="button"
                 onClick={reset}
-                className="font-mono text-[10px] tracking-[0.3em] text-muted hover:text-ink"
+                className="font-mono text-[11px] tracking-[0.3em] text-muted hover:text-ink"
               >
                 ← CANCEL / 취소
               </button>
@@ -439,7 +439,7 @@ export function DataPanel({
 
         {result && (
           <div className="border border-ink p-6">
-            <div className="font-mono text-[10px] tracking-[0.3em] text-muted">
+            <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
               IMPORT COMPLETE
             </div>
             <div className="font-sans text-3xl mt-2">
@@ -452,7 +452,7 @@ export function DataPanel({
             </div>
             {result.errors.length > 0 && (
               <details className="mt-4">
-                <summary className="font-mono text-[10px] tracking-[0.25em] text-muted cursor-pointer">
+                <summary className="font-mono text-[11px] tracking-[0.25em] text-muted cursor-pointer">
                   ERRORS ▼
                 </summary>
                 <ul className="font-mono text-xs mt-2 flex flex-col gap-1">
@@ -496,7 +496,7 @@ function StatusPill({
 }) {
   if (status.kind === "new") {
     return (
-      <span className="font-mono text-[9px] tracking-[0.2em] border border-green text-green px-1.5 py-0.5">
+      <span className="font-mono text-[11px] tracking-[0.2em] border border-green text-green px-1.5 py-0.5">
         NEW
       </span>
     );
@@ -504,7 +504,7 @@ function StatusPill({
   if (status.kind === "dupe") {
     return (
       <span
-        className="font-mono text-[9px] tracking-[0.2em] border px-1.5 py-0.5"
+        className="font-mono text-[11px] tracking-[0.2em] border px-1.5 py-0.5"
         style={{ borderColor: "var(--yellow)", color: "var(--yellow)" }}
       >
         DUPE
@@ -513,7 +513,7 @@ function StatusPill({
   }
   return (
     <span
-      className="font-mono text-[9px] tracking-[0.2em] border border-red text-red px-1.5 py-0.5"
+      className="font-mono text-[11px] tracking-[0.2em] border border-red text-red px-1.5 py-0.5"
       title={status.reason}
     >
       ERROR

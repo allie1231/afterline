@@ -17,7 +17,7 @@ export function ArchiveCover({
       {/* Folder tab */}
       <div className="relative h-7">
         <div
-          className="absolute left-3 top-0 px-3 h-7 flex items-center font-mono text-[8px] tracking-[0.3em]"
+          className="absolute left-3 top-0 px-3 h-7 flex items-center font-mono text-[11px] tracking-[0.3em]"
           style={{
             background: accent,
             color: tabFg,
@@ -72,7 +72,7 @@ export function ArchiveCover({
 
       {/* Tilted "FILED" stamp */}
       <div
-        className="absolute right-2 bottom-14 font-mono text-[9px] tracking-[0.3em] border px-1.5 py-[2px] rotate-[-12deg] opacity-50"
+        className="absolute right-2 bottom-14 font-mono text-[11px] tracking-[0.3em] border px-1.5 py-[2px] rotate-[-12deg] opacity-50"
         style={{ borderColor: accent, color: accent }}
       >
         FILED

@@ -27,7 +27,7 @@ export default async function NotesPage() {
         </h1>
         <Link
           href="/rooms"
-          className="font-mono text-[10px] tracking-[0.3em] text-muted hover:text-ink"
+          className="font-mono text-[11px] tracking-[0.3em] text-muted hover:text-ink"
         >
           소스 골라서 노트 작성 →
         </Link>

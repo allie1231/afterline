@@ -116,7 +116,7 @@ export function CollectionsBrowser({
         <button
           type="button"
           onClick={() => setFavOnly((v) => !v)}
-          className={`font-mono text-[10px] tracking-[0.3em] border px-3 py-2 transition-colors ${
+          className={`font-mono text-[11px] tracking-[0.3em] border px-3 py-2 transition-colors ${
             favOnly
               ? "bg-red border-red text-paper"
               : "border-ink hover:bg-ink hover:text-paper"
@@ -127,7 +127,7 @@ export function CollectionsBrowser({
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortKey)}
-          className="font-mono text-[10px] tracking-[0.2em] border border-ink bg-paper px-3 py-2 focus:outline-none cursor-pointer"
+          className="font-mono text-[11px] tracking-[0.2em] border border-ink bg-paper px-3 py-2 focus:outline-none cursor-pointer"
         >
           {SORT_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
@@ -138,7 +138,7 @@ export function CollectionsBrowser({
       </div>
 
       <div className="flex items-center justify-between mb-4">
-        <div className="font-mono text-[10px] tracking-[0.3em] text-muted">
+        <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
           {String(filtered.length).padStart(3, "0")} ITEMS
         </div>
         <div className="flex border border-ink">
@@ -189,7 +189,7 @@ function ViewToggle({
     <button
       type="button"
       onClick={onClick}
-      className={`font-mono text-[10px] tracking-[0.3em] px-3 py-2 transition-colors ${
+      className={`font-mono text-[11px] tracking-[0.3em] px-3 py-2 transition-colors ${
         active ? "bg-ink text-paper" : "bg-paper hover:bg-line/40"
       }`}
       title={ko}
@@ -246,7 +246,7 @@ function FilterChip({
         {label}
       </span>
       <span
-        className="font-mono text-[9px] tracking-[0.25em] mt-1"
+        className="font-mono text-[11px] tracking-[0.25em] mt-1"
         style={{ opacity: 0.7 }}
       >
         {ko} · {String(count).padStart(2, "0")}
@@ -283,13 +283,13 @@ function CollectionCard({ item }: { item: CollectionsItem }) {
         <div className="flex-1 min-w-0 flex flex-col">
           <div className="flex items-baseline justify-between gap-2 mb-1">
             <span
-              className="font-mono text-[9px] tracking-[0.3em]"
+              className="font-mono text-[11px] tracking-[0.3em]"
               style={{ color: cat.accent }}
             >
               {cat.en}
             </span>
             {item.favorites > 0 && (
-              <span className="font-mono text-[9px] tracking-[0.25em] text-red">
+              <span className="font-mono text-[11px] tracking-[0.25em] text-red">
                 ★ {item.favorites}
               </span>
             )}
@@ -298,11 +298,11 @@ function CollectionCard({ item }: { item: CollectionsItem }) {
             {item.source.title}
           </div>
           {item.source.creator && (
-            <div className="font-mono text-[10px] tracking-[0.2em] text-muted mt-1 truncate">
+            <div className="font-mono text-[11px] tracking-[0.2em] text-muted mt-1 truncate">
               {item.source.creator}
             </div>
           )}
-          <div className="mt-auto pt-3 flex gap-3 flex-wrap font-mono text-[9px] tracking-[0.25em] text-muted">
+          <div className="mt-auto pt-3 flex gap-3 flex-wrap font-mono text-[11px] tracking-[0.25em] text-muted">
             <span>{String(item.lines).padStart(2, "0")} LINES</span>
             {statusLabel && <span>· {statusLabel}</span>}
             {item.note?.rating != null && (

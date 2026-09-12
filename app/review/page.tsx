@@ -37,7 +37,7 @@ export default async function ReviewIndexPage() {
                 className="flex items-baseline justify-between py-5 px-1 -mx-1 hover:bg-line/30 transition-colors"
               >
                 <span className="font-sans text-3xl tracking-tight">{y}</span>
-                <span className="font-mono text-[10px] tracking-[0.3em] text-muted">
+                <span className="font-mono text-[11px] tracking-[0.3em] text-muted">
                   {y === current ? "IN PROGRESS / 진행중" : "ARCHIVED"}
                 </span>
               </Link>

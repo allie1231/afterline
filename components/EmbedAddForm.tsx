@@ -60,11 +60,11 @@ export function EmbedAddForm({
 
   return (
     <main className="min-h-screen flex flex-col p-5 bg-paper text-ink">
-      <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-3">
+      <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-3">
         AFTERLINE / QUICK ADD
       </div>
 
-      <label className="font-mono text-[9px] tracking-[0.3em] text-muted mb-1 block">
+      <label className="font-mono text-[11px] tracking-[0.3em] text-muted mb-1 block">
         INBOX TITLE
       </label>
       <input
@@ -86,7 +86,7 @@ export function EmbedAddForm({
 
       <div className="flex items-center justify-between mt-3 gap-3">
         <span
-          className={`font-mono text-[10px] tracking-[0.2em] ${
+          className={`font-mono text-[11px] tracking-[0.2em] ${
             status === "saved"
               ? "text-green"
               : status === "error"
@@ -106,7 +106,7 @@ export function EmbedAddForm({
           type="button"
           onClick={submit}
           disabled={!text.trim() || status === "saving"}
-          className="font-mono text-[10px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
+          className="font-mono text-[11px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
         >
           [ SAVE ]
         </button>

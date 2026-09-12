@@ -26,7 +26,7 @@ export function DateField({
 
   return (
     <div>
-      <div className="font-mono text-[9px] tracking-[0.3em] text-muted">
+      <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
         {label}
       </div>
       <input

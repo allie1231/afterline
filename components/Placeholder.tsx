@@ -9,7 +9,7 @@ export function Placeholder({
 }) {
   return (
     <section className="px-6 py-20 max-w-3xl">
-      <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-6">
+      <div className="font-mono text-[11px] tracking-[0.25em] text-muted mb-6">
         AFTERLINE / {en.toUpperCase()}
       </div>
       <h2 className="font-sans text-4xl md:text-5xl tracking-tight leading-none">{en}</h2>
@@ -19,7 +19,7 @@ export function Placeholder({
       <p className="font-sans text-2xl text-muted mt-12 max-w-xl">
         This room is being prepared.
       </p>
-      <p className="font-mono text-[10px] tracking-[0.2em] text-muted mt-2">
+      <p className="font-mono text-[11px] tracking-[0.2em] text-muted mt-2">
         이 화면은 다음 Phase 에서 채워집니다.
       </p>
       {note && (

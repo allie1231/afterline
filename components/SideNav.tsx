@@ -38,7 +38,7 @@ export function SideNavTrigger() {
     <button
       type="button"
       onClick={openSideNav}
-      className="font-mono text-[10px] tracking-[0.25em] border border-ink px-3 py-2 hover:bg-ink hover:text-paper transition-colors"
+      className="font-mono text-[11px] tracking-[0.25em] border border-ink px-4 py-3 hover:bg-ink hover:text-paper transition-colors"
       aria-label="Open menu"
     >
       ☰ MENU
@@ -116,12 +116,12 @@ export function SideNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-baseline justify-between px-5 py-4 border-b border-line transition-colors ${
+                className={`flex items-baseline justify-between px-5 py-5 border-b border-line transition-colors ${
                   active ? "bg-line/50" : "hover:bg-line/30"
                 }`}
               >
                 <span className="font-serif text-2xl">{item.en}</span>
-                <span className="font-mono text-[10px] tracking-[0.25em] text-muted">
+                <span className="font-mono text-[11px] tracking-[0.25em] text-muted">
                   {item.ko}
                 </span>
               </Link>

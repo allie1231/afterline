@@ -11,7 +11,7 @@ export default async function RoomsPage() {
     <section className="px-6 py-10">
       <div className="flex items-baseline justify-between mb-10">
         <h2 className="font-serif text-4xl tracking-tight">Rooms</h2>
-        <span className="font-mono text-[10px] tracking-[0.25em] text-muted">
+        <span className="font-mono text-[11px] tracking-[0.25em] text-muted">
           SELECT A DOOR / 문을 선택하세요
         </span>
       </div>
@@ -37,13 +37,13 @@ export default async function RoomsPage() {
             >
               <div className="flex justify-between items-start">
                 <span
-                  className="font-mono text-[10px] tracking-[0.3em]"
+                  className="font-mono text-[11px] tracking-[0.3em]"
                   style={{ color: fgMuted }}
                 >
                   ROOM / 0{categories.indexOf(cat) + 1}
                 </span>
                 <span
-                  className="font-mono text-[10px] tracking-[0.3em] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-[opacity,transform] duration-300 ease-out"
+                  className="font-mono text-[11px] tracking-[0.3em] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-[opacity,transform] duration-300 ease-out"
                   style={{ color: fgMuted }}
                 >
                   ENTER →
@@ -61,7 +61,7 @@ export default async function RoomsPage() {
                   {cat.en}
                 </div>
                 <div
-                  className="font-mono text-[11px] tracking-[0.3em] mt-2"
+                  className="font-mono text-xs tracking-[0.3em] mt-2"
                   style={{ color: fgMuted }}
                 >
                   {cat.ko}
@@ -76,7 +76,7 @@ export default async function RoomsPage() {
               </div>
 
               <div
-                className="flex justify-between font-mono text-[10px] tracking-[0.25em] pt-4 border-t"
+                className="flex justify-between font-mono text-[11px] tracking-[0.25em] pt-4 border-t"
                 style={{ borderColor: divider }}
               >
                 <span>{String(c.sources).padStart(3, "0")} SOURCES</span>

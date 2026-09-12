@@ -22,7 +22,7 @@ export function RegenerateTokenButton() {
           await regenerateTokenAction();
         });
       }}
-      className="font-mono text-[10px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
+      className="font-mono text-[11px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
     >
       [ {pending ? "..." : "REGENERATE"} ]
     </button>

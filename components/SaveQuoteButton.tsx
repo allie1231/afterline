@@ -85,7 +85,7 @@ export function SaveQuoteButton({
           type="button"
           onClick={handleSave}
           disabled={busy}
-          className="font-mono text-[9px] tracking-[0.25em] text-muted hover:text-ink transition-colors disabled:opacity-50"
+          className="font-mono text-[11px] tracking-[0.25em] text-muted hover:text-ink transition-colors disabled:opacity-50"
           title="이미지로 저장"
         >
           {busy ? "…" : "SAVE"}
@@ -94,7 +94,7 @@ export function SaveQuoteButton({
           type="button"
           onClick={handleShare}
           disabled={busy}
-          className="font-mono text-[9px] tracking-[0.25em] text-muted hover:text-ink transition-colors disabled:opacity-50"
+          className="font-mono text-[11px] tracking-[0.25em] text-muted hover:text-ink transition-colors disabled:opacity-50"
           title="이미지 공유"
         >
           {busy ? "…" : "SHARE"}
@@ -102,14 +102,14 @@ export function SaveQuoteButton({
         <button
           type="button"
           onClick={handleCopyLink}
-          className="font-mono text-[9px] tracking-[0.25em] text-muted hover:text-ink transition-colors"
+          className="font-mono text-[11px] tracking-[0.25em] text-muted hover:text-ink transition-colors"
           title="공개 링크 복사 — 받는 사람은 로그인 없이 이 문장을 봅니다"
         >
           {copied ? "COPIED" : "LINK"}
         </button>
       </div>
       {err && (
-        <div className="font-mono text-[9px] text-red max-w-[260px] text-right">
+        <div className="font-mono text-[11px] text-red max-w-[260px] text-right">
           {err}
         </div>
       )}

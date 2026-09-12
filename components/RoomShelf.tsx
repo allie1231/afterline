@@ -123,7 +123,7 @@ export function RoomShelf({
       <div className="flex items-center justify-end gap-3 mb-3 min-h-[28px] flex-wrap">
         {editMode ? (
           <>
-            <span className="font-mono text-[10px] tracking-[0.25em] text-muted">
+            <span className="font-mono text-[11px] tracking-[0.25em] text-muted">
               {selected.size} SELECTED · {sourceCounts.length} TOTAL
             </span>
             <button
@@ -133,7 +133,7 @@ export function RoomShelf({
                   ? clearSelection
                   : selectAll
               }
-              className="font-mono text-[10px] tracking-[0.3em] text-muted hover:text-ink"
+              className="font-mono text-[11px] tracking-[0.3em] text-muted hover:text-ink"
             >
               {selected.size === sourceCounts.length
                 ? "DESELECT ALL"
@@ -142,7 +142,7 @@ export function RoomShelf({
             <button
               type="button"
               onClick={exitEditMode}
-              className="font-mono text-[10px] tracking-[0.3em] text-muted hover:text-ink"
+              className="font-mono text-[11px] tracking-[0.3em] text-muted hover:text-ink"
             >
               × DONE
             </button>
@@ -153,13 +153,13 @@ export function RoomShelf({
                 type="button"
                 onClick={() => setMoveOpen((o) => !o)}
                 disabled={pending || selected.size === 0}
-                className="font-mono text-[10px] tracking-[0.3em] border border-ink px-3 py-1.5 hover:bg-ink hover:text-paper transition-colors disabled:opacity-40"
+                className="font-mono text-[11px] tracking-[0.3em] border border-ink px-3 py-1.5 hover:bg-ink hover:text-paper transition-colors disabled:opacity-40"
               >
                 MOVE {String(selected.size).padStart(2, "0")} ▾
               </button>
               {moveOpen && (
                 <div className="absolute top-full right-0 mt-2 z-30 bg-paper border border-ink min-w-[220px] shadow-[4px_4px_0_var(--ink)]">
-                  <div className="font-mono text-[9px] tracking-[0.3em] text-muted px-3 py-2 border-b border-line">
+                  <div className="font-mono text-[11px] tracking-[0.3em] text-muted px-3 py-2 border-b border-line">
                     MOVE TO ROOM / 룸 이동
                   </div>
                   {ROOM_CATEGORIES.map((cat) => {
@@ -170,7 +170,7 @@ export function RoomShelf({
                         key={cat.type}
                         disabled={active || pending}
                         onClick={() => handleBulkMove(cat.type)}
-                        className={`flex w-full items-center justify-between px-3 py-2 font-mono text-[10px] tracking-[0.25em] border-b border-line last:border-b-0 transition-colors ${
+                        className={`flex w-full items-center justify-between px-3 py-2 font-mono text-[11px] tracking-[0.25em] border-b border-line last:border-b-0 transition-colors ${
                           active
                             ? "bg-line/30 text-muted cursor-default"
                             : "hover:bg-ink hover:text-paper cursor-pointer"
@@ -180,7 +180,7 @@ export function RoomShelf({
                           {cat.en} / {cat.ko}
                         </span>
                         {active ? (
-                          <span className="text-[9px]">HERE</span>
+                          <span className="text-[11px]">HERE</span>
                         ) : (
                           <span
                             className="w-2 h-2 inline-block"
@@ -198,7 +198,7 @@ export function RoomShelf({
               type="button"
               onClick={handleBulkDelete}
               disabled={pending || selected.size === 0}
-              className="font-mono text-[10px] tracking-[0.3em] border border-ink px-3 py-1.5 hover:bg-red hover:text-paper hover:border-red transition-colors disabled:opacity-40"
+              className="font-mono text-[11px] tracking-[0.3em] border border-ink px-3 py-1.5 hover:bg-red hover:text-paper hover:border-red transition-colors disabled:opacity-40"
             >
               {pending
                 ? "WORKING…"
@@ -214,14 +214,14 @@ export function RoomShelf({
                   window.location.reload(),
                 );
               }}
-              className="font-mono text-[10px] tracking-[0.3em] text-muted hover:text-ink"
+              className="font-mono text-[11px] tracking-[0.3em] text-muted hover:text-ink py-2"
             >
               REFRESH / 새로고침
             </button>
             <button
               type="button"
               onClick={() => setEditMode(true)}
-              className="font-mono text-[10px] tracking-[0.3em] text-muted hover:text-ink"
+              className="font-mono text-[11px] tracking-[0.3em] text-muted hover:text-ink py-2"
             >
               EDIT / 정리
             </button>
@@ -233,7 +233,7 @@ export function RoomShelf({
       {colorPickerForId && colorPickerTarget && (
         <div className="border border-ink bg-paper p-4 mb-3 shadow-[4px_4px_0_var(--ink)]">
           <div className="flex items-baseline justify-between mb-3">
-            <div className="font-mono text-[10px] tracking-[0.3em] text-muted">
+            <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
               SPINE COLOR / 책등 색
               <span className="text-ink ml-3 font-sans text-base">
                 {colorPickerTarget.title}
@@ -272,7 +272,7 @@ export function RoomShelf({
                   title={c.label ?? c.value}
                 >
                   {!c.color && (
-                    <span className="font-mono text-[8px] tracking-[0.2em]">
+                    <span className="font-mono text-[11px] tracking-[0.2em]">
                       AUTO
                     </span>
                   )}
@@ -357,7 +357,7 @@ export function RoomShelf({
           })}
         </div>
       </div>
-      <div className="mt-3 font-mono text-[10px] tracking-[0.25em] text-muted">
+      <div className="mt-3 font-mono text-[11px] tracking-[0.25em] text-muted">
         SHELF · {String(sourceCounts.length).padStart(2, "0")} ITEMS
       </div>
     </div>

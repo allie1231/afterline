@@ -101,7 +101,7 @@ export default async function SourcePage({
             target="_blank"
             rel="noopener noreferrer"
             title={externalUrl}
-            className="font-mono text-[10px] tracking-[0.25em] text-muted hover:text-ink transition-colors"
+            className="font-mono text-[11px] tracking-[0.25em] text-muted hover:text-ink transition-colors"
           >
             ↗ VISIT
           </a>
@@ -144,13 +144,13 @@ export default async function SourcePage({
             {source.creator && source.type !== "movie" && (
               <Link
                 href={`/people/${encodeURIComponent(source.creator)}`}
-                className="font-mono text-[10px] tracking-[0.25em] text-muted hover:text-ink whitespace-nowrap"
+                className="font-mono text-[11px] tracking-[0.25em] text-muted hover:text-ink whitespace-nowrap"
               >
                 → ALL FROM {source.creator.toUpperCase()}
               </Link>
             )}
           </div>
-          <div className="font-mono text-[10px] tracking-[0.2em] text-muted mt-2 flex gap-4 flex-wrap">
+          <div className="font-mono text-[11px] tracking-[0.2em] text-muted mt-2 flex gap-4 flex-wrap">
             <SourceFieldEditor
               sourceId={source.id}
               field="publisher"
@@ -179,7 +179,7 @@ export default async function SourcePage({
             )}
           </div>
 
-          <div className="flex gap-6 mt-5 font-mono text-[10px] tracking-[0.25em]">
+          <div className="flex gap-6 mt-5 font-mono text-[11px] tracking-[0.25em]">
             <span>COLLECTED LINES {String(quotes.length).padStart(2, "0")}</span>
             {note?.status && (
               <span>STATUS: {note.status.replace("_", " ").toUpperCase()}</span>
@@ -191,12 +191,12 @@ export default async function SourcePage({
       {/* Lines */}
       <div className="mb-16">
         <div className="flex items-baseline justify-between mb-6">
-          <div className="font-mono text-[10px] tracking-[0.25em] text-muted">
+          <div className="font-mono text-[11px] tracking-[0.25em] text-muted">
             LINES / 수집 문장
           </div>
           <Link
             href={`/quotes/new?type=${source.type}&source=${source.id}`}
-            className="font-mono text-[10px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors"
+            className="font-mono text-[11px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors"
           >
             + NEW LINE
           </Link>
@@ -207,10 +207,10 @@ export default async function SourcePage({
       {/* Long-form notes */}
       <div id="notes" className="mb-16 scroll-mt-20">
         <div className="flex items-baseline justify-between mb-6">
-          <div className="font-mono text-[10px] tracking-[0.25em] text-muted">
+          <div className="font-mono text-[11px] tracking-[0.25em] text-muted">
             NOTES / 노트
           </div>
-          <span className="font-mono text-[10px] tracking-[0.25em] text-muted">
+          <span className="font-mono text-[11px] tracking-[0.25em] text-muted">
             {String(notes.length).padStart(2, "0")} ENTRIES
           </span>
         </div>
@@ -224,7 +224,7 @@ export default async function SourcePage({
       {/* Note as library card */}
       <div>
         <div className="flex items-center justify-between gap-4 mb-4">
-          <div className="font-mono text-[10px] tracking-[0.25em] text-muted">
+          <div className="font-mono text-[11px] tracking-[0.25em] text-muted">
             {noteLabel.en} / {noteLabel.ko}
           </div>
           <SaveCardButton
@@ -244,7 +244,7 @@ export default async function SourcePage({
       <div className="mt-16 flex items-center justify-between gap-4 flex-wrap">
         <Link
           href={`/rooms/${source.type}`}
-          className="font-mono text-[10px] tracking-[0.25em] text-muted hover:text-ink"
+          className="font-mono text-[11px] tracking-[0.25em] text-muted hover:text-ink"
         >
           ← BACK TO {source.type.toUpperCase()} ROOM
         </Link>

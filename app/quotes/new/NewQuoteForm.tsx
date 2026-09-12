@@ -406,7 +406,7 @@ export function NewQuoteForm({
                   <div className="font-sans text-sm leading-none tracking-tight">
                     {cat.en}
                   </div>
-                  <div className="font-mono text-[9px] tracking-[0.25em] mt-1 opacity-70">
+                  <div className="font-mono text-[11px] tracking-[0.25em] mt-1 opacity-70">
                     {cat.ko}
                   </div>
                 </button>
@@ -435,7 +435,7 @@ export function NewQuoteForm({
                   title={c.label ?? ""}
                 >
                   {!c.color && (
-                    <span className="font-mono text-[8px] tracking-[0.2em]">
+                    <span className="font-mono text-[11px] tracking-[0.2em]">
                       AUTO
                     </span>
                   )}
@@ -487,7 +487,7 @@ export function NewQuoteForm({
             {/* Book search — Aladin 우선, Google Books 폴백 */}
             {type === "book" && (
               <div className="mb-6 border border-line bg-paper p-4">
-                <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-2">
+                <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-2">
                   SEARCH BOOKS / 책 검색
                 </div>
                 <div className="flex gap-2">
@@ -508,7 +508,7 @@ export function NewQuoteForm({
                     type="button"
                     onClick={doBookSearch}
                     disabled={searching}
-                    className="font-mono text-[10px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
+                    className="font-mono text-[11px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
                   >
                     {searching ? "..." : "SEARCH"}
                   </button>
@@ -536,11 +536,11 @@ export function NewQuoteForm({
                             {b.title}
                           </div>
                           {b.creator && (
-                            <div className="font-mono text-[10px] tracking-[0.2em] text-muted mt-1">
+                            <div className="font-mono text-[11px] tracking-[0.2em] text-muted mt-1">
                               {b.creator}
                             </div>
                           )}
-                          <div className="font-mono text-[9px] tracking-[0.2em] text-muted mt-0.5 flex gap-2 flex-wrap">
+                          <div className="font-mono text-[11px] tracking-[0.2em] text-muted mt-0.5 flex gap-2 flex-wrap">
                             {b.publisher && <span>{b.publisher}</span>}
                             {b.published_date && (
                               <span>· {b.published_date}</span>
@@ -553,7 +553,7 @@ export function NewQuoteForm({
                         <button
                           type="button"
                           onClick={() => applyBookResult(b)}
-                          className="font-mono text-[10px] tracking-[0.3em] border border-ink px-3 py-2 hover:bg-ink hover:text-paper transition-colors shrink-0"
+                          className="font-mono text-[11px] tracking-[0.3em] border border-ink px-3 py-2 hover:bg-ink hover:text-paper transition-colors shrink-0"
                         >
                           USE
                         </button>
@@ -567,7 +567,7 @@ export function NewQuoteForm({
             {/* Movie / TV search (TMDb) */}
             {type === "movie" && (
               <div className="mb-6 border border-line bg-paper p-4">
-                <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-2">
+                <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-2">
                   SEARCH MOVIES &amp; TV / 영화·드라마·애니 검색
                 </div>
                 <div className="flex gap-2">
@@ -588,7 +588,7 @@ export function NewQuoteForm({
                     type="button"
                     onClick={doMovieSearch}
                     disabled={movieSearching}
-                    className="font-mono text-[10px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
+                    className="font-mono text-[11px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
                   >
                     {movieSearching ? "..." : "SEARCH"}
                   </button>
@@ -615,7 +615,7 @@ export function NewQuoteForm({
                           <div className="font-sans text-base leading-tight">
                             {m.title}
                           </div>
-                          <div className="font-mono text-[10px] tracking-[0.2em] text-muted mt-1 flex gap-2">
+                          <div className="font-mono text-[11px] tracking-[0.2em] text-muted mt-1 flex gap-2">
                             <span>{m.format_guess}</span>
                             {m.year && <span>· {m.year}</span>}
                             <span className="opacity-60">
@@ -626,7 +626,7 @@ export function NewQuoteForm({
                         <button
                           type="button"
                           onClick={() => applyMovieResult(m)}
-                          className="font-mono text-[10px] tracking-[0.3em] border border-ink px-3 py-2 hover:bg-ink hover:text-paper transition-colors shrink-0"
+                          className="font-mono text-[11px] tracking-[0.3em] border border-ink px-3 py-2 hover:bg-ink hover:text-paper transition-colors shrink-0"
                         >
                           USE
                         </button>
@@ -640,7 +640,7 @@ export function NewQuoteForm({
             {/* Lyrics — song search via iTunes (artwork only; lyrics text stays manual) */}
             {type === "lyrics" && (
               <div className="mb-6 border border-line bg-paper p-4">
-                <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-2">
+                <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-2">
                   SEARCH SONG / 노래 검색 — 앨범 표지 가져오기
                 </div>
                 <div className="flex gap-2">
@@ -661,7 +661,7 @@ export function NewQuoteForm({
                     type="button"
                     onClick={doLyricsSearch}
                     disabled={lyricsSearching}
-                    className="font-mono text-[10px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
+                    className="font-mono text-[11px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
                   >
                     {lyricsSearching ? "..." : "SEARCH"}
                   </button>
@@ -689,11 +689,11 @@ export function NewQuoteForm({
                             {l.title}
                           </div>
                           {l.creator && (
-                            <div className="font-mono text-[10px] tracking-[0.2em] text-muted mt-1 truncate">
+                            <div className="font-mono text-[11px] tracking-[0.2em] text-muted mt-1 truncate">
                               {l.creator}
                             </div>
                           )}
-                          <div className="font-mono text-[9px] tracking-[0.2em] text-muted mt-0.5 flex gap-2 flex-wrap truncate">
+                          <div className="font-mono text-[11px] tracking-[0.2em] text-muted mt-0.5 flex gap-2 flex-wrap truncate">
                             {l.publisher && <span>{l.publisher}</span>}
                             {l.published_date && (
                               <span>· {l.published_date}</span>
@@ -704,7 +704,7 @@ export function NewQuoteForm({
                         <button
                           type="button"
                           onClick={() => applyLyricsResult(l)}
-                          className="font-mono text-[10px] tracking-[0.3em] border border-ink px-3 py-2 hover:bg-ink hover:text-paper transition-colors shrink-0"
+                          className="font-mono text-[11px] tracking-[0.3em] border border-ink px-3 py-2 hover:bg-ink hover:text-paper transition-colors shrink-0"
                         >
                           USE
                         </button>
@@ -713,7 +713,7 @@ export function NewQuoteForm({
                   </div>
                 )}
 
-                <p className="font-mono text-[9px] tracking-[0.25em] text-muted mt-3 leading-relaxed">
+                <p className="font-mono text-[11px] tracking-[0.25em] text-muted mt-3 leading-relaxed">
                   ※ 가사 본문은 저작권 이슈로 가져오지 않습니다. 앨범 표지와 메타 정보만 채워져요.
                 </p>
               </div>
@@ -872,7 +872,7 @@ export function NewQuoteForm({
                       type="button"
                       onClick={() => coverFileInputRef.current?.click()}
                       disabled={uploading}
-                      className="font-mono text-[10px] tracking-[0.3em] border border-ink px-4 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
+                      className="font-mono text-[11px] tracking-[0.3em] border border-ink px-4 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
                     >
                       {uploading ? "..." : "↑ UPLOAD"}
                     </button>
@@ -885,7 +885,7 @@ export function NewQuoteForm({
                         alt=""
                         className="w-16 h-24 object-cover bg-ink border border-line"
                       />
-                      <span className="font-mono text-[9px] tracking-[0.2em] text-muted">
+                      <span className="font-mono text-[11px] tracking-[0.2em] text-muted">
                         PREVIEW
                       </span>
                     </div>
@@ -944,7 +944,7 @@ export function NewQuoteForm({
             />
             {allTags.length > 0 && (
               <div className="mt-2">
-                <div className="font-mono text-[9px] tracking-[0.3em] text-muted mb-2">
+                <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-2">
                   PREVIOUSLY USED / 이전에 쓴 태그
                 </div>
                 <div className="flex flex-wrap gap-1.5">
@@ -953,7 +953,7 @@ export function NewQuoteForm({
                       type="button"
                       key={tag}
                       onClick={() => appendTag(tag)}
-                      className="font-mono text-[10px] tracking-[0.2em] border border-line px-2 py-1 hover:border-ink hover:bg-ink hover:text-paper transition-colors"
+                      className="font-mono text-[11px] tracking-[0.2em] border border-line px-2 py-1 hover:border-ink hover:bg-ink hover:text-paper transition-colors"
                     >
                       {tag}
                     </button>
@@ -962,7 +962,7 @@ export function NewQuoteForm({
                     <button
                       type="button"
                       onClick={() => setTagsExpanded((v) => !v)}
-                      className="font-mono text-[10px] tracking-[0.25em] border border-ink px-2 py-1 bg-paper hover:bg-ink hover:text-paper transition-colors"
+                      className="font-mono text-[11px] tracking-[0.25em] border border-ink px-2 py-1 bg-paper hover:bg-ink hover:text-paper transition-colors"
                     >
                       {tagsExpanded
                         ? "− LESS / 접기"
@@ -1001,7 +1001,7 @@ export function NewQuoteForm({
       <div className="flex items-center justify-between border-t border-ink pt-6">
         <a
           href="/rooms"
-          className="font-mono text-[11px] tracking-[0.3em] text-muted hover:text-ink"
+          className="font-mono text-xs tracking-[0.3em] text-muted hover:text-ink"
         >
           ← CANCEL / 취소
         </a>
@@ -1019,11 +1019,11 @@ export function NewQuoteForm({
 function SectionHead({ n, en, ko }: { n: string; en: string; ko: string }) {
   return (
     <div className="flex items-baseline gap-4 border-b border-ink pb-3 mb-8">
-      <span className="font-mono text-[10px] tracking-[0.3em] text-muted">
+      <span className="font-mono text-[11px] tracking-[0.3em] text-muted">
         {n}
       </span>
       <h2 className="font-sans text-2xl tracking-tight">{en}</h2>
-      <span className="font-mono text-[10px] tracking-[0.3em] text-muted">
+      <span className="font-mono text-[11px] tracking-[0.3em] text-muted">
         {ko}
       </span>
     </div>
@@ -1046,12 +1046,12 @@ function Field({
       {(labelEn || labelKo) && (
         <div className="flex items-baseline gap-3 mb-2">
           {labelEn && (
-            <span className="font-mono text-[10px] tracking-[0.3em]">
+            <span className="font-mono text-[11px] tracking-[0.3em]">
               {labelEn}
             </span>
           )}
           {labelKo && (
-            <span className="font-mono text-[10px] tracking-[0.3em] text-muted">
+            <span className="font-mono text-[11px] tracking-[0.3em] text-muted">
               {labelKo}
             </span>
           )}

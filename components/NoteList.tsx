@@ -27,7 +27,7 @@ export function NoteList({
         <button
           type="button"
           onClick={() => setComposing(true)}
-          className="self-start font-mono text-[10px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors"
+          className="self-start font-mono text-[11px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors"
         >
           + NEW NOTE / 새 노트
         </button>

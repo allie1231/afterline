@@ -49,7 +49,7 @@ export default async function YearReviewPage({
       />
 
       <header className="mb-12 border-b border-ink pb-8">
-        <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-3">
+        <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-3">
           YEAR IN REVIEW · VOL. {year}
         </div>
         <h1 className="font-sans text-[clamp(60px,10vw,140px)] leading-none tracking-tight">
@@ -110,7 +110,7 @@ export default async function YearReviewPage({
                         title={`${MONTH_LABEL[m.month - 1]} · ${m.count}`}
                       />
                     </div>
-                    <div className="font-mono text-[8px] tracking-[0.2em] text-muted">
+                    <div className="font-mono text-[11px] tracking-[0.2em] text-muted">
                       {MONTH_LABEL[m.month - 1]}
                     </div>
                   </div>
@@ -153,7 +153,7 @@ export default async function YearReviewPage({
                           }}
                         />
                       </div>
-                      <div className="text-right font-mono text-[10px] tracking-[0.25em] text-muted">
+                      <div className="text-right font-mono text-[11px] tracking-[0.25em] text-muted">
                         {String(v).padStart(3, "0")}
                       </div>
                     </li>
@@ -240,7 +240,7 @@ export default async function YearReviewPage({
                     key={quote.id}
                     className="grid grid-cols-[80px_1fr] gap-4"
                   >
-                    <div className="font-mono text-[10px] tracking-[0.25em] text-muted pt-2">
+                    <div className="font-mono text-[11px] tracking-[0.25em] text-muted pt-2">
                       {fmtDate(quote.created_at).slice(5)}
                     </div>
                     <div>
@@ -250,7 +250,7 @@ export default async function YearReviewPage({
                       {source && (
                         <Link
                           href={`/sources/${source.id}`}
-                          className="font-mono text-[10px] tracking-[0.25em] text-muted hover:text-ink mt-2 inline-block"
+                          className="font-mono text-[11px] tracking-[0.25em] text-muted hover:text-ink mt-2 inline-block"
                         >
                           {source.title}
                           {source.creator ? ` — ${source.creator}` : ""}
@@ -279,13 +279,13 @@ function BigNumber({
 }) {
   return (
     <div className="bg-paper p-6">
-      <div className="font-mono text-[10px] tracking-[0.3em] text-muted">
+      <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
         {label}
       </div>
       <div className="font-sans text-[clamp(36px,6vw,60px)] leading-none mt-2">
         {value}
       </div>
-      <div className="font-mono text-[10px] tracking-[0.25em] text-muted mt-2">
+      <div className="font-mono text-[11px] tracking-[0.25em] text-muted mt-2">
         {ko}
       </div>
     </div>
@@ -319,7 +319,7 @@ function SectionList({
             key={it.key}
             className="grid grid-cols-[24px_1fr_50px] gap-3 items-baseline"
           >
-            <span className="font-mono text-[10px] tracking-[0.2em] text-muted">
+            <span className="font-mono text-[11px] tracking-[0.2em] text-muted">
               {String(i + 1).padStart(2, "0")}
             </span>
             {it.href ? (
@@ -340,7 +340,7 @@ function SectionList({
                 {it.label}
               </span>
             )}
-            <span className="text-right font-mono text-[10px] tracking-[0.25em] text-muted">
+            <span className="text-right font-mono text-[11px] tracking-[0.25em] text-muted">
               {String(it.count).padStart(2, "0")}
             </span>
           </li>
@@ -362,7 +362,7 @@ function Anchor({
 }) {
   return (
     <div>
-      <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-3">
+      <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-3">
         {label} · {fmtDate(item.quote.created_at)}
       </div>
       <p className="font-sans text-base leading-relaxed whitespace-pre-line">
@@ -371,7 +371,7 @@ function Anchor({
       {item.source && (
         <Link
           href={`/sources/${item.source.id}`}
-          className="font-mono text-[10px] tracking-[0.25em] text-muted hover:text-ink mt-2 inline-block"
+          className="font-mono text-[11px] tracking-[0.25em] text-muted hover:text-ink mt-2 inline-block"
         >
           {item.source.title}
           {item.source.creator ? ` — ${item.source.creator}` : ""}

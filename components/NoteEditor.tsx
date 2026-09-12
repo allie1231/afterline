@@ -156,7 +156,7 @@ function NoteFormCore({
     <div className="flex flex-col gap-3 border border-ink p-4 bg-paper">
       {/* Kind chips */}
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="font-mono text-[9px] tracking-[0.3em] text-muted">
+        <span className="font-mono text-[11px] tracking-[0.3em] text-muted">
           KIND
         </span>
         {KIND_PRESETS.map((k) => (
@@ -164,7 +164,7 @@ function NoteFormCore({
             type="button"
             key={k}
             onClick={() => setKind(kind === k ? "" : k)}
-            className={`font-mono text-[10px] tracking-[0.2em] border px-2 py-1 transition-colors ${
+            className={`font-mono text-[11px] tracking-[0.2em] border px-2 py-1 transition-colors ${
               kind === k
                 ? "bg-ink text-paper border-ink"
                 : "border-line hover:border-ink"
@@ -198,7 +198,7 @@ function NoteFormCore({
         <TabBtn active={mode === "preview"} onClick={() => setMode("preview")}>
           PREVIEW / 미리보기
         </TabBtn>
-        <div className="ml-auto font-mono text-[9px] tracking-[0.25em] text-muted self-end pb-2 pr-1">
+        <div className="ml-auto font-mono text-[11px] tracking-[0.25em] text-muted self-end pb-2 pr-1">
           MD 지원 — **굵게** · # 제목 · - 리스트 · [[q:문장-ID]]
         </div>
       </div>
@@ -224,7 +224,7 @@ function NoteFormCore({
       )}
 
       {error && (
-        <div className="font-mono text-[10px] text-red">{error}</div>
+        <div className="font-mono text-[11px] text-red">{error}</div>
       )}
 
       <div className="flex items-center gap-2 pt-1">
@@ -232,7 +232,7 @@ function NoteFormCore({
           <button
             type="submit"
             onClick={(e) => onSave(e)}
-            className="font-mono text-[10px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors"
+            className="font-mono text-[11px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors"
           >
             {saveLabel}
           </button>
@@ -241,7 +241,7 @@ function NoteFormCore({
             type="button"
             onClick={() => onSave()}
             disabled={pending}
-            className="font-mono text-[10px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
+            className="font-mono text-[11px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
           >
             {pending ? "SAVING…" : saveLabel}
           </button>
@@ -250,7 +250,7 @@ function NoteFormCore({
           type="button"
           onClick={onCancel}
           disabled={pending}
-          className="font-mono text-[10px] tracking-[0.3em] text-muted px-3 py-2 hover:text-ink"
+          className="font-mono text-[11px] tracking-[0.3em] text-muted px-3 py-2 hover:text-ink"
         >
           CANCEL
         </button>
@@ -272,7 +272,7 @@ function TabBtn({
     <button
       type="button"
       onClick={onClick}
-      className={`font-mono text-[10px] tracking-[0.3em] px-3 py-2 border-b-2 -mb-px transition-colors ${
+      className={`font-mono text-[11px] tracking-[0.3em] px-3 py-2 border-b-2 -mb-px transition-colors ${
         active ? "border-ink" : "border-transparent text-muted hover:text-ink"
       }`}
     >

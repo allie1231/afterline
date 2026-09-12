@@ -47,11 +47,11 @@ export function NoteCard({
       <header className="flex items-baseline justify-between gap-3 mb-2 flex-wrap">
         <div className="flex items-baseline gap-3 flex-wrap">
           {note.kind && (
-            <span className="font-mono text-[10px] tracking-[0.25em] border border-ink px-2 py-0.5">
+            <span className="font-mono text-[11px] tracking-[0.25em] border border-ink px-2 py-0.5">
               {note.kind}
             </span>
           )}
-          <span className="font-mono text-[10px] tracking-[0.25em] text-muted">
+          <span className="font-mono text-[11px] tracking-[0.25em] text-muted">
             {fmtDate(note.created_at)}
             {note.updated_at !== note.created_at && (
               <span className="ml-2 opacity-60">
@@ -64,7 +64,7 @@ export function NoteCard({
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="font-mono text-[10px] tracking-[0.3em] border border-ink px-2 py-1 hover:bg-ink hover:text-paper transition-colors"
+            className="font-mono text-[11px] tracking-[0.3em] border border-ink px-2 py-1 hover:bg-ink hover:text-paper transition-colors"
           >
             EDIT
           </button>
@@ -72,7 +72,7 @@ export function NoteCard({
             type="button"
             onClick={handleDelete}
             disabled={pending}
-            className="font-mono text-[10px] tracking-[0.3em] border border-line text-muted px-2 py-1 hover:border-red hover:text-red transition-colors disabled:opacity-50"
+            className="font-mono text-[11px] tracking-[0.3em] border border-line text-muted px-2 py-1 hover:border-red hover:text-red transition-colors disabled:opacity-50"
           >
             ×
           </button>

@@ -35,11 +35,11 @@ export function TypographicCover({
       : title.length > 12
         ? "text-[26px]"
         : "text-[32px]"
-    : "text-[11px]";
+    : "text-xs";
 
   const padding = isLg ? "p-5" : "p-2.5";
   const labelSize = isLg ? "text-[9px]" : "text-[6px]";
-  const creatorSize = isLg ? "text-[10px]" : "text-[7px]";
+  const creatorSize = isLg ? "text-[11px]" : "text-[7px]";
   const ruleMargin = isLg ? "my-3" : "my-1.5";
   const ruleWidth = isLg ? "w-10" : "w-5";
 

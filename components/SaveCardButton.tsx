@@ -85,7 +85,7 @@ export function SaveCardButton({
           type="button"
           onClick={handleSave}
           disabled={busy}
-          className="font-mono text-[10px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
+          className="font-mono text-[11px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
         >
           [ {busy ? "..." : "SAVE AS IMAGE"} ]
         </button>
@@ -93,13 +93,13 @@ export function SaveCardButton({
           type="button"
           onClick={handleShare}
           disabled={busy}
-          className="font-mono text-[10px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
+          className="font-mono text-[11px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
         >
           [ {busy ? "..." : "SHARE"} ]
         </button>
       </div>
       {error && (
-        <div className="font-mono text-[10px] text-red">{error}</div>
+        <div className="font-mono text-[11px] text-red">{error}</div>
       )}
     </div>
   );

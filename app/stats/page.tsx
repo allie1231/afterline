@@ -72,7 +72,7 @@ export default async function StatsPage() {
                     <div className="font-sans text-base leading-none tracking-tight">
                       {cat.en}
                     </div>
-                    <div className="font-mono text-[10px] tracking-[0.25em] text-muted mt-1">
+                    <div className="font-mono text-[11px] tracking-[0.25em] text-muted mt-1">
                       {cat.ko}
                     </div>
                   </div>
@@ -85,7 +85,7 @@ export default async function StatsPage() {
                       }}
                     />
                   </div>
-                  <div className="text-right font-mono text-[10px] tracking-[0.25em] text-muted">
+                  <div className="text-right font-mono text-[11px] tracking-[0.25em] text-muted">
                     {String(v).padStart(3, "0")} LINES · {String(sources).padStart(2, "0")} SRCS
                   </div>
                 </Link>
@@ -128,11 +128,11 @@ export default async function StatsPage() {
                           style={{ background: cat.accent }}
                         />
                         <span className="font-sans text-base">{cat.en}</span>
-                        <span className="font-mono text-[10px] tracking-[0.2em] text-muted">
+                        <span className="font-mono text-[11px] tracking-[0.2em] text-muted">
                           {cat.ko}
                         </span>
                       </div>
-                      <span className="font-mono text-[9px] tracking-[0.25em] text-muted">
+                      <span className="font-mono text-[11px] tracking-[0.25em] text-muted">
                         {list.length} 종
                       </span>
                     </div>
@@ -159,7 +159,7 @@ export default async function StatsPage() {
                                 }}
                               />
                             </div>
-                            <div className="text-right font-mono text-[9px] tracking-[0.2em] text-muted">
+                            <div className="text-right font-mono text-[11px] tracking-[0.2em] text-muted">
                               {String(g.lines).padStart(2, "0")} ·{" "}
                               {String(g.sources).padStart(2, "0")}
                             </div>
@@ -203,7 +203,7 @@ export default async function StatsPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-              <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-3 border-b border-line pb-2">
+              <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-3 border-b border-line pb-2">
                 BY ROOM / 룸별
               </div>
               <ul className="flex flex-col gap-2">
@@ -236,7 +236,7 @@ export default async function StatsPage() {
                           }}
                         />
                       </div>
-                      <div className="text-right font-mono text-[10px] tracking-[0.2em] text-muted">
+                      <div className="text-right font-mono text-[11px] tracking-[0.2em] text-muted">
                         {String(v).padStart(2, "0")}
                       </div>
                     </li>
@@ -251,7 +251,7 @@ export default async function StatsPage() {
             </div>
 
             <div>
-              <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-3 border-b border-line pb-2">
+              <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-3 border-b border-line pb-2">
                 BY KIND / 종류별
               </div>
               {stats.notes.byKind.length === 0 ? (
@@ -278,7 +278,7 @@ export default async function StatsPage() {
                             style={{ width: `${pct}%` }}
                           />
                         </div>
-                        <div className="text-right font-mono text-[10px] tracking-[0.2em] text-muted">
+                        <div className="text-right font-mono text-[11px] tracking-[0.2em] text-muted">
                           {String(k.count).padStart(2, "0")}
                         </div>
                       </li>
@@ -316,7 +316,7 @@ export default async function StatsPage() {
             );
           })}
         </div>
-        <div className="mt-2 flex items-center justify-between font-mono text-[9px] tracking-[0.25em] text-muted">
+        <div className="mt-2 flex items-center justify-between font-mono text-[11px] tracking-[0.25em] text-muted">
           <span>{stats.activity[0]?.date}</span>
           <span>{stats.activity[stats.activity.length - 1]?.date}</span>
         </div>
@@ -350,7 +350,7 @@ export default async function StatsPage() {
                           style={{ width: `${pct}%` }}
                         />
                       </span>
-                      <span className="text-right font-mono text-[10px] tracking-[0.25em] text-muted">
+                      <span className="text-right font-mono text-[11px] tracking-[0.25em] text-muted">
                         {String(t.count).padStart(2, "0")}
                       </span>
                     </Link>
@@ -387,12 +387,12 @@ export default async function StatsPage() {
                         <div className="font-sans text-base leading-tight truncate">
                           {source.title}
                         </div>
-                        <div className="font-mono text-[9px] tracking-[0.25em] text-muted mt-0.5 truncate">
+                        <div className="font-mono text-[11px] tracking-[0.25em] text-muted mt-0.5 truncate">
                           {cat?.en}
                           {source.creator ? ` · ${source.creator}` : ""}
                         </div>
                       </div>
-                      <span className="font-mono text-[10px] tracking-[0.25em] text-muted shrink-0">
+                      <span className="font-mono text-[11px] tracking-[0.25em] text-muted shrink-0">
                         {String(lines).padStart(2, "0")} LINES
                       </span>
                     </Link>
@@ -428,7 +428,7 @@ export default async function StatsPage() {
                       {cat.en}
                     </Link>
                     <span
-                      className="font-mono text-[9px] tracking-[0.3em]"
+                      className="font-mono text-[11px] tracking-[0.3em]"
                       style={{ color: cat.accent }}
                     >
                       {cat.ko}
@@ -452,7 +452,7 @@ export default async function StatsPage() {
                                 style={{ width: `${pct}%`, background: cat.accent }}
                               />
                             </span>
-                            <span className="text-right font-mono text-[10px] tracking-[0.2em] text-muted">
+                            <span className="text-right font-mono text-[11px] tracking-[0.2em] text-muted">
                               {String(t.count).padStart(2, "0")}
                             </span>
                           </Link>
@@ -467,7 +467,7 @@ export default async function StatsPage() {
         </section>
       )}
 
-      <footer className="border-t border-line pt-5 font-mono text-[10px] tracking-[0.25em] text-muted">
+      <footer className="border-t border-line pt-5 font-mono text-[11px] tracking-[0.25em] text-muted">
         LATEST LINE · {fmtDate(stats.latestLineAt)}
       </footer>
     </section>
@@ -485,13 +485,13 @@ function BigNumber({
 }) {
   return (
     <div className="bg-paper p-6">
-      <div className="font-mono text-[10px] tracking-[0.3em] text-muted">
+      <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
         {label}
       </div>
       <div className="font-sans text-[clamp(40px,7vw,68px)] leading-none mt-2">
         {value}
       </div>
-      <div className="font-mono text-[10px] tracking-[0.25em] text-muted mt-2">
+      <div className="font-mono text-[11px] tracking-[0.25em] text-muted mt-2">
         {ko}
       </div>
     </div>
@@ -509,11 +509,11 @@ function SmallNumber({
 }) {
   return (
     <div className="bg-paper p-4">
-      <div className="font-mono text-[9px] tracking-[0.3em] text-muted">
+      <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
         {label}
       </div>
       <div className="font-sans text-3xl leading-none mt-1">{value}</div>
-      <div className="font-mono text-[9px] tracking-[0.25em] text-muted mt-1">
+      <div className="font-mono text-[11px] tracking-[0.25em] text-muted mt-1">
         {ko}
       </div>
     </div>

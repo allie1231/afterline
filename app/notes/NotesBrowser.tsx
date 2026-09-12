@@ -56,7 +56,7 @@ export function NotesBrowser({ items }: { items: NoteWithSource[] }) {
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value as SourceType | "all")}
-          className="font-mono text-[10px] tracking-[0.2em] border border-ink bg-paper px-3 py-2 focus:outline-none cursor-pointer"
+          className="font-mono text-[11px] tracking-[0.2em] border border-ink bg-paper px-3 py-2 focus:outline-none cursor-pointer"
         >
           <option value="all">ALL ROOMS</option>
           {ROOM_TYPES.map((t) => {
@@ -72,7 +72,7 @@ export function NotesBrowser({ items }: { items: NoteWithSource[] }) {
           <select
             value={kind}
             onChange={(e) => setKind(e.target.value)}
-            className="font-mono text-[10px] tracking-[0.2em] border border-ink bg-paper px-3 py-2 focus:outline-none cursor-pointer"
+            className="font-mono text-[11px] tracking-[0.2em] border border-ink bg-paper px-3 py-2 focus:outline-none cursor-pointer"
           >
             <option value="">ALL KINDS</option>
             {kinds.map((k) => (
@@ -84,7 +84,7 @@ export function NotesBrowser({ items }: { items: NoteWithSource[] }) {
         )}
       </div>
 
-      <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-4">
+      <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-4">
         {String(filtered.length).padStart(3, "0")} NOTES
       </div>
 
@@ -120,18 +120,18 @@ function NoteRow({ item }: { item: NoteWithSource }) {
       <header className="flex items-baseline justify-between gap-3 mb-2 flex-wrap">
         <div className="flex items-baseline gap-3 flex-wrap">
           {note.kind && (
-            <span className="font-mono text-[10px] tracking-[0.25em] border border-ink px-2 py-0.5">
+            <span className="font-mono text-[11px] tracking-[0.25em] border border-ink px-2 py-0.5">
               {note.kind}
             </span>
           )}
-          <span className="font-mono text-[10px] tracking-[0.25em] text-muted">
+          <span className="font-mono text-[11px] tracking-[0.25em] text-muted">
             {fmtDate(note.created_at)}
           </span>
         </div>
         {source && (
           <Link
             href={`/sources/${source.id}#notes`}
-            className="font-mono text-[10px] tracking-[0.25em] text-muted hover:text-ink truncate max-w-[60%]"
+            className="font-mono text-[11px] tracking-[0.25em] text-muted hover:text-ink truncate max-w-[60%]"
             title={source.title}
           >
             {source.title} ↗
@@ -152,7 +152,7 @@ function NoteRow({ item }: { item: NoteWithSource }) {
       {source && (
         <Link
           href={`/sources/${source.id}#notes`}
-          className="mt-3 inline-block font-mono text-[10px] tracking-[0.3em] text-muted hover:text-ink"
+          className="mt-3 inline-block font-mono text-[11px] tracking-[0.3em] text-muted hover:text-ink"
         >
           READ MORE →
         </Link>

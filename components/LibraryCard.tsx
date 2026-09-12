@@ -47,7 +47,7 @@ export function LibraryCard({
     >
       <header className="flex items-center justify-between border-b border-ink px-6 py-3">
         <div className="flex items-center gap-3">
-          <div className="font-mono text-[10px] tracking-[0.3em]">
+          <div className="font-mono text-[11px] tracking-[0.3em]">
             AFTERLINE / LIBRARY CARD
           </div>
           <span
@@ -56,7 +56,7 @@ export function LibraryCard({
             aria-label="spine color"
           />
         </div>
-        <div className="font-mono text-[10px] tracking-[0.3em] text-muted">
+        <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
           NO. {source.id.slice(-6).toUpperCase()}
         </div>
       </header>
@@ -65,7 +65,7 @@ export function LibraryCard({
         <div className="px-6 py-6 border-r border-ink/0 md:border-ink">
           <div className="flex items-start gap-4">
             <div className="flex-1 min-w-0">
-              <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-1">
+              <div className="font-mono text-[11px] tracking-[0.25em] text-muted mb-1">
                 TITLE
               </div>
               <div className="font-sans text-2xl leading-tight">
@@ -95,7 +95,7 @@ export function LibraryCard({
           </div>
 
           <div className="mt-6 pt-5 border-t border-dashed border-line">
-            <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-2">
+            <div className="font-mono text-[11px] tracking-[0.25em] text-muted mb-2">
               TAGS / 태그
             </div>
             {tags.length > 0 ? (
@@ -103,21 +103,21 @@ export function LibraryCard({
                 {tags.map((t) => (
                   <span
                     key={t}
-                    className="font-mono text-[10px] tracking-[0.2em] border border-ink px-2 py-0.5"
+                    className="font-mono text-[11px] tracking-[0.2em] border border-ink px-2 py-0.5"
                   >
                     #{t.toUpperCase()}
                   </span>
                 ))}
               </div>
             ) : (
-              <div className="font-mono text-[10px] tracking-[0.2em] text-muted italic">
+              <div className="font-mono text-[11px] tracking-[0.2em] text-muted italic">
                 (수집한 문장에 태그를 달면 여기에 모입니다)
               </div>
             )}
           </div>
 
           <div className="mt-6 pt-5 border-t border-dashed border-line">
-            <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-2">
+            <div className="font-mono text-[11px] tracking-[0.25em] text-muted mb-2">
               MY THOUGHT / 내 생각
             </div>
             <NoteFieldEditor
@@ -131,14 +131,14 @@ export function LibraryCard({
 
           {note?.keywords && note.keywords.length > 0 && (
             <div className="mt-6 pt-5 border-t border-dashed border-line">
-              <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-2">
+              <div className="font-mono text-[11px] tracking-[0.25em] text-muted mb-2">
                 KEYWORDS
               </div>
               <div className="flex flex-wrap gap-2">
                 {note.keywords.map((k) => (
                   <span
                     key={k}
-                    className="font-mono text-[10px] tracking-[0.2em] border border-ink px-2 py-0.5"
+                    className="font-mono text-[11px] tracking-[0.2em] border border-ink px-2 py-0.5"
                   >
                     {k.toUpperCase()}
                   </span>
@@ -189,7 +189,7 @@ export function LibraryCard({
 function Stamp({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="font-mono text-[9px] tracking-[0.3em] text-muted">
+      <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
         {label}
       </div>
       <div className="font-mono text-sm tracking-[0.15em] mt-1">{value}</div>
@@ -208,7 +208,7 @@ function Footer({
 }) {
   return (
     <div className={align === "right" ? "text-right" : ""}>
-      <div className="font-mono text-[9px] tracking-[0.3em] text-muted">
+      <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
         {label}
       </div>
       {value && (

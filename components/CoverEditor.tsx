@@ -33,7 +33,7 @@ export function CoverEditor({
           className="absolute inset-0 flex items-center justify-center bg-ink/70 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity cursor-pointer"
           aria-label="Change cover"
         >
-          <span className="font-mono text-[10px] tracking-[0.3em] text-paper border border-paper px-3 py-2">
+          <span className="font-mono text-[11px] tracking-[0.3em] text-paper border border-paper px-3 py-2">
             CHANGE COVER
           </span>
         </button>

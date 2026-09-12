@@ -27,7 +27,7 @@ export function StarRating({
 
   return (
     <div>
-      <div className="font-mono text-[9px] tracking-[0.3em] text-muted">
+      <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
         RATING / 평점
       </div>
       <div

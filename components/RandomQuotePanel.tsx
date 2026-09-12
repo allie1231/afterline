@@ -18,7 +18,7 @@ export function RandomQuotePanel({ pool }: { pool: RandomLine[] }) {
   if (pool.length === 0) {
     return (
       <div className="border-y border-line py-6 my-12">
-        <div className="font-mono text-[10px] tracking-[0.3em] text-muted">
+        <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
           TODAY&apos;S LINE / 오늘의 한 줄
         </div>
         <p className="font-sans text-xl text-muted mt-3">
@@ -26,7 +26,7 @@ export function RandomQuotePanel({ pool }: { pool: RandomLine[] }) {
         </p>
         <Link
           href="/quotes/new"
-          className="inline-block mt-4 font-mono text-[10px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors"
+          className="inline-block mt-4 font-mono text-[11px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors"
         >
           + NEW LINE
         </Link>
@@ -51,19 +51,19 @@ export function RandomQuotePanel({ pool }: { pool: RandomLine[] }) {
   return (
     <div className="border-y border-line py-8 my-12">
       <div className="flex items-baseline justify-between mb-4">
-        <div className="font-mono text-[10px] tracking-[0.3em] text-muted">
+        <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
           TODAY&apos;S LINE / 오늘의 한 줄
         </div>
         <div className="flex items-center gap-3">
           {line.is_favorite && (
-            <span className="font-mono text-[10px] tracking-[0.25em] text-red">
+            <span className="font-mono text-[11px] tracking-[0.25em] text-red">
               ★
             </span>
           )}
           <button
             type="button"
             onClick={shuffle}
-            className="font-mono text-[10px] tracking-[0.3em] text-muted hover:text-ink transition-colors"
+            className="font-mono text-[11px] tracking-[0.3em] text-muted hover:text-ink transition-colors"
             aria-label="Shuffle today's line"
           >
             ⇄ SHUFFLE
@@ -76,7 +76,7 @@ export function RandomQuotePanel({ pool }: { pool: RandomLine[] }) {
       </blockquote>
 
       <div className="mt-5 flex items-baseline justify-between flex-wrap gap-3">
-        <div className="flex items-baseline gap-3 font-mono text-[10px] tracking-[0.25em] text-muted">
+        <div className="flex items-baseline gap-3 font-mono text-[11px] tracking-[0.25em] text-muted">
           {line.source_title && (
             <span className="text-ink">— {line.source_title}</span>
           )}
@@ -86,7 +86,7 @@ export function RandomQuotePanel({ pool }: { pool: RandomLine[] }) {
         {line.source_id && (
           <Link
             href={`/sources/${line.source_id}`}
-            className="font-mono text-[10px] tracking-[0.3em] text-muted hover:text-ink"
+            className="font-mono text-[11px] tracking-[0.3em] text-muted hover:text-ink"
           >
             OPEN →
           </Link>
@@ -99,7 +99,7 @@ export function RandomQuotePanel({ pool }: { pool: RandomLine[] }) {
             <Link
               key={t}
               href={`/mood/${encodeURIComponent(t)}`}
-              className="font-mono text-[9px] tracking-[0.25em] border border-line px-2 py-0.5 hover:border-ink hover:bg-ink hover:text-paper transition-colors"
+              className="font-mono text-[11px] tracking-[0.25em] border border-line px-2 py-0.5 hover:border-ink hover:bg-ink hover:text-paper transition-colors"
             >
               {t}
             </Link>

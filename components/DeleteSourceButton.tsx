@@ -30,7 +30,7 @@ export function DeleteSourceButton({
       type="button"
       onClick={handleClick}
       disabled={pending}
-      className="font-mono text-[10px] tracking-[0.3em] text-muted hover:text-red transition-colors disabled:opacity-50"
+      className="font-mono text-[11px] tracking-[0.3em] text-muted hover:text-red transition-colors disabled:opacity-50"
     >
       {pending ? "DELETING…" : "× DELETE THIS SOURCE"}
     </button>
