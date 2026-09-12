@@ -8,11 +8,6 @@ import { RandomQuotePanel } from "@/components/RandomQuotePanel";
 import { SourceSpine } from "@/components/SourceSpine";
 import type { PastLine } from "@/lib/data/repository";
 
-function fmtDate(iso: string | null) {
-  if (!iso) return null;
-  return iso.slice(0, 10).replace(/-/g, ".");
-}
-
 function yearOf(iso: string): string {
   return iso.slice(0, 4);
 }
@@ -54,19 +49,9 @@ export default async function EntrancePage() {
             </span>
           </div>
           <div className="flex flex-wrap items-end gap-y-5">
-            {reading.map((r) => {
-              const since = fmtDate(r.started_at);
-              return (
-                <div key={r.source.id} className="flex flex-col items-center gap-2">
-                  <SourceSpine source={r.source} lines={r.lines} />
-                  {since && (
-                    <div className="font-mono text-[9px] tracking-[0.2em] text-muted">
-                      SINCE {since}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            {reading.map((r) => (
+              <SourceSpine key={r.source.id} source={r.source} lines={r.lines} />
+            ))}
           </div>
         </section>
       )}
