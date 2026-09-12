@@ -16,7 +16,7 @@ export default async function MoodPage() {
         ]}
         className="mb-3"
       />
-      <h2 className="font-serif text-4xl md:text-5xl tracking-tight leading-none">
+      <h2 className="font-sans text-4xl md:text-5xl tracking-tight leading-none">
         Tags
       </h2>
       <div className="font-mono text-xs tracking-[0.2em] text-muted mt-3 mb-12">
@@ -33,7 +33,7 @@ export default async function MoodPage() {
                 href={`/mood/${encodeURIComponent(tag)}`}
                 className="flex items-baseline justify-between py-4 px-2 -mx-2 hover:bg-line/40 transition-colors"
               >
-                <span className="font-serif text-3xl">{tag}</span>
+                <span className="font-sans text-3xl">{tag}</span>
                 <span className="font-mono text-[10px] tracking-[0.25em] text-muted">
                   {String(count).padStart(2, "0")} LINES
                 </span>

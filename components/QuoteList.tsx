@@ -71,7 +71,7 @@ export function QuoteList({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="이 출처 안에서 문장·메모 검색…"
-              className="flex-1 min-w-[180px] border border-ink bg-paper px-3 py-1.5 font-serif text-base focus:outline-none focus:border-blue"
+              className="flex-1 min-w-[180px] border border-ink bg-paper px-3 py-1.5 font-sans text-base focus:outline-none focus:border-blue"
             />
             <button
               type="button"

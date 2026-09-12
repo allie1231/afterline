@@ -37,7 +37,7 @@ export function TranscriptCover({
 
         {/* Title */}
         <div className="mt-3">
-          <div className="font-serif text-[18px] leading-[0.98] tracking-tight uppercase break-words">
+          <div className="font-sans text-[18px] leading-[0.98] tracking-tight uppercase break-words">
             {source.title}
           </div>
           {source.creator && (

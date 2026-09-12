@@ -57,7 +57,7 @@ export function TypographicCover({
 
       <div className="flex flex-col items-start min-w-0">
         <div
-          className={`font-serif uppercase leading-[0.95] tracking-tight break-words ${titleSize}`}
+          className={`font-sans uppercase leading-[0.95] tracking-tight break-words ${titleSize}`}
         >
           {title}
         </div>

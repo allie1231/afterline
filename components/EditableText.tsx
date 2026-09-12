@@ -60,7 +60,7 @@ export function EditableText({
   }
 
   const sharedCls =
-    "w-full border border-ink bg-paper px-3 py-2 font-serif focus:outline-none focus:border-blue";
+    "w-full border border-ink bg-paper px-3 py-2 font-sans focus:outline-none focus:border-blue";
 
   return (
     <div className="flex flex-col gap-2">

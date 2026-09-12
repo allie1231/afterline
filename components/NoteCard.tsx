@@ -80,7 +80,7 @@ export function NoteCard({
       </header>
 
       {note.title && (
-        <h3 className="font-serif text-2xl tracking-tight leading-tight mb-3">
+        <h3 className="font-sans text-2xl tracking-tight leading-tight mb-3">
           {note.title}
         </h3>
       )}

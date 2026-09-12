@@ -5,18 +5,18 @@ import remarkGfm from "remark-gfm";
 // consistent with the rest of the app (serif body, mono code, paper bg).
 export function Markdown({ source }: { source: string }) {
   return (
-    <div className="markdown font-serif text-lg leading-relaxed">
+    <div className="markdown font-sans text-lg leading-relaxed">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
           h1: (p) => (
-            <h1 className="font-serif text-3xl tracking-tight mt-6 mb-3" {...p} />
+            <h1 className="font-sans text-3xl tracking-tight mt-6 mb-3" {...p} />
           ),
           h2: (p) => (
-            <h2 className="font-serif text-2xl tracking-tight mt-5 mb-2" {...p} />
+            <h2 className="font-sans text-2xl tracking-tight mt-5 mb-2" {...p} />
           ),
           h3: (p) => (
-            <h3 className="font-serif text-xl tracking-tight mt-4 mb-2" {...p} />
+            <h3 className="font-sans text-xl tracking-tight mt-4 mb-2" {...p} />
           ),
           p: (p) => <p className="mb-3 whitespace-pre-line" {...p} />,
           ul: (p) => (

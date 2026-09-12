@@ -125,7 +125,7 @@ export default async function SourcePage({
               currentType={source.type}
             />
           </div>
-          <h1 className="font-serif text-[clamp(28px,4vw,48px)] leading-[1.05] tracking-tight break-words">
+          <h1 className="font-sans text-[clamp(28px,4vw,48px)] leading-[1.05] tracking-tight break-words">
             <SourceFieldEditor
               sourceId={source.id}
               field="title"
@@ -133,7 +133,7 @@ export default async function SourcePage({
               placeholder="제목"
             />
           </h1>
-          <div className="font-serif text-lg text-muted mt-2 flex items-baseline gap-3 flex-wrap">
+          <div className="font-sans text-lg text-muted mt-2 flex items-baseline gap-3 flex-wrap">
             <SourceFieldEditor
               sourceId={source.id}
               field="creator"

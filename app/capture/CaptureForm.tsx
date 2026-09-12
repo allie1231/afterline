@@ -256,7 +256,7 @@ export function CaptureForm({
           onChange={(e) => setText(e.target.value)}
           rows={5}
           placeholder="기억하고 싶은 문장을 붙여넣거나 입력하세요."
-          className="w-full border border-ink bg-paper px-3 py-3 font-serif text-lg leading-snug focus:outline-none focus:border-blue resize-y min-h-[140px]"
+          className="w-full border border-ink bg-paper px-3 py-3 font-sans text-lg leading-snug focus:outline-none focus:border-blue resize-y min-h-[140px]"
         />
       </div>
 
@@ -289,7 +289,7 @@ export function CaptureForm({
                     : "var(--ink)",
                 }}
               >
-                <div className="font-serif text-sm leading-none">{cat.en}</div>
+                <div className="font-sans text-sm leading-none">{cat.en}</div>
                 <div className="font-mono text-[9px] tracking-[0.25em] mt-1 opacity-70">
                   {cat.ko}
                 </div>
@@ -329,7 +329,7 @@ export function CaptureForm({
             required
             value={existingId || sourcesOfType[0]?.id || ""}
             onChange={(e) => setExistingId(e.target.value)}
-            className="w-full border border-ink bg-paper px-3 py-3 font-serif text-base"
+            className="w-full border border-ink bg-paper px-3 py-3 font-sans text-base"
           >
             {sourcesOfType.map((s) => (
               <option key={s.id} value={s.id}>
@@ -364,7 +364,7 @@ export function CaptureForm({
                           ? "영화 · 드라마 제목"
                           : "곡 · 아티스트"
                     }
-                    className="flex-1 border border-ink bg-paper px-3 py-2.5 font-serif text-base focus:outline-none focus:border-blue"
+                    className="flex-1 border border-ink bg-paper px-3 py-2.5 font-sans text-base focus:outline-none focus:border-blue"
                   />
                   <button
                     type="button"
@@ -396,7 +396,7 @@ export function CaptureForm({
                             <div className="w-10 h-14 bg-line shrink-0" />
                           )}
                           <div className="flex-1 min-w-0">
-                            <div className="font-serif text-sm leading-tight truncate">
+                            <div className="font-sans text-sm leading-tight truncate">
                               {h.title}
                             </div>
                             {h.creator && (
@@ -425,7 +425,7 @@ export function CaptureForm({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="제목 *"
-              className="w-full border border-ink bg-paper px-3 py-3 font-serif text-base"
+              className="w-full border border-ink bg-paper px-3 py-3 font-sans text-base"
             />
             <input
               type="text"
@@ -433,7 +433,7 @@ export function CaptureForm({
               value={creator}
               onChange={(e) => setCreator(e.target.value)}
               placeholder="저자 / 출연자 / 아티스트"
-              className="w-full border border-ink bg-paper px-3 py-3 font-serif text-base"
+              className="w-full border border-ink bg-paper px-3 py-3 font-sans text-base"
             />
             <div className="grid grid-cols-2 gap-2">
               <input
@@ -442,7 +442,7 @@ export function CaptureForm({
                 value={publisher}
                 onChange={(e) => setPublisher(e.target.value)}
                 placeholder="출판사 / 앨범"
-                className="border border-ink bg-paper px-3 py-3 font-serif text-base min-w-0"
+                className="border border-ink bg-paper px-3 py-3 font-sans text-base min-w-0"
               />
               <input
                 type="text"
@@ -450,7 +450,7 @@ export function CaptureForm({
                 value={publishedDate}
                 onChange={(e) => setPublishedDate(e.target.value)}
                 placeholder="연도"
-                className="border border-ink bg-paper px-3 py-3 font-serif text-base min-w-0"
+                className="border border-ink bg-paper px-3 py-3 font-sans text-base min-w-0"
               />
             </div>
             <input
@@ -459,7 +459,7 @@ export function CaptureForm({
               value={genre}
               onChange={(e) => setGenre(e.target.value)}
               placeholder="장르 — 한국소설 / 한국영화 / K-Pop … (검색으로 자동입력)"
-              className="w-full border border-ink bg-paper px-3 py-3 font-serif text-base"
+              className="w-full border border-ink bg-paper px-3 py-3 font-sans text-base"
             />
             <input type="hidden" name="isbn" value={isbn} />
             <input type="hidden" name="cover_url" value={coverUrl} />
@@ -488,7 +488,7 @@ export function CaptureForm({
           type="text"
           name="page"
           placeholder="p.132 / 12:30 / S1E04..."
-          className="w-full border border-ink bg-paper px-3 py-3 font-serif text-base"
+          className="w-full border border-ink bg-paper px-3 py-3 font-sans text-base"
         />
       </div>
 
@@ -500,7 +500,7 @@ export function CaptureForm({
           type="text"
           name="mood_tags"
           placeholder="quiet, growth..."
-          className="w-full border border-ink bg-paper px-3 py-3 font-serif text-base"
+          className="w-full border border-ink bg-paper px-3 py-3 font-sans text-base"
         />
       </div>
 

@@ -28,7 +28,7 @@ export default async function DataPage() {
         ]}
         className="mb-3"
       />
-      <h1 className="font-serif text-4xl md:text-5xl tracking-tight leading-none">
+      <h1 className="font-sans text-4xl md:text-5xl tracking-tight leading-none">
         Data
       </h1>
       <p className="font-mono text-xs tracking-[0.2em] text-muted mt-3 mb-12">

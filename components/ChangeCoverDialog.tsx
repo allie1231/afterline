@@ -328,7 +328,7 @@ export function ChangeCoverDialog({
         </header>
 
         <div className="px-5 pt-4">
-          <div className="font-serif text-xl leading-tight">{source.title}</div>
+          <div className="font-sans text-xl leading-tight">{source.title}</div>
           {source.creator && (
             <div className="font-mono text-[10px] tracking-[0.2em] text-muted mt-1">
               {source.creator}
@@ -367,7 +367,7 @@ export function ChangeCoverDialog({
                     }
                   }}
                   placeholder={PLACEHOLDER[source.type]}
-                  className="flex-1 border border-ink bg-paper px-3 py-2 font-serif text-base focus:outline-none focus:border-blue"
+                  className="flex-1 border border-ink bg-paper px-3 py-2 font-sans text-base focus:outline-none focus:border-blue"
                   autoFocus
                 />
                 <button
@@ -398,7 +398,7 @@ export function ChangeCoverDialog({
                         <div className="w-12 h-[72px] bg-line shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
-                        <div className="font-serif text-base leading-tight truncate">
+                        <div className="font-sans text-base leading-tight truncate">
                           {h.title}
                         </div>
                         {h.creator && (
@@ -463,7 +463,7 @@ export function ChangeCoverDialog({
                 <div className="font-mono text-[10px] tracking-[0.3em] text-muted">
                   {uploading ? "UPLOADING…" : "DROP IMAGE HERE / 끌어다 놓기"}
                 </div>
-                <div className="font-serif text-base text-ink mt-2">
+                <div className="font-sans text-base text-ink mt-2">
                   {uploading ? "잠시만요…" : "또는 클릭해서 선택"}
                 </div>
                 <div className="font-mono text-[9px] tracking-[0.25em] text-muted mt-2">
@@ -490,7 +490,7 @@ export function ChangeCoverDialog({
                 value={urlInput}
                 onChange={(e) => setUrlInput(e.target.value)}
                 placeholder="https://..."
-                className="w-full border border-ink bg-paper px-3 py-2 font-serif text-base focus:outline-none focus:border-blue"
+                className="w-full border border-ink bg-paper px-3 py-2 font-sans text-base focus:outline-none focus:border-blue"
                 autoFocus
               />
               {urlInput.trim() && (

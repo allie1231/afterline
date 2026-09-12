@@ -31,7 +31,7 @@ export default async function EntrancePage() {
         <h1 className="font-serif text-[clamp(80px,14vw,200px)] leading-[0.9] tracking-tight">
           After<span className="italic">line</span>
         </h1>
-        <div className="font-serif text-2xl leading-snug max-w-lg">
+        <div className="font-sans text-2xl leading-snug max-w-lg">
           Lines that stayed after reading.
           <br />
           <span className="text-muted">읽고 난 뒤에도 남은 문장들.</span>
@@ -106,7 +106,7 @@ function PastQuoteBody({ q, large = false }: { q: PastLine; large?: boolean }) {
   return (
     <div>
       <p
-        className={`font-serif ${
+        className={`font-sans ${
           large ? "text-3xl md:text-4xl" : "text-xl"
         } leading-snug whitespace-pre-line`}
       >

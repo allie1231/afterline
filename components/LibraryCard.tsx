@@ -68,11 +68,11 @@ export function LibraryCard({
               <div className="font-mono text-[10px] tracking-[0.25em] text-muted mb-1">
                 TITLE
               </div>
-              <div className="font-serif text-2xl leading-tight">
+              <div className="font-sans text-2xl leading-tight">
                 {source.title}
               </div>
               {source.creator && (
-                <div className="font-serif text-base text-muted mt-1">
+                <div className="font-sans text-base text-muted mt-1">
                   {source.creator}
                 </div>
               )}
