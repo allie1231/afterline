@@ -24,6 +24,15 @@ export function AppHeader() {
 
         <div className="justify-self-end flex items-center gap-3">
           <SearchTrigger />
+          <form action="/auth/signout" method="post" className="hidden sm:block">
+            <button
+              type="submit"
+              className="font-mono text-[10px] tracking-[0.2em] text-muted hover:text-ink transition-colors flex flex-col items-start leading-tight cursor-pointer"
+            >
+              <span>SIGN OUT</span>
+              <span className="text-[9px] mt-0.5">로그아웃</span>
+            </button>
+          </form>
         </div>
       </div>
     </header>

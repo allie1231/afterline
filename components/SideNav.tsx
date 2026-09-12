@@ -129,6 +129,15 @@ export function SideNav() {
           })}
         </nav>
 
+        <form action="/auth/signout" method="post" className="border-t border-ink">
+          <button
+            type="submit"
+            className="w-full px-5 py-4 font-mono text-[10px] tracking-[0.3em] text-muted hover:bg-line/40 transition-colors text-left flex items-baseline justify-between"
+          >
+            <span>SIGN OUT</span>
+            <span className="text-[9px]">로그아웃</span>
+          </button>
+        </form>
       </aside>
     </>
   );

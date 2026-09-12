@@ -1,4 +1,11 @@
-export const MAX_COVER_BYTES = 5 * 1024 * 1024;
+// Cover image upload to the Supabase `covers` bucket.
+// Path scheme: {user_id}/{uuid}.{ext}
+// Bucket should be public-read; writes are RLS-protected to the
+// owner's own folder.
+
+import { createClient } from "@/lib/supabase/client";
+
+export const MAX_COVER_BYTES = 5 * 1024 * 1024; // 5 MB
 
 export type UploadError =
   | { kind: "not_authenticated" }
@@ -7,9 +14,41 @@ export type UploadError =
   | { kind: "storage"; message: string };
 
 export async function uploadCover(
-  _file: File,
+  file: File,
 ): Promise<{ url: string } | UploadError> {
-  return { kind: "storage", message: "Upload is not available (Notion read-only mode)" };
+  if (!file.type.startsWith("image/")) {
+    return { kind: "bad_type", type: file.type };
+  }
+  if (file.size > MAX_COVER_BYTES) {
+    return { kind: "too_large", sizeBytes: file.size };
+  }
+
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { kind: "not_authenticated" };
+
+  // Derive a clean extension. Default to "jpg".
+  const dotIndex = file.name.lastIndexOf(".");
+  const rawExt =
+    dotIndex >= 0 ? file.name.slice(dotIndex + 1).toLowerCase() : "";
+  const ext = /^[a-z0-9]{1,5}$/.test(rawExt) ? rawExt : "jpg";
+
+  const id = crypto.randomUUID();
+  const path = `${user.id}/${id}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from("covers")
+    .upload(path, file, {
+      cacheControl: "31536000", // 1 year — cover files are immutable
+      upsert: false,
+      contentType: file.type,
+    });
+  if (error) return { kind: "storage", message: error.message };
+
+  const { data } = supabase.storage.from("covers").getPublicUrl(path);
+  return { url: data.publicUrl };
 }
 
 export function describeUploadError(e: UploadError): string {

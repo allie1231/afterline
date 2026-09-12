@@ -4,6 +4,7 @@ import "./globals.css";
 import { AppHeader } from "@/components/AppHeader";
 import { FloatingNav } from "@/components/FloatingNav";
 import { SideNav } from "@/components/SideNav";
+import { createClient } from "@/lib/supabase/server";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -34,26 +35,31 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f7f7f5",
+  themeColor: "#f5f1e8",
   width: "device-width",
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <html
       lang="ko"
       className={`${cormorant.variable} ${inter.variable} ${plexMono.variable}`}
     >
       <body className="min-h-screen bg-paper text-ink">
-        <AppHeader />
+        {user && <AppHeader />}
         <main>{children}</main>
-        <SideNav />
-        <FloatingNav />
+        {user && <SideNav />}
+        {user && <FloatingNav />}
       </body>
     </html>
   );

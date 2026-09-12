@@ -1,18 +1,24 @@
-import { getData } from "@/lib/notion";
+import { createClient } from "@/lib/supabase/server";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { DataPanel } from "./DataPanel";
 
 export default async function DataPage() {
-  const { sources, quotes } = await getData();
+  // Pre-compute dupe keys (`type|title||text`) so the preview can show DUPE
+  // badges without a round-trip per row.
+  const supabase = await createClient();
+  const [{ data: sources }, { data: quotes }] = await Promise.all([
+    supabase.from("sources").select("id, type, title"),
+    supabase.from("quotes").select("text, source_id"),
+  ]);
 
   const keyBySourceId = new Map<string, string>();
-  for (const s of sources) {
-    keyBySourceId.set(s.id, `${s.type}|${s.title}`);
+  for (const s of sources ?? []) {
+    keyBySourceId.set(s.id as string, `${s.type}|${s.title}`);
   }
   const dupeKeys: string[] = [];
-  for (const q of quotes) {
+  for (const q of quotes ?? []) {
     if (q.source_id) {
-      const k = keyBySourceId.get(q.source_id);
+      const k = keyBySourceId.get(q.source_id as string);
       if (k) dupeKeys.push(`${k}||${q.text}`);
     }
   }

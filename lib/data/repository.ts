@@ -1,4 +1,7 @@
-import { getData } from "@/lib/notion";
+// 데이터 접근 레이어.
+// 모든 화면은 이 함수들만 호출한다. 내부 구현은 Supabase 호출이며,
+// RLS 정책 덕분에 로그인된 사용자의 데이터만 반환된다.
+import { createClient } from "@/lib/supabase/server";
 import { ROOM_CATEGORIES } from "./categories";
 import type {
   CollectionNote,
@@ -8,10 +11,6 @@ import type {
   Source,
   SourceType,
 } from "./types";
-
-// ─────────────────────────────────────────────────────────────────────
-// Room categories (static)
-// ─────────────────────────────────────────────────────────────────────
 
 export async function getRoomCategories(): Promise<RoomCategory[]> {
   return ROOM_CATEGORIES;
@@ -23,161 +22,290 @@ export async function getRoomCategory(
   return ROOM_CATEGORIES.find((c) => c.type === type) ?? null;
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// Sources
-// ─────────────────────────────────────────────────────────────────────
-
 export async function getSourcesByType(type: SourceType): Promise<Source[]> {
-  const { sources } = await getData();
-  return sources.filter((s) => s.type === type);
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("sources")
+    .select("*")
+    .eq("type", type)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as Source[];
 }
-
-export async function getAllSources(): Promise<Source[]> {
-  const { sources } = await getData();
-  return sources;
-}
-
-export async function getSourceById(id: string): Promise<Source | null> {
-  const { sourceById } = await getData();
-  return sourceById.get(id) ?? null;
-}
-
-// ─────────────────────────────────────────────────────────────────────
-// Quotes
-// ─────────────────────────────────────────────────────────────────────
-
-export async function getQuotesBySource(sourceId: string): Promise<Quote[]> {
-  const { quotes } = await getData();
-  return quotes
-    .filter((q) => q.source_id === sourceId)
-    .sort((a, b) => a.created_at.localeCompare(b.created_at));
-}
-
-export async function getAllQuotes(): Promise<Quote[]> {
-  const { quotes } = await getData();
-  return quotes;
-}
-
-// ─────────────────────────────────────────────────────────────────────
-// Collection notes
-// ─────────────────────────────────────────────────────────────────────
-
-export async function getCollectionNoteBySource(
-  sourceId: string,
-): Promise<CollectionNote | null> {
-  const { collectionNotes } = await getData();
-  return collectionNotes.find((n) => n.source_id === sourceId) ?? null;
-}
-
-export async function getAllCollectionNotes(): Promise<CollectionNote[]> {
-  const { collectionNotes } = await getData();
-  return collectionNotes;
-}
-
-// ─────────────────────────────────────────────────────────────────────
-// Collections composite view
-// ─────────────────────────────────────────────────────────────────────
 
 export interface CollectionsItem {
   source: Source;
   lines: number;
   favorites: number;
   note: CollectionNote | null;
+  /** ISO string used for sorting; max of source.updated_at + note.updated_at */
   last_touch: string;
 }
 
+/**
+ * Composite query for the /collections index — every source with its
+ * line count, favorite count, and (optional) collection note.
+ */
 export async function getCollectionsItems(): Promise<CollectionsItem[]> {
-  const { sources, quotes, collectionNotes } = await getData();
+  const supabase = await createClient();
+  const [sourcesRes, quotesRes, notesRes] = await Promise.all([
+    supabase.from("sources").select("*"),
+    supabase.from("quotes").select("source_id, is_favorite"),
+    supabase.from("collection_notes").select("*"),
+  ]);
+  if (sourcesRes.error) throw sourcesRes.error;
+  if (quotesRes.error) throw quotesRes.error;
+  if (notesRes.error) throw notesRes.error;
 
   const linesById = new Map<string, number>();
   const favsById = new Map<string, number>();
-  for (const q of quotes) {
+  for (const q of quotesRes.data ?? []) {
     if (!q.source_id) continue;
-    linesById.set(q.source_id, (linesById.get(q.source_id) ?? 0) + 1);
-    if (q.is_favorite)
-      favsById.set(q.source_id, (favsById.get(q.source_id) ?? 0) + 1);
+    const sid = q.source_id as string;
+    linesById.set(sid, (linesById.get(sid) ?? 0) + 1);
+    if (q.is_favorite) favsById.set(sid, (favsById.get(sid) ?? 0) + 1);
   }
 
   const noteById = new Map<string, CollectionNote>();
-  for (const n of collectionNotes) noteById.set(n.source_id, n);
+  for (const n of (notesRes.data ?? []) as CollectionNote[]) {
+    noteById.set(n.source_id, n);
+  }
 
-  const items: CollectionsItem[] = sources.map((s) => {
-    const note = noteById.get(s.id) ?? null;
+  const items: CollectionsItem[] = (sourcesRes.data ?? []).map((s) => {
+    const note = noteById.get(s.id as string) ?? null;
     const last_touch =
       note?.updated_at && note.updated_at > (s.updated_at ?? "")
         ? note.updated_at
-        : s.updated_at ?? s.created_at;
+        : (s.updated_at as string) ?? (s.created_at as string);
     return {
-      source: s,
-      lines: linesById.get(s.id) ?? 0,
-      favorites: favsById.get(s.id) ?? 0,
+      source: s as Source,
+      lines: linesById.get(s.id as string) ?? 0,
+      favorites: favsById.get(s.id as string) ?? 0,
       note,
       last_touch,
     };
   });
 
+  // Default: most recently touched first.
   items.sort((a, b) => b.last_touch.localeCompare(a.last_touch));
   return items;
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// Room counts
-// ─────────────────────────────────────────────────────────────────────
+export async function getAllSources(): Promise<Source[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("sources")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as Source[];
+}
+
+export async function getSourceById(id: string): Promise<Source | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("sources")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as Source | null) ?? null;
+}
+
+export async function getQuotesBySource(sourceId: string): Promise<Quote[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("quotes")
+    .select("*")
+    .eq("source_id", sourceId)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as Quote[];
+}
+
+export async function getAllQuotes(): Promise<Quote[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("quotes")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as Quote[];
+}
+
+export async function getCollectionNoteBySource(
+  sourceId: string,
+): Promise<CollectionNote | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("collection_notes")
+    .select("*")
+    .eq("source_id", sourceId)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as CollectionNote | null) ?? null;
+}
+
+export async function getAllCollectionNotes(): Promise<CollectionNote[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("collection_notes")
+    .select("*")
+    .order("updated_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as CollectionNote[];
+}
 
 export async function countByRoom(): Promise<
   Record<SourceType, { sources: number; lines: number }>
 > {
-  const { sources, quotes, sourceById } = await getData();
+  const supabase = await createClient();
+  const [{ data: sources }, { data: quotes }] = await Promise.all([
+    supabase.from("sources").select("id, type"),
+    supabase.from("quotes").select("source_id"),
+  ]);
+
+  const typeBySourceId = new Map<string, SourceType>();
+  for (const s of sources ?? []) {
+    typeBySourceId.set(s.id as string, s.type as SourceType);
+  }
 
   const result = {} as Record<SourceType, { sources: number; lines: number }>;
-  for (const cat of ROOM_CATEGORIES)
+  for (const cat of ROOM_CATEGORIES) {
     result[cat.type] = { sources: 0, lines: 0 };
-
-  for (const s of sources) {
-    result[s.type].sources += 1;
   }
-  for (const q of quotes) {
+  for (const s of sources ?? []) {
+    result[s.type as SourceType].sources += 1;
+  }
+  for (const q of quotes ?? []) {
     if (q.source_id) {
-      const s = sourceById.get(q.source_id);
-      if (s) result[s.type].lines += 1;
+      const t = typeBySourceId.get(q.source_id as string);
+      if (t) result[t].lines += 1;
     }
   }
   return result;
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// Tags
-// ─────────────────────────────────────────────────────────────────────
+// ---------------------------------------------------------------------
+// Writes
+// ---------------------------------------------------------------------
+
+export interface CreateSourceInput {
+  type: SourceType;
+  title: string;
+  creator?: string;
+  publisher?: string;
+  published_date?: string;
+  isbn?: string;
+  cover_url?: string;
+  url?: string;
+  genre?: string | null;
+  spine_color?: string | null;
+}
+
+export async function createSource(input: CreateSourceInput): Promise<Source> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const { data, error } = await supabase
+    .from("sources")
+    .insert({ ...input, user_id: user.id })
+    .select()
+    .single();
+  if (error) throw error;
+  return data as Source;
+}
+
+export interface CreateQuoteInput {
+  source_id: string;
+  text: string;
+  page?: string;
+  note?: string;
+  mood_tags?: string[];
+  is_favorite?: boolean;
+}
+
+export interface CollectionNoteFields {
+  summary?: string | null;
+  personal_note?: string | null;
+  rating?: number | null;
+  status?: CollectionNote["status"];
+  started_at?: string | null;
+  finished_at?: string | null;
+  keywords?: string[];
+}
+
+export async function upsertCollectionNote(
+  sourceId: string,
+  fields: CollectionNoteFields,
+): Promise<void> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const { data: existing } = await supabase
+    .from("collection_notes")
+    .select("id")
+    .eq("source_id", sourceId)
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await supabase
+      .from("collection_notes")
+      .update({ ...fields, updated_at: new Date().toISOString() })
+      .eq("id", existing.id);
+    if (error) throw error;
+  } else {
+    const { error } = await supabase.from("collection_notes").insert({
+      ...fields,
+      source_id: sourceId,
+      user_id: user.id,
+    });
+    if (error) throw error;
+  }
+}
+
+export async function createQuote(input: CreateQuoteInput): Promise<Quote> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const { data, error } = await supabase
+    .from("quotes")
+    .insert({
+      source_id: input.source_id,
+      text: input.text,
+      page: input.page ?? null,
+      note: input.note ?? null,
+      mood_tags: input.mood_tags ?? [],
+      is_favorite: input.is_favorite ?? false,
+      visibility: "private",
+      user_id: user.id,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return data as Quote;
+}
 
 export async function getAllTags(): Promise<string[]> {
-  const { quotes } = await getData();
+  const supabase = await createClient();
+  const { data } = await supabase.from("quotes").select("mood_tags");
   const seen = new Set<string>();
-  for (const q of quotes) {
-    for (const t of q.mood_tags) {
+  for (const q of data ?? []) {
+    for (const t of (q.mood_tags ?? []) as string[]) {
       if (t.trim()) seen.add(t);
     }
   }
   return [...seen].sort();
 }
-
-export async function getMoodTagsWithCounts(): Promise<
-  { tag: string; count: number }[]
-> {
-  const { quotes } = await getData();
-  const counts = new Map<string, number>();
-  for (const q of quotes) {
-    for (const tag of q.mood_tags) {
-      counts.set(tag, (counts.get(tag) ?? 0) + 1);
-    }
-  }
-  return [...counts.entries()]
-    .map(([tag, count]) => ({ tag, count }))
-    .sort((a, b) => b.count - a.count);
-}
-
-// ─────────────────────────────────────────────────────────────────────
-// Random line pool
-// ─────────────────────────────────────────────────────────────────────
 
 export interface RandomLine {
   id: string;
@@ -191,17 +319,59 @@ export interface RandomLine {
   source_creator: string | null;
 }
 
-export async function getRandomLinePool(limit = 200): Promise<RandomLine[]> {
-  const { quotes, sourceById } = await getData();
-  return quotes.slice(0, limit).map((q) => {
-    const src = q.source_id ? sourceById.get(q.source_id) : undefined;
+/**
+ * Pool used by the entrance page's "Today's Line" panel. Fetches a
+ * reasonable cap so the entire pool can ship to the client for shuffling
+ * without a round-trip per click.
+ */
+export async function getRandomLinePool(
+  limit = 200,
+): Promise<RandomLine[]> {
+  const supabase = await createClient();
+  const { data: quotes } = await supabase
+    .from("quotes")
+    .select("id, text, page, mood_tags, is_favorite, source_id")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  const sourceIds = Array.from(
+    new Set(
+      (quotes ?? [])
+        .map((q) => q.source_id as string | null)
+        .filter((id): id is string => !!id),
+    ),
+  );
+
+  let sourcesById = new Map<
+    string,
+    { title: string; type: SourceType; creator: string | null }
+  >();
+  if (sourceIds.length > 0) {
+    const { data: sources } = await supabase
+      .from("sources")
+      .select("id, title, type, creator")
+      .in("id", sourceIds);
+    sourcesById = new Map(
+      (sources ?? []).map((s) => [
+        s.id as string,
+        {
+          title: s.title as string,
+          type: s.type as SourceType,
+          creator: (s.creator as string | null) ?? null,
+        },
+      ]),
+    );
+  }
+
+  return (quotes ?? []).map((q) => {
+    const src = q.source_id ? sourcesById.get(q.source_id as string) : null;
     return {
-      id: q.id,
-      text: q.text,
-      page: q.page ?? null,
-      mood_tags: q.mood_tags,
-      is_favorite: q.is_favorite,
-      source_id: q.source_id,
+      id: q.id as string,
+      text: q.text as string,
+      page: (q.page as string | null) ?? null,
+      mood_tags: ((q.mood_tags ?? []) as string[]) ?? [],
+      is_favorite: !!q.is_favorite,
+      source_id: (q.source_id as string | null) ?? null,
       source_title: src?.title ?? null,
       source_type: src?.type ?? null,
       source_creator: src?.creator ?? null,
@@ -209,28 +379,46 @@ export async function getRandomLinePool(limit = 200): Promise<RandomLine[]> {
   });
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// Quotes by tag
-// ─────────────────────────────────────────────────────────────────────
-
 export interface QuoteWithSource {
   quote: Quote;
   source: Source | null;
 }
 
+/**
+ * All quotes carrying a given mood tag, joined with their source.
+ * Used by /mood/[tag] tag drill-in pages.
+ */
 export async function getQuotesByTag(tag: string): Promise<QuoteWithSource[]> {
-  const { quotes, sourceById } = await getData();
-  return quotes
-    .filter((q) => q.mood_tags.includes(tag))
-    .map((q) => ({
-      quote: q,
-      source: q.source_id ? sourceById.get(q.source_id) ?? null : null,
-    }));
-}
+  const supabase = await createClient();
+  const { data: quotes, error } = await supabase
+    .from("quotes")
+    .select("*")
+    .contains("mood_tags", [tag])
+    .order("created_at", { ascending: false });
+  if (error) throw error;
 
-// ─────────────────────────────────────────────────────────────────────
-// Stats
-// ─────────────────────────────────────────────────────────────────────
+  const sourceIds = Array.from(
+    new Set(
+      (quotes ?? [])
+        .map((q) => q.source_id as string | null)
+        .filter((id): id is string => !!id),
+    ),
+  );
+  let byId = new Map<string, Source>();
+  if (sourceIds.length > 0) {
+    const { data: sources } = await supabase
+      .from("sources")
+      .select("*")
+      .in("id", sourceIds);
+    byId = new Map(
+      ((sources ?? []) as Source[]).map((s) => [s.id, s]),
+    );
+  }
+  return ((quotes ?? []) as Quote[]).map((q) => ({
+    quote: q,
+    source: q.source_id ? byId.get(q.source_id) ?? null : null,
+  }));
+}
 
 export interface StatsData {
   totalLines: number;
@@ -240,26 +428,42 @@ export interface StatsData {
   linesByType: Record<SourceType, number>;
   sourcesByType: Record<SourceType, number>;
   topTags: { tag: string; count: number }[];
+  // Top tags grouped by source type — empty array when a room has no tagged quotes.
   tagsByType: Record<SourceType, { tag: string; count: number }[]>;
+  // Genre × type buckets — built from sources.genre (auto-filled or manual).
+  // Map: SourceType → array of {genre, sources, lines} sorted by line count desc.
   genresByType: Record<
     SourceType,
     { genre: string; sources: number; lines: number }[]
   >;
   topSources: { source: Source; lines: number }[];
-  activity: { date: string; count: number }[];
+  activity: { date: string; count: number }[]; // last 30 days, oldest → newest
   latestLineAt: string | null;
+  // Notes — aggregate of the long-form journal entries.
   notes: {
     total: number;
     avgWords: number;
-    longest: number;
+    longest: number; // word count of the longest note
     byType: Record<SourceType, number>;
-    byKind: { kind: string; count: number }[];
+    byKind: { kind: string; count: number }[]; // sorted desc, capped at 10
   };
 }
 
 export async function getStatsData(): Promise<StatsData> {
-  const { sources, quotes, sourceById } = await getData();
+  const supabase = await createClient();
+  const [{ data: sources }, { data: quotes }, { data: notesRaw }] =
+    await Promise.all([
+      supabase.from("sources").select("*"),
+      supabase
+        .from("quotes")
+        .select("id, source_id, mood_tags, is_favorite, created_at"),
+      supabase.from("notes").select("kind, body, source_id"),
+    ]);
 
+  const allSources = (sources ?? []) as Source[];
+  const allQuotes = quotes ?? [];
+
+  // Init type buckets
   const linesByType = {} as Record<SourceType, number>;
   const sourcesByType = {} as Record<SourceType, number>;
   for (const cat of ROOM_CATEGORIES) {
@@ -267,7 +471,9 @@ export async function getStatsData(): Promise<StatsData> {
     sourcesByType[cat.type] = 0;
   }
 
-  for (const s of sources) {
+  const sourceTypeById = new Map<string, SourceType>();
+  for (const s of allSources) {
+    sourceTypeById.set(s.id, s.type);
     sourcesByType[s.type] = (sourcesByType[s.type] ?? 0) + 1;
   }
 
@@ -279,25 +485,25 @@ export async function getStatsData(): Promise<StatsData> {
   let favoriteLines = 0;
   let latestLineAt: string | null = null;
 
-  for (const q of quotes) {
+  for (const q of allQuotes) {
     const sType = q.source_id
-      ? sourceById.get(q.source_id)?.type
+      ? sourceTypeById.get(q.source_id as string)
       : undefined;
     if (q.source_id) {
       if (sType) linesByType[sType] = (linesByType[sType] ?? 0) + 1;
       linesBySourceId.set(
-        q.source_id,
-        (linesBySourceId.get(q.source_id) ?? 0) + 1,
+        q.source_id as string,
+        (linesBySourceId.get(q.source_id as string) ?? 0) + 1,
       );
     }
     if (q.is_favorite) favoriteLines += 1;
-    if (q.created_at) {
-      if (!latestLineAt || q.created_at > latestLineAt)
-        latestLineAt = q.created_at;
-      const day = q.created_at.slice(0, 10);
+    const created = q.created_at as string;
+    if (created) {
+      if (!latestLineAt || created > latestLineAt) latestLineAt = created;
+      const day = created.slice(0, 10);
       activityByDay.set(day, (activityByDay.get(day) ?? 0) + 1);
     }
-    for (const tag of q.mood_tags) {
+    for (const tag of (q.mood_tags ?? []) as string[]) {
       if (!tag.trim()) continue;
       tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
       if (sType) {
@@ -312,10 +518,7 @@ export async function getStatsData(): Promise<StatsData> {
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
 
-  const tagsByType = {} as Record<
-    SourceType,
-    { tag: string; count: number }[]
-  >;
+  const tagsByType = {} as Record<SourceType, { tag: string; count: number }[]>;
   for (const [type, bucket] of tagCountsByType.entries()) {
     tagsByType[type] = [...bucket.entries()]
       .map(([tag, count]) => ({ tag, count }))
@@ -323,13 +526,13 @@ export async function getStatsData(): Promise<StatsData> {
       .slice(0, 10);
   }
 
+  // Genres × type — count source records and total lines per (type, genre).
   const genreCountsByType = new Map<
     SourceType,
     Map<string, { sources: number; lines: number }>
   >();
-  for (const cat of ROOM_CATEGORIES)
-    genreCountsByType.set(cat.type, new Map());
-  for (const s of sources) {
+  for (const cat of ROOM_CATEGORIES) genreCountsByType.set(cat.type, new Map());
+  for (const s of allSources) {
     const g = (s.genre ?? "").trim();
     if (!g) continue;
     const bucket = genreCountsByType.get(s.type)!;
@@ -351,13 +554,50 @@ export async function getStatsData(): Promise<StatsData> {
 
   const topSources = [...linesBySourceId.entries()]
     .map(([sourceId, lines]) => ({
-      source: sourceById.get(sourceId)!,
+      source: allSources.find((s) => s.id === sourceId)!,
       lines,
     }))
     .filter((x) => !!x.source)
     .sort((a, b) => b.lines - a.lines)
     .slice(0, 5);
 
+  // Notes aggregate
+  const sourceTypeBySid = new Map<string, SourceType>();
+  for (const s of allSources) sourceTypeBySid.set(s.id, s.type);
+  const notesList = (notesRaw ?? []) as Array<{
+    kind: string | null;
+    body: string;
+    source_id: string | null;
+  }>;
+  const notesByType = {} as Record<SourceType, number>;
+  for (const cat of ROOM_CATEGORIES) notesByType[cat.type] = 0;
+  const notesByKind = new Map<string, number>();
+  let totalWords = 0;
+  let longestWords = 0;
+  for (const n of notesList) {
+    const wc = n.body.trim().split(/\s+/).filter(Boolean).length;
+    totalWords += wc;
+    if (wc > longestWords) longestWords = wc;
+    if (n.source_id) {
+      const t = sourceTypeBySid.get(n.source_id);
+      if (t) notesByType[t] = (notesByType[t] ?? 0) + 1;
+    }
+    const k = (n.kind ?? "").trim();
+    if (k) notesByKind.set(k, (notesByKind.get(k) ?? 0) + 1);
+  }
+  const notesAgg = {
+    total: notesList.length,
+    avgWords:
+      notesList.length > 0 ? Math.round(totalWords / notesList.length) : 0,
+    longest: longestWords,
+    byType: notesByType,
+    byKind: [...notesByKind.entries()]
+      .map(([kind, count]) => ({ kind, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10),
+  };
+
+  // Build last-30-day activity array (oldest → newest), filling zeros for empty days.
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
   const activity: { date: string; count: number }[] = [];
@@ -368,12 +608,9 @@ export async function getStatsData(): Promise<StatsData> {
     activity.push({ date: iso, count: activityByDay.get(iso) ?? 0 });
   }
 
-  const notesByType = {} as Record<SourceType, number>;
-  for (const cat of ROOM_CATEGORIES) notesByType[cat.type] = 0;
-
   return {
-    totalLines: quotes.length,
-    totalSources: sources.length,
+    totalLines: allQuotes.length,
+    totalSources: allSources.length,
     totalTags: tagCounts.size,
     favoriteLines,
     linesByType,
@@ -384,18 +621,198 @@ export async function getStatsData(): Promise<StatsData> {
     topSources,
     activity,
     latestLineAt,
-    notes: {
-      total: 0,
-      avgWords: 0,
-      longest: 0,
-      byType: notesByType,
-      byKind: [],
-    },
+    notes: notesAgg,
   };
 }
 
+export async function getMoodTagsWithCounts(): Promise<
+  { tag: string; count: number }[]
+> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("quotes").select("mood_tags");
+  if (error) throw error;
+  const counts = new Map<string, number>();
+  for (const q of data ?? []) {
+    for (const tag of (q.mood_tags ?? []) as string[]) {
+      counts.set(tag, (counts.get(tag) ?? 0) + 1);
+    }
+  }
+  return [...counts.entries()]
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => b.count - a.count);
+}
+
+// ---------------------------------------------------------------------
+// Personal API tokens (extension / external clients)
+// ---------------------------------------------------------------------
+
+function generateApiToken(): string {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return `afterline_${Buffer.from(bytes).toString("base64url")}`;
+}
+
+export async function getOrCreateApiToken(): Promise<string> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const { data: existing } = await supabase
+    .from("api_tokens")
+    .select("token")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (existing?.token) return existing.token as string;
+
+  const token = generateApiToken();
+  const { error } = await supabase
+    .from("api_tokens")
+    .insert({ user_id: user.id, token });
+  if (error) throw error;
+  return token;
+}
+
+export async function regenerateApiToken(): Promise<string> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  await supabase.from("api_tokens").delete().eq("user_id", user.id);
+  const token = generateApiToken();
+  const { error } = await supabase
+    .from("api_tokens")
+    .insert({ user_id: user.id, token });
+  if (error) throw error;
+  return token;
+}
+
 // ─────────────────────────────────────────────────────────────────────
-// Year in Review
+// Notes — long-form journal entries attached to a source
+// ─────────────────────────────────────────────────────────────────────
+
+export async function getNotesBySource(sourceId: string): Promise<Note[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("notes")
+    .select("*")
+    .eq("source_id", sourceId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as Note[];
+}
+
+export async function getNoteById(id: string): Promise<Note | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("notes")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as Note | null) ?? null;
+}
+
+export interface NoteWithSource {
+  note: Note;
+  source: Source | null;
+}
+
+export async function getAllNotesWithSource(): Promise<NoteWithSource[]> {
+  const supabase = await createClient();
+  const { data: notes, error } = await supabase
+    .from("notes")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  const noteList = (notes ?? []) as Note[];
+
+  const sourceIds = Array.from(
+    new Set(
+      noteList
+        .map((n) => n.source_id)
+        .filter((id): id is string => !!id),
+    ),
+  );
+  let sourcesById = new Map<string, Source>();
+  if (sourceIds.length > 0) {
+    const { data: sources } = await supabase
+      .from("sources")
+      .select("*")
+      .in("id", sourceIds);
+    sourcesById = new Map(
+      ((sources ?? []) as Source[]).map((s) => [s.id, s]),
+    );
+  }
+  return noteList.map((n) => ({
+    note: n,
+    source: n.source_id ? (sourcesById.get(n.source_id) ?? null) : null,
+  }));
+}
+
+export interface CreateNoteInput {
+  source_id: string | null;
+  kind?: string | null;
+  title?: string | null;
+  body: string;
+}
+
+export async function createNote(input: CreateNoteInput): Promise<Note> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const payload = {
+    user_id: user.id,
+    source_id: input.source_id,
+    kind: input.kind?.trim() || null,
+    title: input.title?.trim() || null,
+    body: input.body,
+  };
+  const { data, error } = await supabase
+    .from("notes")
+    .insert(payload)
+    .select()
+    .single();
+  if (error) throw error;
+  return data as Note;
+}
+
+export interface UpdateNoteInput {
+  kind?: string | null;
+  title?: string | null;
+  body?: string;
+}
+
+export async function updateNote(
+  id: string,
+  fields: UpdateNoteInput,
+): Promise<void> {
+  const supabase = await createClient();
+  const patch: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+  if (fields.kind !== undefined) patch.kind = fields.kind?.trim() || null;
+  if (fields.title !== undefined) patch.title = fields.title?.trim() || null;
+  if (fields.body !== undefined) patch.body = fields.body;
+  const { error } = await supabase.from("notes").update(patch).eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteNote(id: string): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("notes").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Year in Review — annual editorial digest
 // ─────────────────────────────────────────────────────────────────────
 
 export interface YearInReview {
@@ -405,29 +822,69 @@ export interface YearInReview {
   totalNotes: number;
   favoriteCount: number;
   byType: Record<SourceType, number>;
-  byMonth: { month: number; count: number }[];
+  byMonth: { month: number; count: number }[]; // 12 entries, oldest → newest
   busiestMonth: { month: number; count: number } | null;
-  topSources: { source: Source; lines: number }[];
-  topTags: { tag: string; count: number }[];
-  topGenres: { genre: string; count: number }[];
-  topPeople: { name: string; lines: number }[];
+  topSources: { source: Source; lines: number }[]; // top 5
+  topTags: { tag: string; count: number }[]; // top 10
+  topGenres: { genre: string; count: number }[]; // top 8
+  topPeople: { name: string; lines: number }[]; // top 8 creators
   firstLine: { quote: Quote; source: Source | null } | null;
   latestLine: { quote: Quote; source: Source | null } | null;
-  favorites: { quote: Quote; source: Source | null }[];
+  favorites: { quote: Quote; source: Source | null }[]; // up to 5 random favorites
 }
 
 export async function getYearInReview(year: number): Promise<YearInReview> {
-  const { sources, quotes, sourceById } = await getData();
-  const start = `${year}-01-01`;
-  const end = `${year + 1}-01-01`;
+  const supabase = await createClient();
+  const start = `${year}-01-01T00:00:00.000Z`;
+  const end = `${year + 1}-01-01T00:00:00.000Z`;
+  const [
+    { data: quotes },
+    { data: sources },
+    { data: notes },
+  ] = await Promise.all([
+    supabase
+      .from("quotes")
+      .select("*")
+      .gte("created_at", start)
+      .lt("created_at", end)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("sources")
+      .select("*")
+      .gte("created_at", start)
+      .lt("created_at", end),
+    supabase
+      .from("notes")
+      .select("id, created_at")
+      .gte("created_at", start)
+      .lt("created_at", end),
+  ]);
+  const quoteList = (quotes ?? []) as Quote[];
+  const sourceList = (sources ?? []) as Source[];
+  const noteList = notes ?? [];
 
-  const yearQuotes = quotes.filter(
-    (q) => q.created_at >= start && q.created_at < end,
+  // We also need full sources for any quote source_id that isn't in this
+  // year's new sources (a line collected this year from an older source).
+  const allSourceIds = Array.from(
+    new Set(
+      quoteList.map((q) => q.source_id).filter((s): s is string => !!s),
+    ),
   );
-  const yearSources = sources.filter(
-    (s) => s.created_at >= start && s.created_at < end,
+  const knownIds = new Set(sourceList.map((s) => s.id));
+  const missingIds = allSourceIds.filter((id) => !knownIds.has(id));
+  let extraSources: Source[] = [];
+  if (missingIds.length > 0) {
+    const { data } = await supabase
+      .from("sources")
+      .select("*")
+      .in("id", missingIds);
+    extraSources = (data ?? []) as Source[];
+  }
+  const sourceById = new Map(
+    [...sourceList, ...extraSources].map((s) => [s.id, s]),
   );
 
+  // Buckets
   const byType = {} as Record<SourceType, number>;
   for (const cat of ROOM_CATEGORIES) byType[cat.type] = 0;
   const byMonthMap = new Map<number, number>();
@@ -437,7 +894,7 @@ export async function getYearInReview(year: number): Promise<YearInReview> {
   const peopleCounts = new Map<string, number>();
   let favoriteCount = 0;
 
-  for (const q of yearQuotes) {
+  for (const q of quoteList) {
     if (q.is_favorite) favoriteCount += 1;
     const m = new Date(q.created_at).getMonth() + 1;
     byMonthMap.set(m, (byMonthMap.get(m) ?? 0) + 1);
@@ -452,18 +909,16 @@ export async function getYearInReview(year: number): Promise<YearInReview> {
         peopleCounts.set(creator, (peopleCounts.get(creator) ?? 0) + 1);
       }
     }
-    for (const t of q.mood_tags) {
+    for (const t of q.mood_tags ?? []) {
       if (t.trim()) tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
     }
   }
 
   const byMonth: { month: number; count: number }[] = [];
-  for (let i = 1; i <= 12; i++)
+  for (let i = 1; i <= 12; i++) {
     byMonth.push({ month: i, count: byMonthMap.get(i) ?? 0 });
-  const busiestMonth = byMonth.reduce<{
-    month: number;
-    count: number;
-  } | null>(
+  }
+  const busiestMonth = byMonth.reduce<{ month: number; count: number } | null>(
     (best, cur) =>
       cur.count > 0 && (!best || cur.count > best.count) ? cur : best,
     null,
@@ -490,16 +945,13 @@ export async function getYearInReview(year: number): Promise<YearInReview> {
     .sort((a, b) => b.lines - a.lines)
     .slice(0, 8);
 
-  const sorted = [...yearQuotes].sort((a, b) =>
-    a.created_at.localeCompare(b.created_at),
-  );
-  const firstQ = sorted[0] ?? null;
-  const lastQ = sorted[sorted.length - 1] ?? null;
+  const firstQ = quoteList[0] ?? null;
+  const lastQ = quoteList[quoteList.length - 1] ?? null;
   const firstLine = firstQ
     ? {
         quote: firstQ,
         source: firstQ.source_id
-          ? sourceById.get(firstQ.source_id) ?? null
+          ? (sourceById.get(firstQ.source_id) ?? null)
           : null,
       }
     : null;
@@ -507,24 +959,24 @@ export async function getYearInReview(year: number): Promise<YearInReview> {
     ? {
         quote: lastQ,
         source: lastQ.source_id
-          ? sourceById.get(lastQ.source_id) ?? null
+          ? (sourceById.get(lastQ.source_id) ?? null)
           : null,
       }
     : null;
 
-  const favList = yearQuotes
-    .filter((q) => q.is_favorite)
-    .sort((a, b) => a.id.localeCompare(b.id));
+  const favList = quoteList.filter((q) => q.is_favorite);
+  // Shuffle deterministically by id hash so the page is stable per refresh.
+  favList.sort((a, b) => a.id.localeCompare(b.id));
   const favorites = favList.slice(0, 5).map((q) => ({
     quote: q,
-    source: q.source_id ? sourceById.get(q.source_id) ?? null : null,
+    source: q.source_id ? (sourceById.get(q.source_id) ?? null) : null,
   }));
 
   return {
     year,
-    totalLines: yearQuotes.length,
-    totalSources: yearSources.length,
-    totalNotes: 0,
+    totalLines: quoteList.length,
+    totalSources: sourceList.length,
+    totalNotes: noteList.length,
     favoriteCount,
     byType,
     byMonth,
@@ -539,17 +991,23 @@ export async function getYearInReview(year: number): Promise<YearInReview> {
   };
 }
 
+// List of years that have at least one collected line — used by the
+// /review index to render shortcut links.
 export async function getCollectedYears(): Promise<number[]> {
-  const { quotes } = await getData();
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("quotes")
+    .select("created_at")
+    .order("created_at", { ascending: false });
   const years = new Set<number>();
-  for (const q of quotes) {
+  for (const q of (data ?? []) as Array<{ created_at: string }>) {
     years.add(new Date(q.created_at).getFullYear());
   }
   return [...years].sort((a, b) => b - a);
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Home panels
+// Home panels — On This Day + Rediscover a favorite
 // ─────────────────────────────────────────────────────────────────────
 
 export interface PastLine {
@@ -564,43 +1022,114 @@ export interface PastLine {
   source_type: SourceType | null;
 }
 
-function toPastLine(q: Quote, sourceById: Map<string, Source>): PastLine {
-  const src = q.source_id ? sourceById.get(q.source_id) : undefined;
-  return {
-    id: q.id,
-    text: q.text,
-    page: q.page ?? null,
-    is_favorite: q.is_favorite,
-    created_at: q.created_at,
-    source_id: q.source_id,
-    source_title: src?.title ?? null,
-    source_creator: src?.creator ?? null,
-    source_type: src?.type ?? null,
-  };
+async function attachSources(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  rows: Array<{
+    id: string;
+    text: string;
+    page: string | null;
+    is_favorite: boolean;
+    created_at: string;
+    source_id: string | null;
+  }>,
+): Promise<PastLine[]> {
+  const ids = Array.from(
+    new Set(rows.map((r) => r.source_id).filter((s): s is string => !!s)),
+  );
+  let sources = new Map<
+    string,
+    { title: string; creator: string | null; type: SourceType }
+  >();
+  if (ids.length > 0) {
+    const { data } = await supabase
+      .from("sources")
+      .select("id, title, creator, type")
+      .in("id", ids);
+    sources = new Map(
+      ((data ?? []) as Array<{
+        id: string;
+        title: string;
+        creator: string | null;
+        type: SourceType;
+      }>).map((s) => [
+        s.id,
+        { title: s.title, creator: s.creator, type: s.type },
+      ]),
+    );
+  }
+  return rows.map((r) => {
+    const s = r.source_id ? sources.get(r.source_id) : undefined;
+    return {
+      id: r.id,
+      text: r.text,
+      page: r.page,
+      is_favorite: r.is_favorite,
+      created_at: r.created_at,
+      source_id: r.source_id,
+      source_title: s?.title ?? null,
+      source_creator: s?.creator ?? null,
+      source_type: s?.type ?? null,
+    };
+  });
 }
 
+/**
+ * Lines collected on the same calendar month-day in past years.
+ * The "newspaper archive" panel on the home page.
+ */
 export async function getOnThisDay(): Promise<PastLine[]> {
-  const { quotes, sourceById } = await getData();
+  const supabase = await createClient();
   const today = new Date();
   const mm = String(today.getMonth() + 1).padStart(2, "0");
   const dd = String(today.getDate()).padStart(2, "0");
-
-  return quotes
+  // Postgres has to_char on timestamptz — but supabase-js doesn't expose raw
+  // SQL nicely. Instead we fetch enough recent quotes to scan in-memory.
+  // For an archive of < ~5k lines this is fine; revisit if it grows.
+  const { data, error } = await supabase
+    .from("quotes")
+    .select("id, text, page, is_favorite, created_at, source_id");
+  if (error) throw error;
+  const sameDay = ((data ?? []) as Array<{
+    id: string;
+    text: string;
+    page: string | null;
+    is_favorite: boolean;
+    created_at: string;
+    source_id: string | null;
+  }>)
     .filter((q) => {
       const d = new Date(q.created_at);
-      if (
-        String(d.getMonth() + 1).padStart(2, "0") !== mm ||
-        String(d.getDate()).padStart(2, "0") !== dd
-      )
-        return false;
-      return d.getFullYear() !== today.getFullYear();
+      const qm = String(d.getMonth() + 1).padStart(2, "0");
+      const qd = String(d.getDate()).padStart(2, "0");
+      // Exclude today's own collections — focus on past years.
+      if (qm !== mm || qd !== dd) return false;
+      const sameYear = d.getFullYear() === today.getFullYear();
+      return !sameYear;
     })
-    .map((q) => toPastLine(q, sourceById));
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+  return attachSources(supabase, sameDay);
 }
 
+/**
+ * One favorite the user hasn't collected recently — surfaced as a quiet
+ * "remember this?" prompt. Picks at random from favorites older than 30
+ * days; falls back to any favorite if there aren't enough old ones.
+ */
 export async function getRediscoveredFavorite(): Promise<PastLine | null> {
-  const { quotes, sourceById } = await getData();
-  const favorites = quotes.filter((q) => q.is_favorite);
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("quotes")
+    .select("id, text, page, is_favorite, created_at, source_id")
+    .eq("is_favorite", true);
+  if (error) throw error;
+  const favorites = (data ?? []) as Array<{
+    id: string;
+    text: string;
+    page: string | null;
+    is_favorite: boolean;
+    created_at: string;
+    source_id: string | null;
+  }>;
   if (favorites.length === 0) return null;
   const thirtyDaysAgo = Date.now() - 30 * 86_400_000;
   const stale = favorites.filter(
@@ -608,13 +1137,12 @@ export async function getRediscoveredFavorite(): Promise<PastLine | null> {
   );
   const pool = stale.length > 0 ? stale : favorites;
   const pick = pool[Math.floor(Math.random() * pool.length)];
-  return toPastLine(pick, sourceById);
+  const [withSource] = await attachSources(supabase, [pick]);
+  return withSource ?? null;
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// Reading pulse
-// ─────────────────────────────────────────────────────────────────────
-
+// Sources currently in 'reading' state — surfaced on the home page as a
+// "Now Reading" pulse. Includes line counts so the panel can show progress.
 export interface ReadingPulseItem {
   source: Source;
   lines: number;
@@ -622,99 +1150,126 @@ export interface ReadingPulseItem {
 }
 
 export async function getReadingPulse(): Promise<ReadingPulseItem[]> {
-  const { sources, quotes, collectionNotes } = await getData();
-
-  const readingNotes = collectionNotes.filter((n) => n.status === "reading");
-  if (readingNotes.length === 0) return [];
-
-  const readingSourceIds = new Set(readingNotes.map((n) => n.source_id));
+  const supabase = await createClient();
+  const { data: notes } = await supabase
+    .from("collection_notes")
+    .select("source_id, started_at")
+    .eq("status", "reading");
+  const list = (notes ?? []) as Array<{
+    source_id: string;
+    started_at: string | null;
+  }>;
+  if (list.length === 0) return [];
+  const sourceIds = list.map((n) => n.source_id);
+  const [{ data: sources }, { data: quotes }] = await Promise.all([
+    supabase.from("sources").select("*").in("id", sourceIds),
+    supabase.from("quotes").select("source_id").in("source_id", sourceIds),
+  ]);
   const linesBySource = new Map<string, number>();
-  for (const q of quotes) {
-    if (q.source_id && readingSourceIds.has(q.source_id)) {
-      linesBySource.set(
-        q.source_id,
-        (linesBySource.get(q.source_id) ?? 0) + 1,
-      );
-    }
+  for (const q of quotes ?? []) {
+    const sid = q.source_id as string;
+    linesBySource.set(sid, (linesBySource.get(sid) ?? 0) + 1);
   }
-
-  const sourceMap = new Map(sources.map((s) => [s.id, s]));
-  return readingNotes
-    .map((n) => ({
-      source: sourceMap.get(n.source_id)!,
-      lines: linesBySource.get(n.source_id) ?? 0,
-      started_at: n.started_at ?? null,
+  const startedBySource = new Map<string, string | null>(
+    list.map((n) => [n.source_id, n.started_at]),
+  );
+  return ((sources ?? []) as Source[])
+    .map((s) => ({
+      source: s,
+      lines: linesBySource.get(s.id) ?? 0,
+      started_at: startedBySource.get(s.id) ?? null,
     }))
-    .filter((x) => !!x.source)
     .sort((a, b) => {
+      // Most recently started first (nulls last)
       const av = a.started_at ?? "";
       const bv = b.started_at ?? "";
       return bv.localeCompare(av);
     });
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// Quotes by IDs
-// ─────────────────────────────────────────────────────────────────────
-
+// Fetch quotes by IDs in one round trip, with their parent source attached.
+// Used to resolve [[q:id]] references embedded in note bodies. IDs that
+// don't exist (or that the user can't see via RLS) are silently dropped.
 export async function getQuotesWithSourceByIds(
   ids: string[],
 ): Promise<Map<string, { quote: Quote; source: Source | null }>> {
   if (ids.length === 0) return new Map();
-  const { quotes, sourceById } = await getData();
-  const idSet = new Set(ids);
+  const supabase = await createClient();
+  const { data: quotes } = await supabase
+    .from("quotes")
+    .select("*")
+    .in("id", ids);
+  const quoteList = (quotes ?? []) as Quote[];
+  const sourceIds = Array.from(
+    new Set(
+      quoteList.map((q) => q.source_id).filter((s): s is string => !!s),
+    ),
+  );
+  let sourcesById = new Map<string, Source>();
+  if (sourceIds.length > 0) {
+    const { data: sources } = await supabase
+      .from("sources")
+      .select("*")
+      .in("id", sourceIds);
+    sourcesById = new Map(
+      ((sources ?? []) as Source[]).map((s) => [s.id, s]),
+    );
+  }
   const map = new Map<string, { quote: Quote; source: Source | null }>();
-  for (const q of quotes) {
-    if (idSet.has(q.id)) {
-      map.set(q.id, {
-        quote: q,
-        source: q.source_id ? sourceById.get(q.source_id) ?? null : null,
-      });
-    }
+  for (const q of quoteList) {
+    map.set(q.id, {
+      quote: q,
+      source: q.source_id ? (sourcesById.get(q.source_id) ?? null) : null,
+    });
   }
   return map;
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// People
+// People — surface every source by a single creator together
 // ─────────────────────────────────────────────────────────────────────
 
+// Movie's `creator` field stores the FORMAT (영화/드라마/애니메이션) — not a
+// person. Excluded from author/people aggregation so "영화" isn't a "person".
 const PEOPLE_EXCLUDED_TYPES = new Set<SourceType>(["movie"]);
 
 export interface CreatorSummary {
   name: string;
   sources: number;
   lines: number;
-  types: SourceType[];
+  types: SourceType[]; // distinct, sorted
 }
 
 export async function getAllCreators(): Promise<CreatorSummary[]> {
-  const { sources, quotes } = await getData();
+  const supabase = await createClient();
+  const [{ data: sources }, { data: quotes }] = await Promise.all([
+    supabase.from("sources").select("id, type, creator"),
+    supabase.from("quotes").select("source_id"),
+  ]);
   const linesBySource = new Map<string, number>();
-  for (const q of quotes) {
-    if (q.source_id)
-      linesBySource.set(
-        q.source_id,
-        (linesBySource.get(q.source_id) ?? 0) + 1,
-      );
+  for (const q of quotes ?? []) {
+    const sid = q.source_id as string | null;
+    if (!sid) continue;
+    linesBySource.set(sid, (linesBySource.get(sid) ?? 0) + 1);
   }
-
   const byName = new Map<
     string,
     { sources: number; lines: number; types: Set<SourceType> }
   >();
-  for (const s of sources) {
-    if (PEOPLE_EXCLUDED_TYPES.has(s.type)) continue;
-    const name = (s.creator ?? "").trim();
+  for (const s of sources ?? []) {
+    const type = s.type as SourceType;
+    if (PEOPLE_EXCLUDED_TYPES.has(type)) continue;
+    const name = ((s.creator as string | null) ?? "").trim();
     if (!name) continue;
+    const id = s.id as string;
     const entry = byName.get(name) ?? {
       sources: 0,
       lines: 0,
       types: new Set<SourceType>(),
     };
     entry.sources += 1;
-    entry.lines += linesBySource.get(s.id) ?? 0;
-    entry.types.add(s.type);
+    entry.lines += linesBySource.get(id) ?? 0;
+    entry.types.add(type);
     byName.set(name, entry);
   }
   return [...byName.entries()]
@@ -736,138 +1291,51 @@ export interface PersonPage {
 }
 
 export async function getPersonPage(name: string): Promise<PersonPage | null> {
-  const { sources, quotes } = await getData();
-  const personSources = sources.filter((s) => s.creator === name);
-  if (personSources.length === 0) return null;
+  const supabase = await createClient();
+  // Sources where creator matches exactly (case-sensitive — names tend to be
+  // canonical from search results so this is fine for v1).
+  const { data: sources, error: sErr } = await supabase
+    .from("sources")
+    .select("*")
+    .eq("creator", name)
+    .order("created_at", { ascending: false });
+  if (sErr) throw sErr;
+  const sourceList = (sources ?? []) as Source[];
+  if (sourceList.length === 0) return null;
 
-  const sourceIds = new Set(personSources.map((s) => s.id));
-  const sourceMap = new Map(personSources.map((s) => [s.id, s]));
-  const personQuotes = quotes.filter(
-    (q) => q.source_id && sourceIds.has(q.source_id),
-  );
+  const ids = sourceList.map((s) => s.id);
+  const [{ data: quotes }, { count: notesCount }] = await Promise.all([
+    supabase
+      .from("quotes")
+      .select("*")
+      .in("source_id", ids)
+      .order("created_at", { ascending: false })
+      .limit(40),
+    supabase
+      .from("notes")
+      .select("*", { count: "exact", head: true })
+      .in("source_id", ids),
+  ]);
+  const quotesList = (quotes ?? []) as Quote[];
+  const sourceById = new Map(sourceList.map((s) => [s.id, s]));
 
-  const recentQuotes = personQuotes.slice(0, 40).map((q) => ({
-    quote: q,
-    source: sourceMap.get(q.source_id!)!,
-  }));
+  const recentQuotes = quotesList
+    .filter((q) => q.source_id && sourceById.has(q.source_id))
+    .map((q) => ({ quote: q, source: sourceById.get(q.source_id!)! }));
+
+  // Best estimate of total line count: a separate count query would be exact,
+  // but the limit:40 above covers the displayed slice. Use total with a
+  // dedicated count query for the stats strip.
+  const { count: totalLines } = await supabase
+    .from("quotes")
+    .select("*", { count: "exact", head: true })
+    .in("source_id", ids);
 
   return {
     name,
-    sources: personSources,
-    lines: personQuotes.length,
-    notesCount: 0,
+    sources: sourceList,
+    lines: totalLines ?? quotesList.length,
+    notesCount: notesCount ?? 0,
     recentQuotes,
   };
-}
-
-// ─────────────────────────────────────────────────────────────────────
-// Notes (no standalone notes in Notion — return empty)
-// ─────────────────────────────────────────────────────────────────────
-
-export async function getNotesBySource(_sourceId: string): Promise<Note[]> {
-  return [];
-}
-
-export async function getNoteById(_id: string): Promise<Note | null> {
-  return null;
-}
-
-export interface NoteWithSource {
-  note: Note;
-  source: Source | null;
-}
-
-export async function getAllNotesWithSource(): Promise<NoteWithSource[]> {
-  return [];
-}
-
-// ─────────────────────────────────────────────────────────────────────
-// Writes (disabled — read-only Notion viewer)
-// ─────────────────────────────────────────────────────────────────────
-
-export interface CreateSourceInput {
-  type: SourceType;
-  title: string;
-  creator?: string;
-  publisher?: string;
-  published_date?: string;
-  isbn?: string;
-  cover_url?: string;
-  url?: string;
-  genre?: string | null;
-  spine_color?: string | null;
-}
-
-export async function createSource(_input: CreateSourceInput): Promise<Source> {
-  throw new Error("Write operations are not available (Notion read-only mode)");
-}
-
-export interface CreateQuoteInput {
-  source_id: string;
-  text: string;
-  page?: string;
-  note?: string;
-  mood_tags?: string[];
-  is_favorite?: boolean;
-}
-
-export async function createQuote(_input: CreateQuoteInput): Promise<Quote> {
-  throw new Error("Write operations are not available (Notion read-only mode)");
-}
-
-export interface CollectionNoteFields {
-  summary?: string | null;
-  personal_note?: string | null;
-  rating?: number | null;
-  status?: CollectionNote["status"];
-  started_at?: string | null;
-  finished_at?: string | null;
-  keywords?: string[];
-}
-
-export async function upsertCollectionNote(
-  _sourceId: string,
-  _fields: CollectionNoteFields,
-): Promise<void> {
-  throw new Error("Write operations are not available (Notion read-only mode)");
-}
-
-export interface CreateNoteInput {
-  source_id: string | null;
-  kind?: string | null;
-  title?: string | null;
-  body: string;
-}
-
-export async function createNote(_input: CreateNoteInput): Promise<Note> {
-  throw new Error("Write operations are not available (Notion read-only mode)");
-}
-
-export interface UpdateNoteInput {
-  kind?: string | null;
-  title?: string | null;
-  body?: string;
-}
-
-export async function updateNote(
-  _id: string,
-  _fields: UpdateNoteInput,
-): Promise<void> {
-  throw new Error("Write operations are not available (Notion read-only mode)");
-}
-
-export async function deleteNote(_id: string): Promise<void> {
-  throw new Error("Write operations are not available (Notion read-only mode)");
-}
-
-// ─────────────────────────────────────────────────────────────────────
-// API tokens (static — no Supabase auth)
-// ─────────────────────────────────────────────────────────────────────
-
-export async function getOrCreateApiToken(): Promise<string> {
-  return process.env.QUICK_ADD_TOKEN ?? "no-token";
-}
-
-export async function regenerateApiToken(): Promise<string> {
-  throw new Error("Token management is not available (Notion read-only mode)");
 }
