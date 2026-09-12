@@ -782,8 +782,15 @@ export async function getAllNotesWithSource(): Promise<NoteWithSource[]> {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Writes (disabled — read-only Notion viewer)
+// Writes
 // ─────────────────────────────────────────────────────────────────────
+
+import {
+  createSourceInNotion,
+  createQuoteInNotion,
+  updateSourceNoteInNotion,
+  deletePageInNotion,
+} from "@/lib/notion";
 
 export interface CreateSourceInput {
   type: SourceType;
@@ -798,8 +805,25 @@ export interface CreateSourceInput {
   spine_color?: string | null;
 }
 
-export async function createSource(_input: CreateSourceInput): Promise<Source> {
-  throw new Error("Write operations are not available (Notion read-only mode)");
+export async function createSource(input: CreateSourceInput): Promise<Source> {
+  const id = await createSourceInNotion({
+    title: input.title,
+    creator: input.creator,
+    publisher: input.publisher,
+    genre: input.genre,
+  });
+  return {
+    id,
+    user_id: "owner",
+    type: input.type,
+    title: input.title,
+    creator: input.creator,
+    publisher: input.publisher,
+    cover_url: input.cover_url,
+    genre: input.genre,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
 }
 
 export interface CreateQuoteInput {
@@ -811,8 +835,26 @@ export interface CreateQuoteInput {
   is_favorite?: boolean;
 }
 
-export async function createQuote(_input: CreateQuoteInput): Promise<Quote> {
-  throw new Error("Write operations are not available (Notion read-only mode)");
+export async function createQuote(input: CreateQuoteInput): Promise<Quote> {
+  const id = await createQuoteInNotion({
+    text: input.text,
+    sourceId: input.source_id,
+    mood_tags: input.mood_tags,
+    is_favorite: input.is_favorite,
+  });
+  return {
+    id,
+    user_id: "owner",
+    source_id: input.source_id,
+    text: input.text,
+    page: input.page,
+    note: input.note,
+    mood_tags: input.mood_tags ?? [],
+    is_favorite: input.is_favorite ?? false,
+    visibility: "private",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
 }
 
 export interface CollectionNoteFields {
@@ -826,10 +868,15 @@ export interface CollectionNoteFields {
 }
 
 export async function upsertCollectionNote(
-  _sourceId: string,
-  _fields: CollectionNoteFields,
+  sourceId: string,
+  fields: CollectionNoteFields,
 ): Promise<void> {
-  throw new Error("Write operations are not available (Notion read-only mode)");
+  await updateSourceNoteInNotion(sourceId, {
+    summary: fields.summary ?? undefined,
+    personal_note: fields.personal_note ?? undefined,
+    rating: fields.rating,
+    status: fields.status,
+  });
 }
 
 export interface CreateNoteInput {
@@ -840,7 +887,7 @@ export interface CreateNoteInput {
 }
 
 export async function createNote(_input: CreateNoteInput): Promise<Note> {
-  throw new Error("Write operations are not available (Notion read-only mode)");
+  throw new Error("Notes are stored as Notion page properties, not standalone pages");
 }
 
 export interface UpdateNoteInput {
@@ -853,15 +900,15 @@ export async function updateNote(
   _id: string,
   _fields: UpdateNoteInput,
 ): Promise<void> {
-  throw new Error("Write operations are not available (Notion read-only mode)");
+  throw new Error("Notes are stored as Notion page properties, not standalone pages");
 }
 
 export async function deleteNote(_id: string): Promise<void> {
-  throw new Error("Write operations are not available (Notion read-only mode)");
+  throw new Error("Notes are stored as Notion page properties, not standalone pages");
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// API tokens (static — no Supabase auth)
+// API tokens (static)
 // ─────────────────────────────────────────────────────────────────────
 
 export async function getOrCreateApiToken(): Promise<string> {
@@ -869,5 +916,5 @@ export async function getOrCreateApiToken(): Promise<string> {
 }
 
 export async function regenerateApiToken(): Promise<string> {
-  throw new Error("Token management is not available (Notion read-only mode)");
+  throw new Error("Token management requires environment variable change");
 }

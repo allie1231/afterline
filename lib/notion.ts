@@ -333,3 +333,171 @@ export async function getData(): Promise<AllData> {
 export function invalidateNotionCache() {
   _cache = null;
 }
+
+// ─── Write helpers ──────────────────────────────────────────────────
+
+function richTextProp(value: string) {
+  return { rich_text: [{ text: { content: value } }] };
+}
+
+function titleProp(value: string) {
+  return { title: [{ text: { content: value } }] };
+}
+
+function selectProp(name: string | null) {
+  return name ? { select: { name } } : { select: null };
+}
+
+function checkboxProp(value: boolean) {
+  return { checkbox: value };
+}
+
+const STATUS_CHECKBOX_MAP: Record<string, string> = {
+  finished: "다 읽은 책",
+  reading: "읽고 있는 책",
+  to_read: "읽고 싶은 책",
+  archived: "보류중인 책",
+};
+
+function ratingToSelect(rating: number | null): string | null {
+  if (rating === null) return null;
+  return "⭐".repeat(Math.max(1, Math.min(5, Math.round(rating))));
+}
+
+export async function updateSourceInNotion(
+  pageId: string,
+  fields: {
+    title?: string;
+    creator?: string | null;
+    publisher?: string | null;
+    genre?: string | null;
+    cover_url?: string | null;
+  },
+): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const properties: Record<string, any> = {};
+
+  if (fields.title !== undefined) properties["책 제목"] = titleProp(fields.title);
+  if (fields.creator !== undefined) properties["저자"] = richTextProp(fields.creator ?? "");
+  if (fields.publisher !== undefined) properties["출판사"] = richTextProp(fields.publisher ?? "");
+  if (fields.genre !== undefined) properties["분야"] = selectProp(fields.genre ?? null);
+
+  if (Object.keys(properties).length > 0) {
+    await notion.pages.update({ page_id: pageId, properties });
+  }
+
+  invalidateNotionCache();
+}
+
+export async function updateSourceNoteInNotion(
+  pageId: string,
+  fields: {
+    summary?: string;
+    personal_note?: string;
+    rating?: number | null;
+    status?: string | null;
+  },
+): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const properties: Record<string, any> = {};
+
+  if (fields.summary !== undefined) properties["한줄요약"] = richTextProp(fields.summary);
+  if (fields.personal_note !== undefined) properties["메모"] = richTextProp(fields.personal_note);
+  if (fields.rating !== undefined) properties["평점"] = selectProp(ratingToSelect(fields.rating));
+
+  if (fields.status !== undefined) {
+    for (const [status, propName] of Object.entries(STATUS_CHECKBOX_MAP)) {
+      properties[propName] = checkboxProp(status === fields.status);
+    }
+  }
+
+  if (Object.keys(properties).length > 0) {
+    await notion.pages.update({ page_id: pageId, properties });
+  }
+
+  invalidateNotionCache();
+}
+
+export async function updateQuoteInNotion(
+  pageId: string,
+  fields: {
+    text?: string;
+    mood_tags?: string[];
+    is_favorite?: boolean;
+  },
+): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const properties: Record<string, any> = {};
+
+  if (fields.text !== undefined) properties["수집한 문장"] = titleProp(fields.text);
+  if (fields.mood_tags !== undefined) {
+    properties["태그"] = {
+      multi_select: fields.mood_tags.map((name) => ({ name })),
+    };
+  }
+  if (fields.is_favorite !== undefined) properties["새김"] = checkboxProp(fields.is_favorite);
+
+  if (Object.keys(properties).length > 0) {
+    await notion.pages.update({ page_id: pageId, properties });
+  }
+
+  invalidateNotionCache();
+}
+
+export async function deletePageInNotion(pageId: string): Promise<void> {
+  await notion.pages.update({ page_id: pageId, archived: true });
+  invalidateNotionCache();
+}
+
+export async function createSourceInNotion(fields: {
+  title: string;
+  creator?: string;
+  publisher?: string;
+  genre?: string | null;
+  cover_url?: string;
+}): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const properties: Record<string, any> = {
+    "책 제목": titleProp(fields.title),
+  };
+  if (fields.creator) properties["저자"] = richTextProp(fields.creator);
+  if (fields.publisher) properties["출판사"] = richTextProp(fields.publisher);
+  if (fields.genre) properties["분야"] = selectProp(fields.genre);
+
+  const res = await notion.pages.create({
+    parent: { database_id: SOURCES_DB },
+    properties,
+  });
+  invalidateNotionCache();
+  return res.id;
+}
+
+export async function createQuoteInNotion(fields: {
+  text: string;
+  sourceId?: string | null;
+  mood_tags?: string[];
+  is_favorite?: boolean;
+}): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const properties: Record<string, any> = {
+    "수집한 문장": titleProp(fields.text),
+  };
+  if (fields.sourceId) {
+    properties["책장"] = { relation: [{ id: fields.sourceId }] };
+  }
+  if (fields.mood_tags?.length) {
+    properties["태그"] = {
+      multi_select: fields.mood_tags.map((name) => ({ name })),
+    };
+  }
+  if (fields.is_favorite) {
+    properties["새김"] = checkboxProp(true);
+  }
+
+  const res = await notion.pages.create({
+    parent: { database_id: QUOTES_DB },
+    properties,
+  });
+  invalidateNotionCache();
+  return res.id;
+}
