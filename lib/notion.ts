@@ -1,5 +1,6 @@
 import { Client } from "@notionhq/client";
 import { createHash } from "crypto";
+import { unstable_cache } from "next/cache";
 import type {
   PageObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints/common";
@@ -250,25 +251,30 @@ async function load(): Promise<AllData> {
 }
 
 // ─── Cache ───────────────────────────────────────────────────────────
+// unstable_cache persists in Vercel's Data Cache across cold starts.
+// The Map is rebuilt from the cached arrays on each call (cheap).
 
-let _cache: { data: AllData; exp: number } | null = null;
-let _inflight: Promise<AllData> | null = null;
-const TTL = 5 * 60_000;
+interface CachedData {
+  sources: Source[];
+  quotes: Quote[];
+  collectionNotes: CollectionNote[];
+}
+
+const loadCached = unstable_cache(
+  async (): Promise<CachedData> => {
+    const d = await load();
+    return { sources: d.sources, quotes: d.quotes, collectionNotes: d.collectionNotes };
+  },
+  ["notion-all-data"],
+  { revalidate: 300 },
+);
 
 export async function getData(): Promise<AllData> {
-  if (_cache && Date.now() < _cache.exp) return _cache.data;
-  if (_inflight) return _inflight;
-  _inflight = load().then((data) => {
-    _cache = { data, exp: Date.now() + TTL };
-    _inflight = null;
-    return data;
-  }).catch((err) => {
-    _inflight = null;
-    throw err;
-  });
-  return _inflight;
+  const cached = await loadCached();
+  const sourceById = new Map(cached.sources.map((s) => [s.id, s]));
+  return { ...cached, sourceById };
 }
 
 export function invalidateNotionCache() {
-  _cache = null;
+  // Handled by unstable_cache revalidate interval
 }
