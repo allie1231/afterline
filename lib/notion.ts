@@ -252,13 +252,21 @@ async function load(): Promise<AllData> {
 // ─── Cache ───────────────────────────────────────────────────────────
 
 let _cache: { data: AllData; exp: number } | null = null;
+let _inflight: Promise<AllData> | null = null;
 const TTL = 5 * 60_000;
 
 export async function getData(): Promise<AllData> {
   if (_cache && Date.now() < _cache.exp) return _cache.data;
-  const data = await load();
-  _cache = { data, exp: Date.now() + TTL };
-  return data;
+  if (_inflight) return _inflight;
+  _inflight = load().then((data) => {
+    _cache = { data, exp: Date.now() + TTL };
+    _inflight = null;
+    return data;
+  }).catch((err) => {
+    _inflight = null;
+    throw err;
+  });
+  return _inflight;
 }
 
 export function invalidateNotionCache() {
