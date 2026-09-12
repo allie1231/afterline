@@ -12,6 +12,7 @@ import type {
   SourceType,
   ReadingStatus,
 } from "./data/types";
+import { enrichBookDetail } from "./aladin";
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
 const QUOTES_DB = process.env.NOTION_QUOTES_DB_ID!;
@@ -143,6 +144,30 @@ async function extractColorsForSources(sources: Source[]): Promise<void> {
   }
 }
 
+// ─── Aladin book detail enrichment ──────────────────────────────────
+
+async function enrichSourcesWithBookDetails(sources: Source[]): Promise<void> {
+  const targets = sources.filter(
+    (s) => s.type === "book" && !s.page_count,
+  );
+  const BATCH = 3;
+  for (let i = 0; i < targets.length; i += BATCH) {
+    const batch = targets.slice(i, i + BATCH);
+    const details = await Promise.all(
+      batch.map((s) => enrichBookDetail(s.isbn, s.title, s.creator)),
+    );
+    for (let j = 0; j < batch.length; j++) {
+      const detail = details[j];
+      if (detail) {
+        if (!batch[j].isbn && detail.isbn13) batch[j].isbn = detail.isbn13;
+        if (detail.pageCount) batch[j].page_count = detail.pageCount;
+        if (detail.sizeHeight) batch[j].book_height_mm = detail.sizeHeight;
+        if (detail.sizeWidth) batch[j].book_width_mm = detail.sizeWidth;
+      }
+    }
+  }
+}
+
 // ─── Paginated DB fetch ──────────────────────────────────────────────
 
 async function fetchAll(dbId: string): Promise<PageObjectResponse[]> {
@@ -221,6 +246,7 @@ async function load(): Promise<AllData> {
   }
 
   await extractColorsForSources(sources);
+  await enrichSourcesWithBookDetails(sources);
 
   const quotes: Quote[] = [];
   const vSources = new Map<string, Source>();

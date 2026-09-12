@@ -23,6 +23,9 @@ export interface Source {
   url?: string;
   genre?: string | null;
   spine_color?: string | null;
+  page_count?: number | null;
+  book_height_mm?: number | null;
+  book_width_mm?: number | null;
   external_provider?: string;
   external_id?: string;
   created_at: string;
