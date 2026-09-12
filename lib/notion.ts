@@ -245,9 +245,6 @@ async function load(): Promise<AllData> {
     }
   }
 
-  // Run color extraction and Aladin enrichment in the background.
-  // First load uses palette fallback + hash-based sizes;
-  // data is mutated in place so subsequent cache hits get real values.
   extractColorsForSources(sources)
     .then(() => enrichSourcesWithBookDetails(sources))
     .catch(() => {});
