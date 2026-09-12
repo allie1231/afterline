@@ -1,20 +1,42 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+import { createClient } from "@/lib/supabase/server";
 import type { SourceType } from "@/lib/data/types";
 
-const READONLY_MSG = "Write operations are not available (Notion read-only mode)";
-
 export async function deleteSourcesBulkAction(
-  _ids: string[],
-  _type: SourceType,
+  ids: string[],
+  type: SourceType,
 ): Promise<{ deleted: number }> {
-  throw new Error(READONLY_MSG);
+  if (ids.length === 0) return { deleted: 0 };
+  const supabase = await createClient();
+  const { error, count } = await supabase
+    .from("sources")
+    .delete({ count: "exact" })
+    .in("id", ids);
+  if (error) throw error;
+  revalidatePath("/rooms");
+  revalidatePath(`/rooms/${type}`);
+  return { deleted: count ?? 0 };
 }
 
 export async function moveSourcesBulkAction(
-  _ids: string[],
-  _fromType: SourceType,
-  _toType: SourceType,
+  ids: string[],
+  fromType: SourceType,
+  toType: SourceType,
 ): Promise<{ moved: number }> {
-  throw new Error(READONLY_MSG);
+  if (ids.length === 0 || fromType === toType) return { moved: 0 };
+  const supabase = await createClient();
+  const { error, count } = await supabase
+    .from("sources")
+    .update(
+      { type: toType, updated_at: new Date().toISOString() },
+      { count: "exact" },
+    )
+    .in("id", ids);
+  if (error) throw error;
+  revalidatePath("/rooms");
+  revalidatePath(`/rooms/${fromType}`);
+  revalidatePath(`/rooms/${toType}`);
+  return { moved: count ?? 0 };
 }

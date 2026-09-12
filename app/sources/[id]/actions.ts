@@ -1,40 +1,57 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { upsertCollectionNote } from "@/lib/data/repository";
 import type { ReadingStatus, SourceType } from "@/lib/data/types";
 
-const READONLY_MSG = "Write operations are not available (Notion read-only mode)";
+// ─────────────────────────────────────────────────────────────────────
+// Collection note edits
+// ─────────────────────────────────────────────────────────────────────
 
 export async function setRatingAction(
-  _sourceId: string,
-  _rating: number | null,
+  sourceId: string,
+  rating: number | null,
 ): Promise<void> {
-  throw new Error(READONLY_MSG);
+  await upsertCollectionNote(sourceId, { rating });
+  revalidatePath(`/sources/${sourceId}`);
 }
 
 type NoteTextField = "summary" | "personal_note";
 export async function updateNoteTextAction(
-  _sourceId: string,
-  _field: NoteTextField,
-  _value: string,
+  sourceId: string,
+  field: NoteTextField,
+  value: string,
 ): Promise<void> {
-  throw new Error(READONLY_MSG);
+  const v = value.trim();
+  await upsertCollectionNote(sourceId, { [field]: v.length === 0 ? null : v });
+  revalidatePath(`/sources/${sourceId}`);
 }
 
 export async function setStatusAction(
-  _sourceId: string,
-  _status: ReadingStatus | null,
+  sourceId: string,
+  status: ReadingStatus | null,
 ): Promise<void> {
-  throw new Error(READONLY_MSG);
+  await upsertCollectionNote(sourceId, { status: status ?? undefined });
+  revalidatePath(`/sources/${sourceId}`);
 }
 
 type NoteDateField = "started_at" | "finished_at";
 export async function setNoteDateAction(
-  _sourceId: string,
-  _field: NoteDateField,
-  _value: string | null,
+  sourceId: string,
+  field: NoteDateField,
+  value: string | null,
 ): Promise<void> {
-  throw new Error(READONLY_MSG);
+  // value is YYYY-MM-DD (date input). Send as timestamp midnight UTC, or null.
+  const iso = value ? new Date(`${value}T00:00:00.000Z`).toISOString() : null;
+  await upsertCollectionNote(sourceId, { [field]: iso });
+  revalidatePath(`/sources/${sourceId}`);
 }
+
+// ─────────────────────────────────────────────────────────────────────
+// Quote edits
+// ─────────────────────────────────────────────────────────────────────
 
 export interface QuoteEditFields {
   text?: string;
@@ -45,19 +62,32 @@ export interface QuoteEditFields {
 }
 
 export async function updateQuoteAction(
-  _quoteId: string,
-  _sourceId: string,
-  _fields: QuoteEditFields,
+  quoteId: string,
+  sourceId: string,
+  fields: QuoteEditFields,
 ): Promise<void> {
-  throw new Error(READONLY_MSG);
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("quotes")
+    .update({ ...fields, updated_at: new Date().toISOString() })
+    .eq("id", quoteId);
+  if (error) throw error;
+  revalidatePath(`/sources/${sourceId}`);
 }
 
 export async function deleteQuoteAction(
-  _quoteId: string,
-  _sourceId: string,
+  quoteId: string,
+  sourceId: string,
 ): Promise<void> {
-  throw new Error(READONLY_MSG);
+  const supabase = await createClient();
+  const { error } = await supabase.from("quotes").delete().eq("id", quoteId);
+  if (error) throw error;
+  revalidatePath(`/sources/${sourceId}`);
 }
+
+// ─────────────────────────────────────────────────────────────────────
+// Source edits
+// ─────────────────────────────────────────────────────────────────────
 
 type SourceTextField =
   | "title"
@@ -70,18 +100,34 @@ type SourceTextField =
   | "genre";
 
 export async function updateSourceTextAction(
-  _sourceId: string,
-  _field: SourceTextField,
-  _value: string,
+  sourceId: string,
+  field: SourceTextField,
+  value: string,
 ): Promise<void> {
-  throw new Error(READONLY_MSG);
+  const v = value.trim();
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("sources")
+    .update({
+      [field]: v.length === 0 ? null : v,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", sourceId);
+  if (error) throw error;
+  revalidatePath(`/sources/${sourceId}`);
+  revalidatePath(`/rooms`);
 }
 
 export async function deleteSourceAction(
-  _sourceId: string,
-  _type: SourceType,
+  sourceId: string,
+  type: SourceType,
 ): Promise<void> {
-  throw new Error(READONLY_MSG);
+  const supabase = await createClient();
+  const { error } = await supabase.from("sources").delete().eq("id", sourceId);
+  if (error) throw error;
+  revalidatePath("/rooms");
+  revalidatePath(`/rooms/${type}`);
+  redirect(`/rooms/${type}`);
 }
 
 export interface EditSourceFields {
@@ -96,23 +142,60 @@ export interface EditSourceFields {
 }
 
 export async function updateSourceBulkAction(
-  _sourceId: string,
-  _fields: EditSourceFields,
+  sourceId: string,
+  fields: EditSourceFields,
 ): Promise<void> {
-  throw new Error(READONLY_MSG);
+  const supabase = await createClient();
+  const update: Record<string, string | null> = {};
+  for (const [k, v] of Object.entries(fields)) {
+    if (v === undefined) continue;
+    const t = typeof v === "string" ? v.trim() : v;
+    update[k] = t === "" ? null : (t as string | null);
+  }
+  if ("title" in update && (update.title === null || !update.title)) {
+    throw new Error("title cannot be empty");
+  }
+  update.updated_at = new Date().toISOString();
+  const { error } = await supabase
+    .from("sources")
+    .update(update)
+    .eq("id", sourceId);
+  if (error) throw error;
+  revalidatePath(`/sources/${sourceId}`);
+  revalidatePath("/rooms");
 }
 
 export async function updateSourceSpineColorAction(
-  _sourceId: string,
-  _color: string | null,
+  sourceId: string,
+  color: string | null,
 ): Promise<void> {
-  throw new Error(READONLY_MSG);
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("sources")
+    .update({
+      spine_color: color,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", sourceId);
+  if (error) throw error;
+  revalidatePath(`/sources/${sourceId}`);
+  revalidatePath("/rooms");
 }
 
 export async function changeSourceTypeAction(
-  _sourceId: string,
-  _fromType: SourceType,
-  _toType: SourceType,
+  sourceId: string,
+  fromType: SourceType,
+  toType: SourceType,
 ): Promise<void> {
-  throw new Error(READONLY_MSG);
+  if (fromType === toType) return;
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("sources")
+    .update({ type: toType, updated_at: new Date().toISOString() })
+    .eq("id", sourceId);
+  if (error) throw error;
+  revalidatePath("/rooms");
+  revalidatePath(`/rooms/${fromType}`);
+  revalidatePath(`/rooms/${toType}`);
+  revalidatePath(`/sources/${sourceId}`);
 }

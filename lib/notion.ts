@@ -83,7 +83,7 @@ const TYPE_MAP: Record<string, SourceType> = {
 };
 
 function toSourceType(v: string | null): SourceType {
-  return (v && TYPE_MAP[v]) ?? "other";
+  return (v ? TYPE_MAP[v] : undefined) ?? "other";
 }
 
 function toRating(v: string | null): number | undefined {
