@@ -39,8 +39,17 @@ export function SourceSpine({
   return (
     <Link
       href={`/sources/${source.id}`}
-      className="group relative block shrink-0 h-[360px] overflow-hidden transition-[transform,box-shadow] duration-300 ease-out will-change-transform hover:-translate-y-4 hover:scale-[1.04] hover:rotate-[-1.5deg] hover:shadow-[5px_5px_0_var(--ink)] hover:z-10"
-      style={{ background: bg, color: fg, width: style.width }}
+      className="group relative block shrink-0 transition-[transform] duration-300 ease-out will-change-transform hover:-translate-y-4 hover:scale-[1.04] hover:rotate-[-1.5deg] hover:z-10"
+      style={{
+        background: bg,
+        color: fg,
+        width: style.width,
+        height: style.height,
+        borderLeft: "1px solid rgba(0,0,0,0.08)",
+        borderRight: "1px solid rgba(0,0,0,0.08)",
+        borderTop: "1px solid rgba(0,0,0,0.05)",
+        boxShadow: "0 6px 0 var(--line), 0 7px 0 rgba(0,0,0,0.12)",
+      }}
       aria-label={`${source.title} — ${lines} lines`}
     >
       <span
@@ -51,7 +60,7 @@ export function SourceSpine({
       </span>
 
       <span
-        className="absolute inset-x-0 inset-y-8 flex items-center justify-center px-1"
+        className="absolute inset-0 flex items-center justify-center"
         style={{ writingMode: "vertical-rl" }}
       >
         <span
@@ -62,25 +71,13 @@ export function SourceSpine({
             fontWeight: style.fontWeight,
             letterSpacing: style.letterSpacing,
             textTransform: style.textTransform,
+            maxHeight: style.height - 32,
+            overflow: "hidden",
           }}
         >
           {source.title}
         </span>
       </span>
-
-      {style.showCreator && source.creator && (
-        <span
-          className="absolute bottom-8 left-0 right-0 flex justify-center px-1"
-          style={{ writingMode: "vertical-rl", color: fgMuted }}
-        >
-          <span
-            className="font-sans leading-tight text-center"
-            style={{ fontSize: style.creatorFontSize }}
-          >
-            {source.creator}
-          </span>
-        </span>
-      )}
 
       <span
         className="absolute bottom-2 left-0 right-0 text-center font-mono text-[8px] tracking-widest"

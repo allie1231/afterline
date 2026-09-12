@@ -271,7 +271,7 @@ export function RoomShelf({
       )}
 
       <div className="border-y-2 border-ink">
-        <div className="flex flex-wrap items-end gap-x-3 gap-y-8 py-6">
+        <div className="flex flex-wrap items-end gap-y-5 py-6 pb-2">
           {sourceCounts.map(({ source, lines }) => {
             const currentColor = source.spine_color?.trim();
             const isAuto = !currentColor;

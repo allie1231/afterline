@@ -8,9 +8,8 @@ export interface SpineStyle {
   fontWeight: number;
   letterSpacing: string;
   textTransform: "uppercase" | "none";
-  showCreator: boolean;
-  creatorFontSize: number;
   width: number;
+  height: number;
 }
 
 function hashCode(s: string): number {
@@ -60,6 +59,7 @@ const EN_PRESETS: readonly FontPreset[] = [
 ];
 
 const WIDTH_STEPS = [36, 40, 44, 48, 52, 56, 64, 72] as const;
+const HEIGHT_STEPS = [280, 300, 320, 340, 360, 380, 400] as const;
 
 export function resolveSpineStyle(source: Source): SpineStyle {
   const h = hashCode(source.id);
@@ -67,20 +67,21 @@ export function resolveSpineStyle(source: Source): SpineStyle {
   const presets = isKorean ? KR_PRESETS : EN_PRESETS;
   const preset = pick(presets, h, 0);
 
+  const width = pick(WIDTH_STEPS, h, 4);
+  const height = pick(HEIGHT_STEPS, h, 8);
+
   const titleLen = source.title.length;
   let fontSize = preset.fontSize;
-  if (titleLen > 20) fontSize = Math.max(11, fontSize - 4);
-  else if (titleLen > 12) fontSize = Math.max(11, fontSize - 2);
-  else if (titleLen <= 4) fontSize = Math.min(30, fontSize + 6);
 
-  const width = pick(WIDTH_STEPS, h, 4);
-  const showCreator = !!source.creator && width >= 48 && ((h >>> 12) & 1) === 0;
+  const verticalBudget = height - 32;
+  const maxByHeight = Math.floor(verticalBudget / (titleLen * 1.3));
+  const maxByWidth = width - 6;
+  fontSize = Math.max(9, Math.min(fontSize, maxByHeight, maxByWidth));
 
   return {
     ...preset,
     fontSize,
-    showCreator,
-    creatorFontSize: 9,
     width,
+    height,
   };
 }

@@ -94,7 +94,7 @@ export default async function PersonPageView({
                 ALL {cat?.en ?? type.toUpperCase()} →
               </Link>
             </div>
-            <div className="flex flex-wrap items-end gap-x-3 gap-y-8 py-4">
+            <div className="flex flex-wrap items-end gap-y-5 py-4 pb-2">
               {sources.map((s) => (
                 <SourceSpine key={s.id} source={s} lines={0} />
               ))}
