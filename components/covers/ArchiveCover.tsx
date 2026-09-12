@@ -46,7 +46,7 @@ export function ArchiveCover({
           <div className="font-mono text-[7px] tracking-[0.28em] text-muted mb-1">
             SUBJECT
           </div>
-          <div className="font-serif text-[20px] uppercase leading-[0.95] tracking-tight break-words">
+          <div className="font-sans text-[20px] uppercase leading-[0.95] tracking-tight break-words">
             {source.title}
           </div>
           {source.creator && (

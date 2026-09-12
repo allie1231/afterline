@@ -17,10 +17,10 @@ export default async function SettingsPage() {
         className="mb-8"
       />
 
-      <h1 className="font-serif text-5xl tracking-tight leading-none">
+      <h1 className="font-sans text-5xl tracking-tight leading-none">
         Settings
       </h1>
-      <p className="font-serif text-lg text-muted mt-3">
+      <p className="font-sans text-lg text-muted mt-3">
         외부 클라이언트 — 크롬 확장, 북마클릿, 스크립트 — 가 Afterline에
         문장을 보내는 데 쓰는 개인용 키예요.
       </p>
@@ -46,11 +46,11 @@ export default async function SettingsPage() {
         <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-3">
           iOS WIDGET / 홈 화면 위젯
         </div>
-        <p className="font-serif text-base leading-relaxed">
+        <p className="font-sans text-base leading-relaxed">
           무료 앱 <strong>Scriptable</strong> 을 깔면 홈 화면에 오늘의 한 줄
           위젯을 박을 수 있어요.
         </p>
-        <ol className="mt-4 ml-5 list-decimal font-serif text-base leading-relaxed flex flex-col gap-1.5">
+        <ol className="mt-4 ml-5 list-decimal font-sans text-base leading-relaxed flex flex-col gap-1.5">
           <li>
             App Store에서{" "}
             <a
@@ -97,7 +97,7 @@ export default async function SettingsPage() {
         <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-3">
           API / 직접 호출 (스크립트·단축어)
         </div>
-        <p className="font-serif text-base leading-relaxed">
+        <p className="font-sans text-base leading-relaxed">
           iOS 단축어나 스크립트에서 쓸 때는 이 엔드포인트를 직접 호출하면 됩니다.
         </p>
         <pre className="mt-4 font-mono text-[11px] leading-relaxed bg-paper border border-line p-4 overflow-x-auto">

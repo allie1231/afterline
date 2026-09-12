@@ -152,7 +152,7 @@ export function EditSourceDialog({
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full border border-ink bg-paper px-3 py-2 font-serif text-lg focus:outline-none focus:border-blue"
+              className="w-full border border-ink bg-paper px-3 py-2 font-sans text-lg focus:outline-none focus:border-blue"
             />
           </Field>
 
@@ -161,7 +161,7 @@ export function EditSourceDialog({
               type="text"
               value={creator}
               onChange={(e) => setCreator(e.target.value)}
-              className="w-full border border-ink bg-paper px-3 py-2 font-serif text-base focus:outline-none focus:border-blue"
+              className="w-full border border-ink bg-paper px-3 py-2 font-sans text-base focus:outline-none focus:border-blue"
             />
           </Field>
 
@@ -173,7 +173,7 @@ export function EditSourceDialog({
                 type="text"
                 value={publisher}
                 onChange={(e) => setPublisher(e.target.value)}
-                className="w-full border border-ink bg-paper px-3 py-2 font-serif text-base focus:outline-none focus:border-blue"
+                className="w-full border border-ink bg-paper px-3 py-2 font-sans text-base focus:outline-none focus:border-blue"
               />
             </Field>
           )}
@@ -185,7 +185,7 @@ export function EditSourceDialog({
                 value={publishedDate}
                 onChange={(e) => setPublishedDate(e.target.value)}
                 placeholder="2024"
-                className="w-full border border-ink bg-paper px-3 py-2 font-serif text-base focus:outline-none focus:border-blue"
+                className="w-full border border-ink bg-paper px-3 py-2 font-sans text-base focus:outline-none focus:border-blue"
               />
             </Field>
           )}
@@ -196,7 +196,7 @@ export function EditSourceDialog({
                 type="text"
                 value={isbn}
                 onChange={(e) => setIsbn(e.target.value)}
-                className="w-full border border-ink bg-paper px-3 py-2 font-serif text-base focus:outline-none focus:border-blue"
+                className="w-full border border-ink bg-paper px-3 py-2 font-sans text-base focus:outline-none focus:border-blue"
               />
             </Field>
           )}
@@ -208,7 +208,7 @@ export function EditSourceDialog({
                 value={genre}
                 onChange={(e) => setGenre(e.target.value)}
                 placeholder={GENRE_HINT[source.type] ?? "장르"}
-                className="w-full border border-ink bg-paper px-3 py-2 font-serif text-base focus:outline-none focus:border-blue"
+                className="w-full border border-ink bg-paper px-3 py-2 font-sans text-base focus:outline-none focus:border-blue"
               />
             </Field>
           )}
@@ -220,7 +220,7 @@ export function EditSourceDialog({
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="https://"
-                className="w-full border border-ink bg-paper px-3 py-2 font-serif text-base focus:outline-none focus:border-blue"
+                className="w-full border border-ink bg-paper px-3 py-2 font-sans text-base focus:outline-none focus:border-blue"
               />
             </Field>
           )}

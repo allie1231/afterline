@@ -22,7 +22,7 @@ export default async function EmbedAddPage({
       <main className="min-h-screen flex items-center justify-center p-6 bg-paper text-ink">
         <div className="font-mono text-[10px] tracking-[0.3em] text-muted text-center">
           AFTERLINE / NO TOKEN
-          <div className="mt-3 normal-case tracking-normal font-serif text-base">
+          <div className="mt-3 normal-case tracking-normal font-sans text-base">
             ?token=… 쿼리에 Personal Token이 필요해요.
           </div>
         </div>

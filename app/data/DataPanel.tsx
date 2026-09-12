@@ -162,13 +162,13 @@ export function DataPanel({
     <div className="flex flex-col gap-16">
       {/* EXPORT */}
       <section>
-        <h2 className="font-serif text-2xl tracking-tight border-b border-ink pb-3 mb-6">
+        <h2 className="font-sans text-2xl tracking-tight border-b border-ink pb-3 mb-6">
           <span className="font-mono text-[10px] tracking-[0.3em] text-muted mr-3">
             01
           </span>
           EXPORT / 내보내기
         </h2>
-        <p className="font-serif text-lg text-muted mb-6 max-w-lg">
+        <p className="font-sans text-lg text-muted mb-6 max-w-lg">
           지금까지 모은 모든 문장을 CSV 한 파일로 받습니다. Excel, Google Sheets,
           Notion 어디든 열 수 있어요.
         </p>
@@ -190,13 +190,13 @@ export function DataPanel({
 
       {/* IMPORT */}
       <section>
-        <h2 className="font-serif text-2xl tracking-tight border-b border-ink pb-3 mb-6">
+        <h2 className="font-sans text-2xl tracking-tight border-b border-ink pb-3 mb-6">
           <span className="font-mono text-[10px] tracking-[0.3em] text-muted mr-3">
             02
           </span>
           IMPORT / 가져오기
         </h2>
-        <p className="font-serif text-lg text-muted mb-6 max-w-xl">
+        <p className="font-sans text-lg text-muted mb-6 max-w-xl">
           Notion, 메모 앱, Google Sheets 어디서든 CSV 로 내보낸 파일을 끌어다
           놓으면 — 컬럼을 Afterline 필드에 매핑하고 한 번에 가져옵니다.
           중복(같은 문장 + 같은 출처)은 자동으로 건너뜁니다.
@@ -225,7 +225,7 @@ export function DataPanel({
             <div className="font-mono text-xs tracking-[0.3em] text-muted">
               DROP CSV HERE
             </div>
-            <div className="font-serif text-2xl text-ink mt-3">
+            <div className="font-sans text-2xl text-ink mt-3">
               CSV 파일을 끌어다 놓거나 클릭
             </div>
             <div className="font-mono text-[10px] tracking-[0.25em] text-muted mt-3">
@@ -262,7 +262,7 @@ export function DataPanel({
                           : "var(--ink)",
                       }}
                     >
-                      <div className="font-serif text-base leading-none tracking-tight">
+                      <div className="font-sans text-base leading-none tracking-tight">
                         {cat.en}
                       </div>
                       <div className="font-mono text-[9px] tracking-[0.25em] mt-1 opacity-70">
@@ -289,7 +289,7 @@ export function DataPanel({
                       key={h}
                       className="grid grid-cols-[1fr_1fr_2fr] gap-4 items-center px-4 py-3"
                     >
-                      <div className="font-serif text-base truncate" title={h}>
+                      <div className="font-sans text-base truncate" title={h}>
                         {h}
                       </div>
                       <select
@@ -378,12 +378,12 @@ export function DataPanel({
                           <td className="px-3 py-2">
                             <StatusPill status={c} />
                           </td>
-                          <td className="font-serif text-sm px-3 py-2 max-w-[400px] truncate">
+                          <td className="font-sans text-sm px-3 py-2 max-w-[400px] truncate">
                             {r.text || (
                               <span className="text-muted italic">—</span>
                             )}
                           </td>
-                          <td className="font-serif text-sm px-3 py-2 truncate max-w-[200px]">
+                          <td className="font-sans text-sm px-3 py-2 truncate max-w-[200px]">
                             {r.source_title || (
                               <span className="text-muted italic">—</span>
                             )}
@@ -442,7 +442,7 @@ export function DataPanel({
             <div className="font-mono text-[10px] tracking-[0.3em] text-muted">
               IMPORT COMPLETE
             </div>
-            <div className="font-serif text-3xl mt-2">
+            <div className="font-sans text-3xl mt-2">
               {result.imported}개의 문장을 들였습니다.
             </div>
             <div className="font-mono text-xs tracking-[0.2em] text-muted mt-4 flex gap-6 flex-wrap">

@@ -235,7 +235,7 @@ export function RoomShelf({
           <div className="flex items-baseline justify-between mb-3">
             <div className="font-mono text-[10px] tracking-[0.3em] text-muted">
               SPINE COLOR / 책등 색
-              <span className="text-ink ml-3 font-serif text-base">
+              <span className="text-ink ml-3 font-sans text-base">
                 {colorPickerTarget.title}
               </span>
             </div>

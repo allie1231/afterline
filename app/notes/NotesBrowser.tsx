@@ -51,7 +51,7 @@ export function NotesBrowser({ items }: { items: NoteWithSource[] }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="제목 / 본문 / 출처 검색…"
-          className="flex-1 min-w-[200px] border border-ink bg-paper px-3 py-2 font-serif text-base focus:outline-none focus:border-blue"
+          className="flex-1 min-w-[200px] border border-ink bg-paper px-3 py-2 font-sans text-base focus:outline-none focus:border-blue"
         />
         <select
           value={typeFilter}
@@ -140,7 +140,7 @@ function NoteRow({ item }: { item: NoteWithSource }) {
       </header>
 
       {note.title && (
-        <h3 className="font-serif text-xl tracking-tight leading-tight mb-2">
+        <h3 className="font-sans text-xl tracking-tight leading-tight mb-2">
           {note.title}
         </h3>
       )}

@@ -111,7 +111,7 @@ export function CollectionsBrowser({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="제목 / 저자 검색..."
-          className="flex-1 min-w-[200px] border border-ink bg-paper px-3 py-2 font-serif text-base focus:outline-none focus:border-blue"
+          className="flex-1 min-w-[200px] border border-ink bg-paper px-3 py-2 font-sans text-base focus:outline-none focus:border-blue"
         />
         <button
           type="button"
@@ -242,7 +242,7 @@ function FilterChip({
         color: active ? activeText : "var(--ink)",
       }}
     >
-      <span className="font-serif text-sm leading-none tracking-tight">
+      <span className="font-sans text-sm leading-none tracking-tight">
         {label}
       </span>
       <span
@@ -294,7 +294,7 @@ function CollectionCard({ item }: { item: CollectionsItem }) {
               </span>
             )}
           </div>
-          <div className="font-serif text-lg leading-tight tracking-tight line-clamp-2">
+          <div className="font-sans text-lg leading-tight tracking-tight line-clamp-2">
             {item.source.title}
           </div>
           {item.source.creator && (

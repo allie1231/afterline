@@ -403,7 +403,7 @@ export function NewQuoteForm({
                       : "var(--ink)",
                   }}
                 >
-                  <div className="font-serif text-sm leading-none tracking-tight">
+                  <div className="font-sans text-sm leading-none tracking-tight">
                     {cat.en}
                   </div>
                   <div className="font-mono text-[9px] tracking-[0.25em] mt-1 opacity-70">
@@ -472,7 +472,7 @@ export function NewQuoteForm({
               required
               value={selectedSourceId}
               onChange={(e) => setSelectedSourceId(e.target.value)}
-              className="w-full border border-ink bg-paper px-4 py-3 font-serif text-lg focus:outline-none focus:border-blue"
+              className="w-full border border-ink bg-paper px-4 py-3 font-sans text-lg focus:outline-none focus:border-blue"
             >
               {sourcesOfType.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -502,7 +502,7 @@ export function NewQuoteForm({
                       }
                     }}
                     placeholder="책 제목, 저자, ISBN..."
-                    className="flex-1 border border-ink bg-paper px-3 py-2 font-serif text-base focus:outline-none focus:border-blue"
+                    className="flex-1 border border-ink bg-paper px-3 py-2 font-sans text-base focus:outline-none focus:border-blue"
                   />
                   <button
                     type="button"
@@ -532,7 +532,7 @@ export function NewQuoteForm({
                           <div className="w-12 h-16 bg-line shrink-0" />
                         )}
                         <div className="flex-1 min-w-0">
-                          <div className="font-serif text-base leading-tight">
+                          <div className="font-sans text-base leading-tight">
                             {b.title}
                           </div>
                           {b.creator && (
@@ -582,7 +582,7 @@ export function NewQuoteForm({
                       }
                     }}
                     placeholder="제목으로 검색…"
-                    className="flex-1 border border-ink bg-paper px-3 py-2 font-serif text-base focus:outline-none focus:border-blue"
+                    className="flex-1 border border-ink bg-paper px-3 py-2 font-sans text-base focus:outline-none focus:border-blue"
                   />
                   <button
                     type="button"
@@ -612,7 +612,7 @@ export function NewQuoteForm({
                           <div className="w-12 h-[72px] bg-line shrink-0" />
                         )}
                         <div className="flex-1 min-w-0">
-                          <div className="font-serif text-base leading-tight">
+                          <div className="font-sans text-base leading-tight">
                             {m.title}
                           </div>
                           <div className="font-mono text-[10px] tracking-[0.2em] text-muted mt-1 flex gap-2">
@@ -655,7 +655,7 @@ export function NewQuoteForm({
                       }
                     }}
                     placeholder="곡 제목 또는 아티스트…"
-                    className="flex-1 border border-ink bg-paper px-3 py-2 font-serif text-base focus:outline-none focus:border-blue"
+                    className="flex-1 border border-ink bg-paper px-3 py-2 font-sans text-base focus:outline-none focus:border-blue"
                   />
                   <button
                     type="button"
@@ -685,7 +685,7 @@ export function NewQuoteForm({
                           <div className="w-14 h-14 bg-line shrink-0" />
                         )}
                         <div className="flex-1 min-w-0">
-                          <div className="font-serif text-base leading-tight truncate">
+                          <div className="font-sans text-base leading-tight truncate">
                             {l.title}
                           </div>
                           {l.creator && (
@@ -729,7 +729,7 @@ export function NewQuoteForm({
                     required
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full border border-ink bg-paper px-4 py-3 font-serif text-lg focus:outline-none focus:border-blue"
+                    className="w-full border border-ink bg-paper px-4 py-3 font-sans text-lg focus:outline-none focus:border-blue"
                   />
                 </Field>
               ) : (
@@ -741,7 +741,7 @@ export function NewQuoteForm({
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="제목을 입력하세요"
-                    className="w-full border border-ink bg-paper px-4 py-3 font-serif text-lg focus:outline-none focus:border-blue"
+                    className="w-full border border-ink bg-paper px-4 py-3 font-sans text-lg focus:outline-none focus:border-blue"
                   />
                 </Field>
               )}
@@ -779,7 +779,7 @@ export function NewQuoteForm({
                     name="creator"
                     value={creator}
                     onChange={(e) => setCreator(e.target.value)}
-                    className="w-full border border-ink bg-paper px-4 py-3 font-serif text-lg focus:outline-none focus:border-blue"
+                    className="w-full border border-ink bg-paper px-4 py-3 font-sans text-lg focus:outline-none focus:border-blue"
                   />
                 </Field>
               )}
@@ -794,7 +794,7 @@ export function NewQuoteForm({
                       ? setPublishedDate(e.target.value)
                       : setPublisher(e.target.value)
                   }
-                  className="w-full border border-ink bg-paper px-4 py-3 font-serif text-lg focus:outline-none focus:border-blue"
+                  className="w-full border border-ink bg-paper px-4 py-3 font-sans text-lg focus:outline-none focus:border-blue"
                 />
               </Field>
 
@@ -805,7 +805,7 @@ export function NewQuoteForm({
                     name="isbn"
                     value={isbn}
                     onChange={(e) => setIsbn(e.target.value)}
-                    className="w-full border border-ink bg-paper px-4 py-3 font-serif text-lg focus:outline-none focus:border-blue"
+                    className="w-full border border-ink bg-paper px-4 py-3 font-sans text-lg focus:outline-none focus:border-blue"
                   />
                 </Field>
               )}
@@ -828,7 +828,7 @@ export function NewQuoteForm({
                     value={genre}
                     onChange={(e) => setGenre(e.target.value)}
                     placeholder="검색 결과를 USE 하면 자동 입력돼요"
-                    className="w-full border border-ink bg-paper px-4 py-3 font-serif text-lg focus:outline-none focus:border-blue"
+                    className="w-full border border-ink bg-paper px-4 py-3 font-sans text-lg focus:outline-none focus:border-blue"
                   />
                 </Field>
               )}
@@ -839,7 +839,7 @@ export function NewQuoteForm({
                     type="url"
                     name="url"
                     placeholder="https://"
-                    className="w-full border border-ink bg-paper px-4 py-3 font-serif text-lg focus:outline-none focus:border-blue"
+                    className="w-full border border-ink bg-paper px-4 py-3 font-sans text-lg focus:outline-none focus:border-blue"
                   />
                 </Field>
               )}
@@ -858,7 +858,7 @@ export function NewQuoteForm({
                       value={coverUrl}
                       onChange={(e) => setCoverUrl(e.target.value)}
                       placeholder="https://... (검색 결과를 USE 하거나 직접 입력)"
-                      className="flex-1 border border-ink bg-paper px-4 py-3 font-serif text-lg focus:outline-none focus:border-blue"
+                      className="flex-1 border border-ink bg-paper px-4 py-3 font-sans text-lg focus:outline-none focus:border-blue"
                     />
                     <input
                       ref={coverFileInputRef}
@@ -912,7 +912,7 @@ export function NewQuoteForm({
             required
             rows={5}
             placeholder="기억하고 싶은 문장을 적어주세요."
-            className="w-full border border-ink bg-paper px-4 py-3 font-serif text-xl leading-snug focus:outline-none focus:border-blue resize-y"
+            className="w-full border border-ink bg-paper px-4 py-3 font-sans text-xl leading-snug focus:outline-none focus:border-blue resize-y"
           />
         </Field>
 
@@ -930,7 +930,7 @@ export function NewQuoteForm({
                       ? "132"
                       : ""
               }
-              className="w-full border border-ink bg-paper px-4 py-3 font-serif text-lg focus:outline-none focus:border-blue"
+              className="w-full border border-ink bg-paper px-4 py-3 font-sans text-lg focus:outline-none focus:border-blue"
             />
           </Field>
           <Field labelEn="TAGS" labelKo="태그 — 쉼표로 구분">
@@ -940,7 +940,7 @@ export function NewQuoteForm({
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
               placeholder="quiet courage, growth..."
-              className="w-full border border-ink bg-paper px-4 py-3 font-serif text-lg focus:outline-none focus:border-blue"
+              className="w-full border border-ink bg-paper px-4 py-3 font-sans text-lg focus:outline-none focus:border-blue"
             />
             {allTags.length > 0 && (
               <div className="mt-2">
@@ -980,7 +980,7 @@ export function NewQuoteForm({
             name="note"
             rows={3}
             placeholder="이 문장에 대한 짧은 생각 (선택)"
-            className="w-full border border-ink bg-paper px-4 py-3 font-serif text-lg leading-snug focus:outline-none focus:border-blue resize-y"
+            className="w-full border border-ink bg-paper px-4 py-3 font-sans text-lg leading-snug focus:outline-none focus:border-blue resize-y"
           />
         </Field>
 
@@ -1022,7 +1022,7 @@ function SectionHead({ n, en, ko }: { n: string; en: string; ko: string }) {
       <span className="font-mono text-[10px] tracking-[0.3em] text-muted">
         {n}
       </span>
-      <h2 className="font-serif text-2xl tracking-tight">{en}</h2>
+      <h2 className="font-sans text-2xl tracking-tight">{en}</h2>
       <span className="font-mono text-[10px] tracking-[0.3em] text-muted">
         {ko}
       </span>

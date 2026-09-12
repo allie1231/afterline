@@ -17,7 +17,7 @@ export default async function PeoplePage() {
         ]}
         className="mb-3"
       />
-      <h1 className="font-serif text-4xl md:text-5xl tracking-tight leading-none">
+      <h1 className="font-sans text-4xl md:text-5xl tracking-tight leading-none">
         People
       </h1>
       <p className="font-mono text-xs tracking-[0.2em] text-muted mt-3 mb-10">
@@ -41,7 +41,7 @@ export default async function PeoplePage() {
                 className="grid grid-cols-[1fr_auto] items-baseline gap-4 py-4 hover:bg-line/30 px-1 -mx-1 transition-colors"
               >
                 <div>
-                  <div className="font-serif text-xl tracking-tight">
+                  <div className="font-sans text-xl tracking-tight">
                     {c.name}
                   </div>
                   <div className="font-mono text-[10px] tracking-[0.25em] text-muted mt-1 flex gap-3 flex-wrap">

@@ -54,7 +54,7 @@ export default async function PersonPageView({
       />
 
       <header className="border-b border-ink pb-8 mb-12">
-        <h1 className="font-serif text-[clamp(36px,5vw,64px)] tracking-tight leading-none break-words">
+        <h1 className="font-sans text-[clamp(36px,5vw,64px)] tracking-tight leading-none break-words">
           {name}
         </h1>
         <div className="font-mono text-[11px] tracking-[0.3em] text-muted mt-4 flex gap-6 flex-wrap">
@@ -80,7 +80,7 @@ export default async function PersonPageView({
                   className="w-2 h-2 inline-block"
                   style={{ background: cat?.accent }}
                 />
-                <h2 className="font-serif text-2xl tracking-tight">
+                <h2 className="font-sans text-2xl tracking-tight">
                   {cat?.en ?? type.toUpperCase()}
                 </h2>
                 <span className="font-mono text-[10px] tracking-[0.25em] text-muted">

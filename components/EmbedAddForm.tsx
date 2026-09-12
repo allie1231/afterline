@@ -72,7 +72,7 @@ export function EmbedAddForm({
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Quick Notes"
-        className="font-serif text-base border-b border-line py-1.5 mb-4 bg-transparent focus:outline-none focus:border-ink"
+        className="font-sans text-base border-b border-line py-1.5 mb-4 bg-transparent focus:outline-none focus:border-ink"
       />
 
       <textarea
@@ -81,7 +81,7 @@ export function EmbedAddForm({
         onKeyDown={onKeyDown}
         placeholder="문장을 적어주세요…  ⌘/Ctrl + Enter 로 저장"
         rows={5}
-        className="font-serif text-lg leading-snug bg-paper border border-ink p-3 focus:outline-none focus:border-blue resize-none flex-1 min-h-[140px]"
+        className="font-sans text-lg leading-snug bg-paper border border-ink p-3 focus:outline-none focus:border-blue resize-none flex-1 min-h-[140px]"
       />
 
       <div className="flex items-center justify-between mt-3 gap-3">

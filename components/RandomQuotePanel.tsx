@@ -21,7 +21,7 @@ export function RandomQuotePanel({ pool }: { pool: RandomLine[] }) {
         <div className="font-mono text-[10px] tracking-[0.3em] text-muted">
           TODAY&apos;S LINE / 오늘의 한 줄
         </div>
-        <p className="font-serif text-xl text-muted mt-3">
+        <p className="font-sans text-xl text-muted mt-3">
           아직 수집된 문장이 없어요. 첫 문장을 더해보세요.
         </p>
         <Link

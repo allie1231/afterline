@@ -154,7 +154,7 @@ export function SearchDialog({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="문장 · 출처 · 저자 · 메모 검색…"
-            className="flex-1 bg-paper font-serif text-xl focus:outline-none"
+            className="flex-1 bg-paper font-sans text-xl focus:outline-none"
           />
           <span className="font-mono text-[9px] tracking-[0.25em] text-muted">
             ⌘K · ESC
@@ -274,7 +274,7 @@ function ResultRow({
             {highlight(snippet(hit.quote_text, query), query)}
           </p>
         ) : (
-          <p className="font-serif text-lg leading-tight">
+          <p className="font-sans text-lg leading-tight">
             {highlight(hit.source_title, query)}
           </p>
         )}

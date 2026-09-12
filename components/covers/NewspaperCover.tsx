@@ -63,7 +63,7 @@ export function NewspaperCover({
           <span>VOL. I</span>
           <span>NO. {source.id.slice(-3).toUpperCase()}</span>
         </div>
-        <div className="font-serif text-[22px] text-center leading-none tracking-tight mt-1 italic">
+        <div className="font-sans text-[22px] text-center leading-none tracking-tight mt-1 italic">
           The Gazette
         </div>
         <div className="flex justify-between font-mono text-[6px] tracking-[0.3em] text-muted mt-1.5">
@@ -84,7 +84,7 @@ export function NewspaperCover({
 
       {/* Headline */}
       <div className="px-3 mt-2 flex-1 flex flex-col min-h-0">
-        <h3 className="font-serif text-[18px] leading-[0.98] tracking-tight break-words">
+        <h3 className="font-sans text-[18px] leading-[0.98] tracking-tight break-words">
           {source.title}
         </h3>
         {source.creator && (

@@ -32,7 +32,7 @@ export default async function CapturePage({
         ]}
         className="mb-2"
       />
-      <h1 className="font-serif text-3xl tracking-tight leading-tight">
+      <h1 className="font-sans text-3xl tracking-tight leading-tight">
         Quick Capture
       </h1>
       <p className="font-mono text-[10px] tracking-[0.2em] text-muted mt-2 mb-6">

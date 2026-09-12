@@ -33,7 +33,7 @@ export default async function StatsPage() {
         ]}
         className="mb-3"
       />
-      <h1 className="font-serif text-4xl md:text-5xl tracking-tight leading-none">
+      <h1 className="font-sans text-4xl md:text-5xl tracking-tight leading-none">
         Stats
       </h1>
       <p className="font-mono text-xs tracking-[0.2em] text-muted mt-3 mb-12">
@@ -51,7 +51,7 @@ export default async function StatsPage() {
 
       {/* Lines by room */}
       <section className="mb-12">
-        <h2 className="font-serif text-2xl tracking-tight mb-1">
+        <h2 className="font-sans text-2xl tracking-tight mb-1">
           Lines by Room
         </h2>
         <div className="font-mono text-xs tracking-[0.2em] text-muted mb-5">
@@ -69,7 +69,7 @@ export default async function StatsPage() {
                   className="grid grid-cols-[140px_1fr_120px] gap-4 items-center group"
                 >
                   <div>
-                    <div className="font-serif text-base leading-none tracking-tight">
+                    <div className="font-sans text-base leading-none tracking-tight">
                       {cat.en}
                     </div>
                     <div className="font-mono text-[10px] tracking-[0.25em] text-muted mt-1">
@@ -97,7 +97,7 @@ export default async function StatsPage() {
 
       {/* Genres by room */}
       <section className="mb-12">
-        <h2 className="font-serif text-2xl tracking-tight mb-1">
+        <h2 className="font-sans text-2xl tracking-tight mb-1">
           Genres by Room
         </h2>
         <div className="font-mono text-xs tracking-[0.2em] text-muted mb-5">
@@ -127,7 +127,7 @@ export default async function StatsPage() {
                           className="w-2 h-2 inline-block"
                           style={{ background: cat.accent }}
                         />
-                        <span className="font-serif text-base">{cat.en}</span>
+                        <span className="font-sans text-base">{cat.en}</span>
                         <span className="font-mono text-[10px] tracking-[0.2em] text-muted">
                           {cat.ko}
                         </span>
@@ -145,7 +145,7 @@ export default async function StatsPage() {
                             className="grid grid-cols-[1fr_60px_70px] gap-3 items-center"
                           >
                             <div
-                              className="font-serif text-sm leading-tight truncate"
+                              className="font-sans text-sm leading-tight truncate"
                               title={g.genre}
                             >
                               {g.genre}
@@ -178,7 +178,7 @@ export default async function StatsPage() {
       {/* Notes aggregate */}
       {stats.notes.total > 0 && (
         <section className="mb-12">
-          <h2 className="font-serif text-2xl tracking-tight mb-1">Notes</h2>
+          <h2 className="font-sans text-2xl tracking-tight mb-1">Notes</h2>
           <div className="font-mono text-xs tracking-[0.2em] text-muted mb-5">
             긴 글로 적은 기록 — 노트 통계
           </div>
@@ -223,7 +223,7 @@ export default async function StatsPage() {
                     >
                       <Link
                         href={`/rooms/${cat.type}`}
-                        className="font-serif text-base hover:text-red transition-colors"
+                        className="font-sans text-base hover:text-red transition-colors"
                       >
                         {cat.en}
                       </Link>
@@ -271,7 +271,7 @@ export default async function StatsPage() {
                         key={k.kind}
                         className="grid grid-cols-[120px_1fr_60px] gap-3 items-center"
                       >
-                        <span className="font-serif text-base">{k.kind}</span>
+                        <span className="font-sans text-base">{k.kind}</span>
                         <div className="h-2 bg-line/40">
                           <div
                             className="h-full bg-ink"
@@ -293,7 +293,7 @@ export default async function StatsPage() {
 
       {/* Activity last 30 days */}
       <section className="mb-12">
-        <h2 className="font-serif text-2xl tracking-tight mb-1">
+        <h2 className="font-sans text-2xl tracking-tight mb-1">
           Last 30 Days
         </h2>
         <div className="font-mono text-xs tracking-[0.2em] text-muted mb-5">
@@ -325,7 +325,7 @@ export default async function StatsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
         {/* Top tags */}
         <section>
-          <h2 className="font-serif text-2xl tracking-tight mb-1">Top Tags</h2>
+          <h2 className="font-sans text-2xl tracking-tight mb-1">Top Tags</h2>
           <div className="font-mono text-xs tracking-[0.2em] text-muted mb-5">
             가장 많이 쓴 태그
           </div>
@@ -341,7 +341,7 @@ export default async function StatsPage() {
                       href={`/mood/${encodeURIComponent(t.tag)}`}
                       className="grid grid-cols-[1fr_140px_50px] gap-3 items-center group"
                     >
-                      <span className="font-serif text-lg truncate group-hover:underline">
+                      <span className="font-sans text-lg truncate group-hover:underline">
                         {t.tag}
                       </span>
                       <span className="h-2 bg-line/40 relative">
@@ -363,7 +363,7 @@ export default async function StatsPage() {
 
         {/* Deep shelves */}
         <section>
-          <h2 className="font-serif text-2xl tracking-tight mb-1">
+          <h2 className="font-sans text-2xl tracking-tight mb-1">
             Deep Shelves
           </h2>
           <div className="font-mono text-xs tracking-[0.2em] text-muted mb-5">
@@ -384,7 +384,7 @@ export default async function StatsPage() {
                       className="flex items-baseline justify-between gap-3 border-b border-line py-2 hover:bg-line/30 transition-colors px-1 -mx-1"
                     >
                       <div className="min-w-0 flex-1">
-                        <div className="font-serif text-base leading-tight truncate">
+                        <div className="font-sans text-base leading-tight truncate">
                           {source.title}
                         </div>
                         <div className="font-mono text-[9px] tracking-[0.25em] text-muted mt-0.5 truncate">
@@ -407,7 +407,7 @@ export default async function StatsPage() {
       {/* Tags by room */}
       {ROOM_CATEGORIES.some((c) => (stats.tagsByType[c.type] ?? []).length > 0) && (
         <section className="mb-12">
-          <h2 className="font-serif text-2xl tracking-tight mb-1">
+          <h2 className="font-sans text-2xl tracking-tight mb-1">
             Tags by Room
           </h2>
           <div className="font-mono text-xs tracking-[0.2em] text-muted mb-5">
@@ -423,7 +423,7 @@ export default async function StatsPage() {
                   <div className="flex items-baseline justify-between mb-3 border-b border-line pb-2">
                     <Link
                       href={`/rooms/${cat.type}`}
-                      className="font-serif text-lg tracking-tight hover:underline"
+                      className="font-sans text-lg tracking-tight hover:underline"
                     >
                       {cat.en}
                     </Link>
@@ -443,7 +443,7 @@ export default async function StatsPage() {
                             href={`/mood/${encodeURIComponent(t.tag)}`}
                             className="grid grid-cols-[1fr_90px_36px] gap-2 items-center group"
                           >
-                            <span className="font-serif text-sm truncate group-hover:underline">
+                            <span className="font-sans text-sm truncate group-hover:underline">
                               {t.tag}
                             </span>
                             <span className="h-1.5 bg-line/40 relative">
@@ -488,7 +488,7 @@ function BigNumber({
       <div className="font-mono text-[10px] tracking-[0.3em] text-muted">
         {label}
       </div>
-      <div className="font-serif text-[clamp(40px,7vw,68px)] leading-none mt-2">
+      <div className="font-sans text-[clamp(40px,7vw,68px)] leading-none mt-2">
         {value}
       </div>
       <div className="font-mono text-[10px] tracking-[0.25em] text-muted mt-2">
@@ -512,7 +512,7 @@ function SmallNumber({
       <div className="font-mono text-[9px] tracking-[0.3em] text-muted">
         {label}
       </div>
-      <div className="font-serif text-3xl leading-none mt-1">{value}</div>
+      <div className="font-sans text-3xl leading-none mt-1">{value}</div>
       <div className="font-mono text-[9px] tracking-[0.25em] text-muted mt-1">
         {ko}
       </div>

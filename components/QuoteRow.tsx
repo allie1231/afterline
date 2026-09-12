@@ -69,7 +69,7 @@ export function QuoteRow({
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={6}
-            className="w-full border border-line bg-paper px-4 py-3 font-serif text-xl leading-relaxed focus:outline-none focus:border-blue resize-y min-h-[180px]"
+            className="w-full border border-line bg-paper px-4 py-3 font-sans text-xl leading-relaxed focus:outline-none focus:border-blue resize-y min-h-[180px]"
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
@@ -80,7 +80,7 @@ export function QuoteRow({
                 type="text"
                 value={page}
                 onChange={(e) => setPage(e.target.value)}
-                className="w-full border border-line bg-paper px-3 py-2 font-serif text-base focus:outline-none focus:border-blue"
+                className="w-full border border-line bg-paper px-3 py-2 font-sans text-base focus:outline-none focus:border-blue"
               />
             </div>
             <div>
@@ -91,7 +91,7 @@ export function QuoteRow({
                 type="text"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
-                className="w-full border border-line bg-paper px-3 py-2 font-serif text-base focus:outline-none focus:border-blue"
+                className="w-full border border-line bg-paper px-3 py-2 font-sans text-base focus:outline-none focus:border-blue"
               />
             </div>
           </div>

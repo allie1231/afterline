@@ -52,7 +52,7 @@ export default async function YearReviewPage({
         <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-3">
           YEAR IN REVIEW · VOL. {year}
         </div>
-        <h1 className="font-serif text-[clamp(60px,10vw,140px)] leading-none tracking-tight">
+        <h1 className="font-sans text-[clamp(60px,10vw,140px)] leading-none tracking-tight">
           {year}
         </h1>
       </header>
@@ -81,7 +81,7 @@ export default async function YearReviewPage({
 
           {/* Pace by month */}
           <section className="mb-12">
-            <h2 className="font-serif text-2xl tracking-tight mb-1">
+            <h2 className="font-sans text-2xl tracking-tight mb-1">
               Pace by Month
             </h2>
             <div className="font-mono text-xs tracking-[0.2em] text-muted mb-5">
@@ -121,7 +121,7 @@ export default async function YearReviewPage({
 
           {/* By room */}
           <section className="mb-12">
-            <h2 className="font-serif text-2xl tracking-tight mb-1">
+            <h2 className="font-sans text-2xl tracking-tight mb-1">
               By Room
             </h2>
             <div className="font-mono text-xs tracking-[0.2em] text-muted mb-5">
@@ -140,7 +140,7 @@ export default async function YearReviewPage({
                     >
                       <Link
                         href={`/rooms/${cat.type}`}
-                        className="font-serif text-base"
+                        className="font-sans text-base"
                       >
                         {cat.en}
                       </Link>
@@ -228,7 +228,7 @@ export default async function YearReviewPage({
           {/* Favorites */}
           {r.favorites.length > 0 && (
             <section className="mb-12">
-              <h2 className="font-serif text-2xl tracking-tight mb-1">
+              <h2 className="font-sans text-2xl tracking-tight mb-1">
                 Favorites
               </h2>
               <div className="font-mono text-xs tracking-[0.2em] text-muted mb-5">
@@ -282,7 +282,7 @@ function BigNumber({
       <div className="font-mono text-[10px] tracking-[0.3em] text-muted">
         {label}
       </div>
-      <div className="font-serif text-[clamp(36px,6vw,60px)] leading-none mt-2">
+      <div className="font-sans text-[clamp(36px,6vw,60px)] leading-none mt-2">
         {value}
       </div>
       <div className="font-mono text-[10px] tracking-[0.25em] text-muted mt-2">
@@ -309,7 +309,7 @@ function SectionList({
 }) {
   return (
     <section>
-      <h2 className="font-serif text-2xl tracking-tight mb-1">{title}</h2>
+      <h2 className="font-sans text-2xl tracking-tight mb-1">{title}</h2>
       <div className="font-mono text-xs tracking-[0.2em] text-muted mb-4">
         {ko}
       </div>
@@ -325,7 +325,7 @@ function SectionList({
             {it.href ? (
               <Link
                 href={it.href}
-                className="font-serif text-base truncate hover:text-red transition-colors"
+                className="font-sans text-base truncate hover:text-red transition-colors"
                 title={it.label}
               >
                 {it.label}
@@ -336,7 +336,7 @@ function SectionList({
                 )}
               </Link>
             ) : (
-              <span className="font-serif text-base truncate" title={it.label}>
+              <span className="font-sans text-base truncate" title={it.label}>
                 {it.label}
               </span>
             )}

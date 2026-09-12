@@ -187,7 +187,7 @@ function NoteFormCore({
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="제목 (선택)"
-        className="border border-line bg-paper px-3 py-2 font-serif text-lg focus:outline-none focus:border-blue"
+        className="border border-line bg-paper px-3 py-2 font-sans text-lg focus:outline-none focus:border-blue"
       />
 
       {/* Tabs */}
@@ -209,7 +209,7 @@ function NoteFormCore({
           onChange={(e) => setBody(e.target.value)}
           rows={10}
           placeholder="여기 적어주세요. 마크다운을 쓰면 PREVIEW 에서 그대로 보여요."
-          className="w-full border border-line bg-paper px-3 py-3 font-serif text-lg leading-relaxed focus:outline-none focus:border-blue resize-y min-h-[260px]"
+          className="w-full border border-line bg-paper px-3 py-3 font-sans text-lg leading-relaxed focus:outline-none focus:border-blue resize-y min-h-[260px]"
         />
       ) : (
         <div className="border border-line bg-paper px-4 py-3 min-h-[260px]">

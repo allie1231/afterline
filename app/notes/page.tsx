@@ -22,7 +22,7 @@ export default async function NotesPage() {
         className="mb-3"
       />
       <div className="flex items-baseline justify-between flex-wrap gap-4 mb-2">
-        <h1 className="font-serif text-4xl md:text-5xl tracking-tight leading-none">
+        <h1 className="font-sans text-4xl md:text-5xl tracking-tight leading-none">
           Notes
         </h1>
         <Link
