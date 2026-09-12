@@ -122,9 +122,21 @@ async function extractDominantColor(url: string): Promise<string | null> {
     const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
     if (!res.ok) return null;
     const buf = Buffer.from(await res.arrayBuffer());
-    const { dominant } = await sharp(buf).resize(64, 64, { fit: "cover" }).stats();
+    const { dominant, channels } = await sharp(buf)
+      .resize(64, 64, { fit: "cover" })
+      .stats();
+    const r = dominant.r, g = dominant.g, b = dominant.b;
+    const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    if (lum > 0.85 || lum < 0.08) {
+      // Dominant color is near-white or near-black — try channel means instead
+      const mr = channels[0].mean, mg = channels[1].mean, mb = channels[2].mean;
+      const mLum = (0.2126 * mr + 0.7152 * mg + 0.0722 * mb) / 255;
+      if (mLum > 0.85 || mLum < 0.08) return null;
+      const hex = (n: number) => Math.round(n).toString(16).padStart(2, "0");
+      return `#${hex(mr)}${hex(mg)}${hex(mb)}`;
+    }
     const hex = (n: number) => Math.round(n).toString(16).padStart(2, "0");
-    return `#${hex(dominant.r)}${hex(dominant.g)}${hex(dominant.b)}`;
+    return `#${hex(r)}${hex(g)}${hex(b)}`;
   } catch {
     return null;
   }
