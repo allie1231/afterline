@@ -98,7 +98,7 @@ export function EditSourceDialog({
         className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[min(640px,92vw)] max-h-[88vh] overflow-y-auto bg-paper border border-ink shadow-[6px_6px_0_var(--ink)]"
       >
         <header className="flex items-center justify-between border-b border-ink px-5 py-3">
-          <div className="font-mono text-[10px] tracking-[0.3em]">
+          <div className="font-mono text-[11px] tracking-[0.3em]">
             EDIT INFO / 소스 정보 수정
           </div>
           <button
@@ -124,23 +124,23 @@ export function EditSourceDialog({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="font-mono text-[9px] tracking-[0.2em] text-muted">
+                  <span className="font-mono text-[11px] tracking-[0.2em] text-muted">
                     NO COVER
                   </span>
                 )}
               </div>
               <div className="flex-1">
-                <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-2">
+                <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-2">
                   COVER / 표지
                 </div>
                 <button
                   type="button"
                   onClick={() => setCoverDialogOpen(true)}
-                  className="font-mono text-[10px] tracking-[0.3em] border border-ink px-3 py-1.5 hover:bg-ink hover:text-paper transition-colors"
+                  className="font-mono text-[11px] tracking-[0.3em] border border-ink px-3 py-1.5 hover:bg-ink hover:text-paper transition-colors"
                 >
                   [ CHANGE COVER ]
                 </button>
-                <p className="font-mono text-[10px] text-muted mt-2 leading-relaxed">
+                <p className="font-mono text-[11px] text-muted mt-2 leading-relaxed">
                   검색 / 업로드 / URL 중 골라서 바꿀 수 있어요.
                 </p>
               </div>
@@ -230,7 +230,7 @@ export function EditSourceDialog({
               <button
                 type="button"
                 onClick={() => setSpineColor(null)}
-                className={`font-mono text-[10px] tracking-[0.25em] border px-3 py-1.5 transition-colors ${
+                className={`font-mono text-[11px] tracking-[0.25em] border px-3 py-1.5 transition-colors ${
                   spineColor === null
                     ? "border-ink bg-ink text-paper"
                     : "border-ink text-muted hover:text-ink"
@@ -280,14 +280,14 @@ export function EditSourceDialog({
                 className="font-mono text-xs border border-ink bg-paper px-2 py-1 w-24"
               />
             </div>
-            <p className="font-mono text-[10px] text-muted mt-2 leading-relaxed">
+            <p className="font-mono text-[11px] text-muted mt-2 leading-relaxed">
               6색 프리셋 / 무지개 픽커 / 직접 #hex 입력 중 아무거나.
               AUTO를 누르면 ID 해시로 자동 배정돼요.
             </p>
           </Field>
 
           {error && (
-            <div className="font-mono text-[10px] text-red">{error}</div>
+            <div className="font-mono text-[11px] text-red">{error}</div>
           )}
         </div>
 
@@ -296,7 +296,7 @@ export function EditSourceDialog({
             type="button"
             onClick={onClose}
             disabled={pending}
-            className="font-mono text-[10px] tracking-[0.3em] text-muted hover:text-ink disabled:opacity-50"
+            className="font-mono text-[11px] tracking-[0.3em] text-muted hover:text-ink disabled:opacity-50"
           >
             CANCEL
           </button>
@@ -304,7 +304,7 @@ export function EditSourceDialog({
             type="button"
             onClick={handleSave}
             disabled={pending}
-            className="font-mono text-[10px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
+            className="font-mono text-[11px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
           >
             [ {pending ? "SAVING…" : "SAVE"} ]
           </button>
@@ -335,7 +335,7 @@ function Field({
 }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="font-mono text-[10px] tracking-[0.3em] text-muted">
+      <span className="font-mono text-[11px] tracking-[0.3em] text-muted">
         {label}
       </span>
       {children}

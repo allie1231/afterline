@@ -20,7 +20,7 @@ export function Breadcrumb({
   return (
     <nav
       aria-label="breadcrumb"
-      className={`font-mono text-[10px] tracking-[0.25em] text-muted flex flex-wrap items-baseline gap-x-2 ${className}`}
+      className={`font-mono text-[11px] tracking-[0.25em] text-muted flex flex-wrap items-baseline gap-x-2 ${className}`}
     >
       {backHref && (
         <Link

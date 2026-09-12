@@ -76,7 +76,7 @@ export function QuoteList({
             <button
               type="button"
               onClick={() => setFavOnly((v) => !v)}
-              className={`font-mono text-[10px] tracking-[0.3em] border px-3 py-1.5 transition-colors ${
+              className={`font-mono text-[11px] tracking-[0.3em] border px-3 py-1.5 transition-colors ${
                 favOnly
                   ? "bg-red border-red text-paper"
                   : "border-ink hover:bg-ink hover:text-paper"
@@ -88,7 +88,7 @@ export function QuoteList({
               <button
                 type="button"
                 onClick={clearAll}
-                className="font-mono text-[10px] tracking-[0.3em] text-muted hover:text-ink"
+                className="font-mono text-[11px] tracking-[0.3em] text-muted hover:text-ink"
               >
                 × RESET
               </button>
@@ -103,7 +103,7 @@ export function QuoteList({
                     key={t}
                     type="button"
                     onClick={() => toggleTag(t)}
-                    className={`font-mono text-[10px] tracking-[0.2em] border px-2 py-1 transition-colors ${
+                    className={`font-mono text-[11px] tracking-[0.2em] border px-2 py-1 transition-colors ${
                       on
                         ? "bg-ink text-paper border-ink"
                         : "border-line hover:border-ink"
@@ -116,7 +116,7 @@ export function QuoteList({
             </div>
           )}
           {anyFilter && (
-            <div className="font-mono text-[9px] tracking-[0.25em] text-muted">
+            <div className="font-mono text-[11px] tracking-[0.25em] text-muted">
               SHOWING {String(filtered.length).padStart(2, "0")} OF{" "}
               {String(quotes.length).padStart(2, "0")}
             </div>

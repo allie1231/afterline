@@ -35,7 +35,7 @@ export default async function EmbedTodayPage() {
   if (!line) {
     return (
       <main className="min-h-screen flex items-center justify-center p-6 bg-paper text-ink">
-        <div className="font-mono text-[10px] tracking-[0.3em] text-muted">
+        <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
           AFTERLINE / NO LINE
         </div>
       </main>
@@ -44,7 +44,7 @@ export default async function EmbedTodayPage() {
 
   return (
     <main className="min-h-screen flex flex-col justify-between p-6 bg-paper text-ink">
-      <div className="font-mono text-[10px] tracking-[0.3em] text-muted">
+      <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
         AFTERLINE
         {line.source_type ? ` / ${line.source_type.toUpperCase()}` : ""}
       </div>
@@ -54,7 +54,7 @@ export default async function EmbedTodayPage() {
       </blockquote>
 
       {(line.source_title || line.source_creator) && (
-        <div className="border-t border-line pt-3 font-mono text-[10px] tracking-[0.25em] text-muted">
+        <div className="border-t border-line pt-3 font-mono text-[11px] tracking-[0.25em] text-muted">
           {line.source_title}
           {line.source_creator ? ` — ${line.source_creator}` : ""}
         </div>

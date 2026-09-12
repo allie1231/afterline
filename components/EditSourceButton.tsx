@@ -11,7 +11,7 @@ export function EditSourceButton({ source }: { source: Source }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="font-mono text-[10px] tracking-[0.3em] border border-ink px-3 py-1.5 hover:bg-ink hover:text-paper transition-colors"
+        className="font-mono text-[11px] tracking-[0.3em] border border-ink px-3 py-1.5 hover:bg-ink hover:text-paper transition-colors"
       >
         [ EDIT INFO ]
       </button>

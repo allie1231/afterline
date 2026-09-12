@@ -314,7 +314,7 @@ export function ChangeCoverDialog({
         className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[min(640px,92vw)] max-h-[88vh] overflow-y-auto bg-paper border border-ink shadow-[6px_6px_0_var(--ink)]"
       >
         <header className="flex items-center justify-between border-b border-ink px-5 py-3">
-          <div className="font-mono text-[10px] tracking-[0.3em]">
+          <div className="font-mono text-[11px] tracking-[0.3em]">
             CHANGE COVER / 표지 변경
           </div>
           <button
@@ -330,7 +330,7 @@ export function ChangeCoverDialog({
         <div className="px-5 pt-4">
           <div className="font-sans text-xl leading-tight">{source.title}</div>
           {source.creator && (
-            <div className="font-mono text-[10px] tracking-[0.2em] text-muted mt-1">
+            <div className="font-mono text-[11px] tracking-[0.2em] text-muted mt-1">
               {source.creator}
             </div>
           )}
@@ -352,7 +352,7 @@ export function ChangeCoverDialog({
         <div className="p-5">
           {mode === "search" ? (
             <>
-              <div className="font-mono text-[9px] tracking-[0.3em] text-muted mb-2">
+              <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-2">
                 {PROVIDER_LABEL[source.type]}
               </div>
               <div className="flex gap-2">
@@ -374,7 +374,7 @@ export function ChangeCoverDialog({
                   type="button"
                   onClick={doSearch}
                   disabled={searching}
-                  className="font-mono text-[10px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
+                  className="font-mono text-[11px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
                 >
                   {searching ? "..." : "SEARCH"}
                 </button>
@@ -402,11 +402,11 @@ export function ChangeCoverDialog({
                           {h.title}
                         </div>
                         {h.creator && (
-                          <div className="font-mono text-[10px] tracking-[0.2em] text-muted mt-1 truncate">
+                          <div className="font-mono text-[11px] tracking-[0.2em] text-muted mt-1 truncate">
                             {h.creator}
                           </div>
                         )}
-                        <div className="font-mono text-[9px] tracking-[0.2em] text-muted mt-0.5 truncate">
+                        <div className="font-mono text-[11px] tracking-[0.2em] text-muted mt-0.5 truncate">
                           {h.meta && <span>{h.meta}</span>}
                           <span className="opacity-60 ml-2">· {h.source}</span>
                         </div>
@@ -415,7 +415,7 @@ export function ChangeCoverDialog({
                         type="button"
                         onClick={() => applyHit(h)}
                         disabled={!h.cover_url || pending}
-                        className="font-mono text-[10px] tracking-[0.3em] border border-ink px-3 py-2 hover:bg-ink hover:text-paper transition-colors shrink-0 disabled:opacity-40"
+                        className="font-mono text-[11px] tracking-[0.3em] border border-ink px-3 py-2 hover:bg-ink hover:text-paper transition-colors shrink-0 disabled:opacity-40"
                       >
                         USE
                       </button>
@@ -432,7 +432,7 @@ export function ChangeCoverDialog({
             </>
           ) : mode === "upload" ? (
             <>
-              <div className="font-mono text-[9px] tracking-[0.3em] text-muted mb-2">
+              <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-2">
                 UPLOAD IMAGE / 이미지 파일 — 최대 5 MB
               </div>
               <label
@@ -460,13 +460,13 @@ export function ChangeCoverDialog({
                   className="sr-only"
                   disabled={uploading}
                 />
-                <div className="font-mono text-[10px] tracking-[0.3em] text-muted">
+                <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
                   {uploading ? "UPLOADING…" : "DROP IMAGE HERE / 끌어다 놓기"}
                 </div>
                 <div className="font-sans text-base text-ink mt-2">
                   {uploading ? "잠시만요…" : "또는 클릭해서 선택"}
                 </div>
-                <div className="font-mono text-[9px] tracking-[0.25em] text-muted mt-2">
+                <div className="font-mono text-[11px] tracking-[0.25em] text-muted mt-2">
                   JPG · PNG · WEBP · GIF
                 </div>
               </label>
@@ -475,14 +475,14 @@ export function ChangeCoverDialog({
                   {uploadError}
                 </div>
               )}
-              <p className="font-mono text-[9px] tracking-[0.25em] text-muted mt-4 leading-relaxed">
+              <p className="font-mono text-[11px] tracking-[0.25em] text-muted mt-4 leading-relaxed">
                 ※ 업로드 즉시 해당 출처의 표지로 저장됩니다. 같은 다이얼로그에서
                 CLEAR COVER 로 다시 비울 수 있어요.
               </p>
             </>
           ) : (
             <>
-              <div className="font-mono text-[9px] tracking-[0.3em] text-muted mb-2">
+              <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-2">
                 IMAGE URL / 이미지 주소
               </div>
               <input
@@ -501,7 +501,7 @@ export function ChangeCoverDialog({
                     alt=""
                     className="w-20 h-28 object-cover bg-ink border border-line"
                   />
-                  <div className="font-mono text-[10px] tracking-[0.2em] text-muted">
+                  <div className="font-mono text-[11px] tracking-[0.2em] text-muted">
                     PREVIEW
                   </div>
                 </div>
@@ -511,7 +511,7 @@ export function ChangeCoverDialog({
                   type="button"
                   onClick={() => apply(urlInput.trim())}
                   disabled={!urlInput.trim() || pending}
-                  className="font-mono text-[10px] tracking-[0.3em] border border-ink px-5 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-40"
+                  className="font-mono text-[11px] tracking-[0.3em] border border-ink px-5 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-40"
                 >
                   {pending ? "..." : "APPLY"}
                 </button>
@@ -525,14 +525,14 @@ export function ChangeCoverDialog({
             type="button"
             onClick={clearCover}
             disabled={pending || !source.cover_url}
-            className="font-mono text-[10px] tracking-[0.3em] text-muted hover:text-red transition-colors disabled:opacity-40"
+            className="font-mono text-[11px] tracking-[0.3em] text-muted hover:text-red transition-colors disabled:opacity-40"
           >
             × CLEAR COVER
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="font-mono text-[10px] tracking-[0.3em] text-muted hover:text-ink"
+            className="font-mono text-[11px] tracking-[0.3em] text-muted hover:text-ink"
           >
             CANCEL
           </button>

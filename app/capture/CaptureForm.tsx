@@ -215,7 +215,7 @@ export function CaptureForm({
       {/* THE LINE — pulled to top for thumb-reach */}
       <div>
         <div className="flex items-center justify-between mb-1.5 gap-2 flex-wrap">
-          <span className="font-mono text-[10px] tracking-[0.3em]">
+          <span className="font-mono text-[11px] tracking-[0.3em]">
             LINE / 문장 *
           </span>
           <div className="flex items-center gap-1.5">
@@ -235,7 +235,7 @@ export function CaptureForm({
               type="button"
               onClick={() => ocrInputRef.current?.click()}
               disabled={ocring}
-              className="font-mono text-[10px] tracking-[0.3em] border border-ink px-2 py-1 hover:bg-ink hover:text-paper transition-colors disabled:opacity-60"
+              className="font-mono text-[11px] tracking-[0.3em] border border-ink px-2 py-1 hover:bg-ink hover:text-paper transition-colors disabled:opacity-60"
               title="책 페이지를 찍으면 글자를 읽어요 (한 · 영)"
             >
               {ocring ? `OCR ${ocrProgress}%` : "📷 PHOTO"}
@@ -243,7 +243,7 @@ export function CaptureForm({
             <button
               type="button"
               onClick={pasteFromClipboard}
-              className="font-mono text-[10px] tracking-[0.3em] border border-ink px-2 py-1 hover:bg-ink hover:text-paper transition-colors"
+              className="font-mono text-[11px] tracking-[0.3em] border border-ink px-2 py-1 hover:bg-ink hover:text-paper transition-colors"
             >
               📋 PASTE
             </button>
@@ -262,7 +262,7 @@ export function CaptureForm({
 
       {/* TYPE */}
       <div>
-        <div className="font-mono text-[10px] tracking-[0.3em] mb-1.5">
+        <div className="font-mono text-[11px] tracking-[0.3em] mb-1.5">
           TYPE / 종류
         </div>
         <div className="grid grid-cols-3 gap-px bg-ink border border-ink">
@@ -290,7 +290,7 @@ export function CaptureForm({
                 }}
               >
                 <div className="font-sans text-sm leading-none">{cat.en}</div>
-                <div className="font-mono text-[9px] tracking-[0.25em] mt-1 opacity-70">
+                <div className="font-mono text-[11px] tracking-[0.25em] mt-1 opacity-70">
                   {cat.ko}
                 </div>
               </button>
@@ -306,7 +306,7 @@ export function CaptureForm({
             type="button"
             onClick={() => setMode("existing")}
             disabled={sourcesOfType.length === 0}
-            className={`font-mono text-[10px] tracking-[0.3em] px-3 py-2 border-b-2 -mb-px ${
+            className={`font-mono text-[11px] tracking-[0.3em] px-3 py-2 border-b-2 -mb-px ${
               mode === "existing" ? "border-ink" : "border-transparent text-muted"
             } ${sourcesOfType.length === 0 ? "opacity-30" : ""}`}
           >
@@ -315,7 +315,7 @@ export function CaptureForm({
           <button
             type="button"
             onClick={() => setMode("new")}
-            className={`font-mono text-[10px] tracking-[0.3em] px-3 py-2 border-b-2 -mb-px ${
+            className={`font-mono text-[11px] tracking-[0.3em] px-3 py-2 border-b-2 -mb-px ${
               mode === "new" ? "border-ink" : "border-transparent text-muted"
             }`}
           >
@@ -343,7 +343,7 @@ export function CaptureForm({
             {/* Search — auto-fill all fields */}
             {SEARCHABLE.includes(type) && (
               <div className="border border-line p-3">
-                <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-2">
+                <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-2">
                   SEARCH / 검색 — 자동 입력
                 </div>
                 <div className="flex gap-2">
@@ -370,7 +370,7 @@ export function CaptureForm({
                     type="button"
                     onClick={doSearch}
                     disabled={searching}
-                    className="font-mono text-[10px] tracking-[0.3em] border border-ink px-3 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
+                    className="font-mono text-[11px] tracking-[0.3em] border border-ink px-3 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
                   >
                     {searching ? "..." : "GO"}
                   </button>
@@ -400,11 +400,11 @@ export function CaptureForm({
                               {h.title}
                             </div>
                             {h.creator && (
-                              <div className="font-mono text-[10px] tracking-[0.2em] text-muted truncate">
+                              <div className="font-mono text-[11px] tracking-[0.2em] text-muted truncate">
                                 {h.creator}
                               </div>
                             )}
-                            <div className="font-mono text-[9px] tracking-[0.2em] text-muted truncate">
+                            <div className="font-mono text-[11px] tracking-[0.2em] text-muted truncate">
                               {[h.publisher, h.published_date]
                                 .filter(Boolean)
                                 .join(" · ")}
@@ -471,7 +471,7 @@ export function CaptureForm({
                   alt=""
                   className="w-14 h-20 object-cover bg-ink border border-line"
                 />
-                <span className="font-mono text-[10px] tracking-[0.2em] text-muted">
+                <span className="font-mono text-[11px] tracking-[0.2em] text-muted">
                   COVER LOCKED
                 </span>
               </div>
@@ -481,7 +481,7 @@ export function CaptureForm({
       </div>
 
       <div>
-        <div className="font-mono text-[10px] tracking-[0.3em] mb-1.5">
+        <div className="font-mono text-[11px] tracking-[0.3em] mb-1.5">
           PAGE / LOCATION
         </div>
         <input
@@ -493,7 +493,7 @@ export function CaptureForm({
       </div>
 
       <div>
-        <div className="font-mono text-[10px] tracking-[0.3em] mb-1.5">
+        <div className="font-mono text-[11px] tracking-[0.3em] mb-1.5">
           TAGS / 태그 — 쉼표 구분
         </div>
         <input

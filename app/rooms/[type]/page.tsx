@@ -54,14 +54,14 @@ export default async function RoomPage({
         <h2 className="font-sans text-4xl md:text-5xl tracking-tight">{category.en}</h2>
         <div className="flex items-end gap-6">
           <div className="text-right">
-            <div className="font-mono text-[10px] tracking-[0.25em] text-muted">
+            <div className="font-mono text-[11px] tracking-[0.25em] text-muted">
               {category.ko}
             </div>
             <div className="font-sans text-lg mt-1">{category.description}</div>
           </div>
           <Link
             href={`/quotes/new?type=${category.type}`}
-            className="font-mono text-[11px] tracking-[0.3em] border border-ink px-5 py-3 hover:bg-ink hover:text-paper transition-colors whitespace-nowrap"
+            className="font-mono text-xs tracking-[0.3em] border border-ink px-5 py-3 hover:bg-ink hover:text-paper transition-colors whitespace-nowrap"
           >
             + NEW LINE
           </Link>
@@ -75,7 +75,7 @@ export default async function RoomPage({
           </div>
           <Link
             href={`/quotes/new?type=${category.type}`}
-            className="font-mono text-[11px] tracking-[0.3em] border border-ink px-6 py-4 hover:bg-ink hover:text-paper transition-colors"
+            className="font-mono text-xs tracking-[0.3em] border border-ink px-6 py-4 hover:bg-ink hover:text-paper transition-colors"
           >
             [ ADD FIRST LINE / 첫 문장 더하기 ]
           </Link>

@@ -12,7 +12,7 @@ export function InlineQuoteCard({
 }) {
   if (!quote) {
     return (
-      <span className="inline-block font-mono text-[10px] tracking-[0.2em] text-muted border border-dashed border-line px-2 py-1 my-2">
+      <span className="inline-block font-mono text-[11px] tracking-[0.2em] text-muted border border-dashed border-line px-2 py-1 my-2">
         UNRESOLVED LINE / 인용 못 찾음
       </span>
     );
@@ -23,7 +23,7 @@ export function InlineQuoteCard({
         &ldquo;{quote.text}&rdquo;
       </p>
       {(source || quote.page) && (
-        <div className="font-mono text-[10px] tracking-[0.25em] text-muted mt-2 flex gap-3 flex-wrap">
+        <div className="font-mono text-[11px] tracking-[0.25em] text-muted mt-2 flex gap-3 flex-wrap">
           {source && (
             <Link
               href={`/sources/${source.id}`}

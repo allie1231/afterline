@@ -23,7 +23,7 @@ export default async function EntrancePage() {
 
   return (
     <section className="min-h-[calc(100vh-77px)] flex flex-col justify-between px-8 py-16 gap-16">
-      <div className="font-mono text-[10px] tracking-[0.25em] text-muted">
+      <div className="font-mono text-[11px] tracking-[0.25em] text-muted">
         VOL. 01 / PERSONAL EDITORIAL ARCHIVE
       </div>
 
@@ -41,10 +41,10 @@ export default async function EntrancePage() {
       {reading.length > 0 && (
         <section className="border-y border-line py-6">
           <div className="flex items-baseline justify-between mb-4">
-            <div className="font-mono text-[10px] tracking-[0.3em] text-muted">
+            <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
               NOW READING / 지금 읽는 중
             </div>
-            <span className="font-mono text-[10px] tracking-[0.25em] text-muted">
+            <span className="font-mono text-[11px] tracking-[0.25em] text-muted">
               {String(reading.length).padStart(2, "0")} ACTIVE
             </span>
           </div>
@@ -59,17 +59,17 @@ export default async function EntrancePage() {
       {onThisDay.length > 0 && (
         <section className="border-y border-line py-6">
           <div className="flex items-baseline justify-between mb-5">
-            <div className="font-mono text-[10px] tracking-[0.3em] text-muted">
+            <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
               ON THIS DAY / 같은 날의 기록
             </div>
-            <span className="font-mono text-[10px] tracking-[0.25em] text-muted">
+            <span className="font-mono text-[11px] tracking-[0.25em] text-muted">
               {String(onThisDay.length).padStart(2, "0")} ENTRIES
             </span>
           </div>
           <ol className="flex flex-col gap-6">
             {onThisDay.slice(0, 4).map((q) => (
               <li key={q.id} className="grid grid-cols-[60px_1fr] gap-6">
-                <div className="font-mono text-[11px] tracking-[0.2em] text-muted pt-1">
+                <div className="font-mono text-xs tracking-[0.2em] text-muted pt-1">
                   {yearOf(q.created_at)}
                 </div>
                 <PastQuoteBody q={q} />
@@ -84,11 +84,11 @@ export default async function EntrancePage() {
       <div className="flex items-end justify-between">
         <Link
           href="/rooms"
-          className="font-mono text-xs tracking-[0.3em] border border-ink px-6 py-4 hover:bg-ink hover:text-paper transition-colors"
+          className="font-mono text-xs tracking-[0.3em] border border-ink px-8 py-5 hover:bg-ink hover:text-paper transition-colors"
         >
           [ ENTER ARCHIVE ]
         </Link>
-        <div className="font-mono text-[10px] tracking-[0.2em] text-muted text-right leading-relaxed">
+        <div className="font-mono text-[11px] tracking-[0.2em] text-muted text-right leading-relaxed">
           A PRIVATE ARCHIVE
           <br />
           OF LINES THAT STAYED
@@ -113,7 +113,7 @@ function PastQuoteBody({ q, large = false }: { q: PastLine; large?: boolean }) {
         &ldquo;{q.text}&rdquo;
       </p>
       {(q.source_title || q.source_id) && (
-        <div className="mt-3 font-mono text-[10px] tracking-[0.25em] text-muted">
+        <div className="mt-3 font-mono text-[11px] tracking-[0.25em] text-muted">
           {q.source_id ? (
             <Link href={`/sources/${q.source_id}`} className="hover:text-ink">
               {q.source_title}

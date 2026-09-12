@@ -51,7 +51,7 @@ export default async function TagPage({
         <ol className="flex flex-col gap-10">
           {items.map(({ quote, source }, i) => (
             <li key={quote.id} className="grid grid-cols-[40px_1fr] gap-6">
-              <div className="font-mono text-[10px] tracking-[0.2em] text-muted pt-2">
+              <div className="font-mono text-[11px] tracking-[0.2em] text-muted pt-2">
                 {String(i + 1).padStart(2, "0")}
               </div>
               <div>
@@ -59,7 +59,7 @@ export default async function TagPage({
                   {quote.text}
                 </blockquote>
                 {source && (
-                  <div className="mt-3 font-mono text-[10px] tracking-[0.25em] text-muted flex gap-3 items-baseline flex-wrap">
+                  <div className="mt-3 font-mono text-[11px] tracking-[0.25em] text-muted flex gap-3 items-baseline flex-wrap">
                     <Link
                       href={`/sources/${source.id}`}
                       className="text-ink hover:underline"
@@ -73,7 +73,7 @@ export default async function TagPage({
                       if (!cat) return null;
                       return (
                         <span
-                          className="font-mono text-[9px] tracking-[0.25em] px-1.5 py-0.5"
+                          className="font-mono text-[11px] tracking-[0.25em] px-1.5 py-0.5"
                           style={{
                             background: cat.accent,
                             color:
@@ -101,7 +101,7 @@ export default async function TagPage({
                         <Link
                           key={t}
                           href={`/mood/${encodeURIComponent(t)}`}
-                          className="font-mono text-[9px] tracking-[0.25em] border border-line px-2 py-0.5 hover:border-ink hover:bg-ink hover:text-paper transition-colors"
+                          className="font-mono text-[11px] tracking-[0.25em] border border-line px-2 py-0.5 hover:border-ink hover:bg-ink hover:text-paper transition-colors"
                         >
                           {t}
                         </Link>

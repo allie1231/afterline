@@ -61,7 +61,7 @@ export function QuoteRow({
   if (editing) {
     return (
       <li className="grid grid-cols-[40px_1fr] gap-6">
-        <div className="font-mono text-[10px] tracking-[0.2em] text-muted pt-2">
+        <div className="font-mono text-[11px] tracking-[0.2em] text-muted pt-2">
           {String(index + 1).padStart(2, "0")}
         </div>
         <div className="flex flex-col gap-3 border border-ink p-5 bg-paper">
@@ -73,7 +73,7 @@ export function QuoteRow({
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <div className="font-mono text-[9px] tracking-[0.3em] text-muted mb-1">
+              <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-1">
                 PAGE / LOCATION
               </div>
               <input
@@ -84,7 +84,7 @@ export function QuoteRow({
               />
             </div>
             <div>
-              <div className="font-mono text-[9px] tracking-[0.3em] text-muted mb-1">
+              <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-1">
                 TAGS
               </div>
               <input
@@ -96,7 +96,7 @@ export function QuoteRow({
             </div>
           </div>
           <div>
-            <div className="font-mono text-[9px] tracking-[0.3em] text-muted mb-1">
+            <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-1">
               MEMO
             </div>
             <textarea
@@ -113,7 +113,7 @@ export function QuoteRow({
               onChange={(e) => setFavorite(e.target.checked)}
               className="w-4 h-4 accent-red"
             />
-            <span className="font-mono text-[10px] tracking-[0.25em]">
+            <span className="font-mono text-[11px] tracking-[0.25em]">
               FAVORITE / 즐겨찾기
             </span>
           </label>
@@ -122,7 +122,7 @@ export function QuoteRow({
               type="button"
               onClick={save}
               disabled={pending}
-              className="font-mono text-[10px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
+              className="font-mono text-[11px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
             >
               SAVE
             </button>
@@ -133,7 +133,7 @@ export function QuoteRow({
                 setEditing(false);
               }}
               disabled={pending}
-              className="font-mono text-[10px] tracking-[0.3em] text-muted px-3 py-2 hover:text-ink"
+              className="font-mono text-[11px] tracking-[0.3em] text-muted px-3 py-2 hover:text-ink"
             >
               CANCEL
             </button>
@@ -145,7 +145,7 @@ export function QuoteRow({
 
   return (
     <li className="group grid grid-cols-[40px_1fr_auto] gap-6">
-      <div className="font-mono text-[10px] tracking-[0.2em] text-muted pt-2">
+      <div className="font-mono text-[11px] tracking-[0.2em] text-muted pt-2">
         {String(index + 1).padStart(2, "0")}
       </div>
       <div className="min-w-0">
@@ -153,13 +153,13 @@ export function QuoteRow({
           {quote.text}
         </p>
         {quote.page && (
-          <div className="font-mono text-[10px] tracking-[0.25em] text-muted mt-2">
+          <div className="font-mono text-[11px] tracking-[0.25em] text-muted mt-2">
             p. {quote.page}
           </div>
         )}
         {quote.note && (
           <div className="mt-3">
-            <div className="font-mono text-[10px] tracking-[0.2em] text-muted">
+            <div className="font-mono text-[11px] tracking-[0.2em] text-muted">
               memo
             </div>
             <p className="font-sans text-sm mt-1">{quote.note}</p>
@@ -170,7 +170,7 @@ export function QuoteRow({
             {quote.mood_tags.map((m) => (
               <span
                 key={m}
-                className="font-mono text-[10px] tracking-[0.2em] border border-line px-2 py-0.5"
+                className="font-mono text-[11px] tracking-[0.2em] border border-line px-2 py-0.5"
               >
                 {m}
               </span>
@@ -178,7 +178,7 @@ export function QuoteRow({
           </div>
         )}
         {quote.is_favorite && (
-          <div className="mt-3 font-mono text-[10px] tracking-[0.25em] text-red">
+          <div className="mt-3 font-mono text-[11px] tracking-[0.25em] text-red">
             ★ FAVORITE
           </div>
         )}
@@ -193,7 +193,7 @@ export function QuoteRow({
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="font-mono text-[10px] tracking-[0.3em] border border-ink px-2 py-1 bg-paper hover:bg-ink hover:text-paper transition-colors"
+          className="font-mono text-[11px] tracking-[0.3em] border border-ink px-2 py-1 bg-paper hover:bg-ink hover:text-paper transition-colors"
         >
           EDIT
         </button>
@@ -209,7 +209,7 @@ export function QuoteRow({
               prompt("이 토큰을 노트 본문에 붙여넣으세요:", token);
             }
           }}
-          className="font-mono text-[10px] tracking-[0.3em] border border-line text-muted px-2 py-1 bg-paper hover:border-ink hover:text-ink transition-colors"
+          className="font-mono text-[11px] tracking-[0.3em] border border-line text-muted px-2 py-1 bg-paper hover:border-ink hover:text-ink transition-colors"
           title="노트에 인용 — [[q:id]] 토큰 복사"
         >
           {copiedRef ? "✓" : "↗"}
@@ -218,7 +218,7 @@ export function QuoteRow({
           type="button"
           onClick={handleDelete}
           disabled={pending}
-          className="font-mono text-[10px] tracking-[0.3em] border border-line text-muted px-2 py-1 bg-paper hover:border-red hover:text-red transition-colors disabled:opacity-50"
+          className="font-mono text-[11px] tracking-[0.3em] border border-line text-muted px-2 py-1 bg-paper hover:border-red hover:text-red transition-colors disabled:opacity-50"
           title="Delete"
         >
           ×

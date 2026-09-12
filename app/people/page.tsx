@@ -24,7 +24,7 @@ export default async function PeoplePage() {
         모은 모든 저자 · 필자 · 아티스트
       </p>
 
-      <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-4">
+      <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-4">
         {String(creators.length).padStart(3, "0")} PEOPLE
       </div>
 
@@ -44,7 +44,7 @@ export default async function PeoplePage() {
                   <div className="font-sans text-xl tracking-tight">
                     {c.name}
                   </div>
-                  <div className="font-mono text-[10px] tracking-[0.25em] text-muted mt-1 flex gap-3 flex-wrap">
+                  <div className="font-mono text-[11px] tracking-[0.25em] text-muted mt-1 flex gap-3 flex-wrap">
                     {c.types.map((t) => {
                       const cat = ROOM_CATEGORIES.find((cc) => cc.type === t);
                       return (
@@ -62,7 +62,7 @@ export default async function PeoplePage() {
                     })}
                   </div>
                 </div>
-                <div className="text-right font-mono text-[10px] tracking-[0.25em] text-muted">
+                <div className="text-right font-mono text-[11px] tracking-[0.25em] text-muted">
                   {String(c.sources).padStart(2, "0")} SRCS ·{" "}
                   {String(c.lines).padStart(3, "0")} LINES
                 </div>

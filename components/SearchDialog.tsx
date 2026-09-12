@@ -145,7 +145,7 @@ export function SearchDialog({
         className="fixed left-1/2 top-[15%] -translate-x-1/2 z-50 w-[min(720px,92vw)] max-h-[70vh] flex flex-col bg-paper border border-ink shadow-[6px_6px_0_var(--ink)]"
       >
         <header className="flex items-center gap-3 border-b border-ink px-4 py-3">
-          <span className="font-mono text-[10px] tracking-[0.3em] text-muted">
+          <span className="font-mono text-[11px] tracking-[0.3em] text-muted">
             SEARCH
           </span>
           <input
@@ -156,29 +156,29 @@ export function SearchDialog({
             placeholder="문장 · 출처 · 저자 · 메모 검색…"
             className="flex-1 bg-paper font-sans text-xl focus:outline-none"
           />
-          <span className="font-mono text-[9px] tracking-[0.25em] text-muted">
+          <span className="font-mono text-[11px] tracking-[0.25em] text-muted">
             ⌘K · ESC
           </span>
         </header>
 
         <div className="flex-1 overflow-y-auto">
           {query.trim().length === 0 ? (
-            <div className="px-4 py-10 text-center font-mono text-[10px] tracking-[0.3em] text-muted">
+            <div className="px-4 py-10 text-center font-mono text-[11px] tracking-[0.3em] text-muted">
               TYPE TO SEARCH ACROSS EVERYTHING
             </div>
           ) : pending && hits.length === 0 ? (
-            <div className="px-4 py-10 text-center font-mono text-[10px] tracking-[0.3em] text-muted">
+            <div className="px-4 py-10 text-center font-mono text-[11px] tracking-[0.3em] text-muted">
               SEARCHING…
             </div>
           ) : hits.length === 0 ? (
-            <div className="px-4 py-10 text-center font-mono text-[10px] tracking-[0.3em] text-muted">
+            <div className="px-4 py-10 text-center font-mono text-[11px] tracking-[0.3em] text-muted">
               NO RESULTS / 결과 없음
             </div>
           ) : (
             <>
               {grouped.sources.length > 0 && (
                 <>
-                  <div className="font-mono text-[9px] tracking-[0.3em] text-muted px-4 pt-3 pb-1">
+                  <div className="font-mono text-[11px] tracking-[0.3em] text-muted px-4 pt-3 pb-1">
                     SOURCES · {String(grouped.sources.length).padStart(2, "0")}
                   </div>
                   <ul>
@@ -197,7 +197,7 @@ export function SearchDialog({
               )}
               {grouped.quotes.length > 0 && (
                 <>
-                  <div className="font-mono text-[9px] tracking-[0.3em] text-muted px-4 pt-3 pb-1 border-t border-line">
+                  <div className="font-mono text-[11px] tracking-[0.3em] text-muted px-4 pt-3 pb-1 border-t border-line">
                     QUOTES · {String(grouped.quotes.length).padStart(2, "0")}
                   </div>
                   <ul>
@@ -218,7 +218,7 @@ export function SearchDialog({
           )}
         </div>
 
-        <footer className="border-t border-line px-4 py-2 flex items-center justify-between font-mono text-[9px] tracking-[0.25em] text-muted">
+        <footer className="border-t border-line px-4 py-2 flex items-center justify-between font-mono text-[11px] tracking-[0.25em] text-muted">
           <span>↑↓ NAVIGATE · ↵ OPEN · ESC CLOSE</span>
           <span>
             {hits.length > 0 &&
@@ -256,7 +256,7 @@ function ResultRow({
       >
         <div className="flex items-baseline gap-2 mb-1">
           <span
-            className="font-mono text-[9px] tracking-[0.3em] px-1.5 py-0.5"
+            className="font-mono text-[11px] tracking-[0.3em] px-1.5 py-0.5"
             style={{
               background: cat?.accent,
               color: cat?.contrast === "dark" ? "var(--white)" : "var(--ink)",
@@ -264,7 +264,7 @@ function ResultRow({
           >
             {cat?.en ?? hit.source_type.toUpperCase()}
           </span>
-          <span className="font-mono text-[9px] tracking-[0.25em] text-muted">
+          <span className="font-mono text-[11px] tracking-[0.25em] text-muted">
             · {MATCH_LABEL[hit.matched_on]}
           </span>
         </div>
@@ -279,7 +279,7 @@ function ResultRow({
           </p>
         )}
 
-        <div className="font-mono text-[10px] tracking-[0.2em] text-muted mt-1.5 truncate">
+        <div className="font-mono text-[11px] tracking-[0.2em] text-muted mt-1.5 truncate">
           {hit.quote_text ? (
             <>
               — {hit.source_title}

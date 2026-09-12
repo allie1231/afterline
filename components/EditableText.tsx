@@ -95,7 +95,7 @@ export function EditableText({
           type="button"
           onClick={save}
           disabled={pending}
-          className="font-mono text-[10px] tracking-[0.3em] border border-ink px-3 py-1.5 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
+          className="font-mono text-[11px] tracking-[0.3em] border border-ink px-3 py-1.5 hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
         >
           SAVE
         </button>

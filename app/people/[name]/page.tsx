@@ -57,7 +57,7 @@ export default async function PersonPageView({
         <h1 className="font-sans text-[clamp(36px,5vw,64px)] tracking-tight leading-none break-words">
           {name}
         </h1>
-        <div className="font-mono text-[11px] tracking-[0.3em] text-muted mt-4 flex gap-6 flex-wrap">
+        <div className="font-mono text-xs tracking-[0.3em] text-muted mt-4 flex gap-6 flex-wrap">
           <span>{String(data.sources.length).padStart(2, "0")} SOURCES</span>
           <span>{String(data.lines).padStart(3, "0")} LINES</span>
           <span>{String(data.notesCount).padStart(2, "0")} NOTES</span>
@@ -83,13 +83,13 @@ export default async function PersonPageView({
                 <h2 className="font-sans text-2xl tracking-tight">
                   {cat?.en ?? type.toUpperCase()}
                 </h2>
-                <span className="font-mono text-[10px] tracking-[0.25em] text-muted">
+                <span className="font-mono text-[11px] tracking-[0.25em] text-muted">
                   {cat?.ko}
                 </span>
               </div>
               <Link
                 href={`/rooms/${type}`}
-                className="font-mono text-[10px] tracking-[0.25em] text-muted hover:text-ink"
+                className="font-mono text-[11px] tracking-[0.25em] text-muted hover:text-ink"
               >
                 ALL {cat?.en ?? type.toUpperCase()} →
               </Link>
@@ -106,7 +106,7 @@ export default async function PersonPageView({
       {/* Recent lines */}
       {data.recentQuotes.length > 0 && (
         <section className="mb-12">
-          <div className="font-mono text-[10px] tracking-[0.3em] text-muted mb-4">
+          <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-4">
             RECENT LINES / 최근 수집한 문장
           </div>
           <ol className="flex flex-col gap-6">
@@ -115,7 +115,7 @@ export default async function PersonPageView({
                 key={quote.id}
                 className="grid grid-cols-[40px_1fr] gap-6"
               >
-                <div className="font-mono text-[10px] tracking-[0.25em] text-muted pt-2">
+                <div className="font-mono text-[11px] tracking-[0.25em] text-muted pt-2">
                   {fmtDate(quote.created_at).slice(5)}
                 </div>
                 <div>
@@ -124,7 +124,7 @@ export default async function PersonPageView({
                   </p>
                   <Link
                     href={`/sources/${source.id}`}
-                    className="font-mono text-[10px] tracking-[0.25em] text-muted hover:text-ink mt-2 inline-block"
+                    className="font-mono text-[11px] tracking-[0.25em] text-muted hover:text-ink mt-2 inline-block"
                   >
                     {source.title} ↗
                   </Link>
