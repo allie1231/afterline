@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getData } from "@/lib/notion";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 type PublicQuote = {
   id: string;

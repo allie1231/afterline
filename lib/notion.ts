@@ -245,8 +245,9 @@ async function load(): Promise<AllData> {
     }
   }
 
-  await extractColorsForSources(sources);
-  await enrichSourcesWithBookDetails(sources);
+  extractColorsForSources(sources)
+    .then(() => enrichSourcesWithBookDetails(sources))
+    .catch(() => {});
 
   const quotes: Quote[] = [];
   const vSources = new Map<string, Source>();

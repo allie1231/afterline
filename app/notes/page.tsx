@@ -7,7 +7,7 @@ import { NotesBrowser } from "./NotesBrowser";
 // The browser previews show the first ~240 chars of raw body, which is
 // enough to identify the note before clicking through.
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function NotesPage() {
   const items = await getAllNotesWithSource();

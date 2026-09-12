@@ -4,7 +4,7 @@ import { getYearInReview } from "@/lib/data/repository";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { ROOM_CATEGORIES } from "@/lib/data/categories";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 const MONTH_LABEL = [
   "JAN",

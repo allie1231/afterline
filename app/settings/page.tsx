@@ -2,7 +2,7 @@ import { getOrCreateApiToken } from "@/lib/data/repository";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { RegenerateTokenButton } from "@/components/RegenerateTokenButton";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function SettingsPage() {
   const token = await getOrCreateApiToken();

@@ -6,7 +6,7 @@ import { ROOM_CATEGORIES } from "@/lib/data/categories";
 import { SourceSpine } from "@/components/SourceSpine";
 import type { SourceType } from "@/lib/data/types";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 function fmtDate(iso?: string | null) {
   if (!iso) return "—";
