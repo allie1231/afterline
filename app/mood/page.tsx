@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { getMoodTagsWithCounts } from "@/lib/data/repository";
 import { Breadcrumb } from "@/components/Breadcrumb";

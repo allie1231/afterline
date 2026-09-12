@@ -1,120 +1,54 @@
-// Public JSON endpoint for the Scriptable widget (iOS home screen).
-// GET /api/today?token=<personal-token>
-//
-// Returns one line for the day, picked deterministically by day-of-year so
-// the widget shows the same quote across refreshes within a single day.
-//
-// The token is the same Personal Token used by the Chrome extension and
-// /api/quick-add. Anyone with the URL can read the user's lines, so it
-// must stay private. Rotate via /settings if it leaks.
-
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { getData } from "@/lib/notion";
 
 export const dynamic = "force-dynamic";
 
-// iOS clients (Safari, Scriptable) don't always auto-detect UTF-8 on
-// JSON responses lacking an explicit charset — Korean bytes get rendered
-// as garbled CJK on the iPhone. Spell it out.
-//
-// We also disable any CDN/client caching here. The endpoint is tiny and
-// hit at most a few times a day per user, so cache wins are negligible
-// versus the cost of stuck cached error responses (which is exactly the
-// kind of "Scriptable shows HTML but Safari shows JSON" bug a stale edge
-// cache can produce after a deploy).
-const COMMON_HEADERS = {
+const HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
   "Access-Control-Allow-Origin": "*",
   "Cache-Control": "no-store, max-age=0",
 };
 
-function jsonResponse(body: unknown, status = 200) {
-  return new NextResponse(JSON.stringify(body), {
-    status,
-    headers: COMMON_HEADERS,
-  });
-}
-
-function jsonError(message: string, status: number) {
-  return jsonResponse({ error: message }, status);
+function json(body: unknown, status = 200) {
+  return new NextResponse(JSON.stringify(body), { status, headers: HEADERS });
 }
 
 export async function GET(request: Request) {
-  // Wrap everything so Scriptable / other JSON clients always get JSON,
-  // never an HTML error page. A thrown exception here used to surface as
-  // Next's default 500 HTML, which crashed JSON parsers on the consumer
-  // side with "올바른 포맷이 아니기 때문에 …" / "Invalid JSON".
   try {
     const { searchParams } = new URL(request.url);
-    const token = (searchParams.get("token") ?? "").trim();
-    if (!token) return jsonError("missing token", 401);
+    const { quotes, sourceById } = await getData();
+    if (quotes.length === 0) return json({ text: null });
 
-    let sb;
-    try {
-      sb = createAdminClient();
-    } catch (e) {
-      return jsonError(
-        e instanceof Error ? e.message : "service not configured",
-        500,
-      );
+    const now = Date.now();
+    const random = searchParams.get("random") === "1";
+    const period = searchParams.get("period");
+    let index: number;
+    if (random) {
+      index = Math.floor(Math.random() * quotes.length);
+    } else if (period === "hour") {
+      index = Math.floor(now / 3_600_000) % quotes.length;
+    } else {
+      const today = new Date(now);
+      index =
+        Math.floor(
+          (today.getTime() -
+            new Date(today.getFullYear(), 0, 0).getTime()) /
+            86_400_000,
+        ) % quotes.length;
     }
+    const pick = quotes[index];
+    const src = pick.source_id ? sourceById.get(pick.source_id) : null;
 
-    const { data: tokenRow, error: tokenErr } = await sb
-      .from("api_tokens")
-      .select("user_id")
-      .eq("token", token)
-      .maybeSingle();
-    if (tokenErr) return jsonError(`db: ${tokenErr.message}`, 500);
-    if (!tokenRow) return jsonError("invalid token", 401);
-    const userId = tokenRow.user_id as string;
-
-    const { data: quotes, error: qErr } = await sb
-      .from("quotes")
-      .select("id, text, page, source_id")
-      .eq("user_id", userId)
-      .limit(200)
-      .order("created_at", { ascending: false });
-    if (qErr) return jsonError(`db: ${qErr.message}`, 500);
-    if (!quotes || quotes.length === 0) {
-      return jsonResponse({ text: null });
-    }
-
-    const today = new Date();
-    const dayOfYear = Math.floor(
-      (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) /
-        86400000,
-    );
-    const pick = quotes[dayOfYear % quotes.length] as {
-      id: string;
-      text: string;
-      page: string | null;
-      source_id: string | null;
-    };
-
-    let source_title: string | null = null;
-    let source_creator: string | null = null;
-    let source_type: string | null = null;
-    if (pick.source_id) {
-      const { data: s } = await sb
-        .from("sources")
-        .select("title, creator, type")
-        .eq("id", pick.source_id)
-        .maybeSingle();
-      source_title = (s?.title as string | null) ?? null;
-      source_creator = (s?.creator as string | null) ?? null;
-      source_type = (s?.type as string | null) ?? null;
-    }
-
-    return jsonResponse({
+    return json({
       id: pick.id,
       text: pick.text,
-      page: pick.page,
-      source_title,
-      source_creator,
-      source_type,
-      day: today.toISOString().slice(0, 10),
+      page: pick.page ?? null,
+      source_title: src?.title ?? null,
+      source_creator: src?.creator ?? null,
+      source_type: src?.type ?? null,
+      day: new Date(now).toISOString().slice(0, 10),
     });
   } catch (e) {
-    return jsonError(e instanceof Error ? e.message : "unknown", 500);
+    return json({ error: e instanceof Error ? e.message : "unknown" }, 500);
   }
 }
