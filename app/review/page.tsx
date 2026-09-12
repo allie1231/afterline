@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getCollectedYears } from "@/lib/data/repository";
 import { Breadcrumb } from "@/components/Breadcrumb";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function ReviewIndexPage() {
   const years = await getCollectedYears();

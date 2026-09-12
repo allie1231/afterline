@@ -3,7 +3,7 @@ import { getAllCreators } from "@/lib/data/repository";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { ROOM_CATEGORIES } from "@/lib/data/categories";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function PeoplePage() {
   const creators = await getAllCreators();

@@ -12,7 +12,7 @@ function yearOf(iso: string): string {
   return iso.slice(0, 4);
 }
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function EntrancePage() {
   const [pool, reading, onThisDay] = await Promise.all([
