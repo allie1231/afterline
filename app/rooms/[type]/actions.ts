@@ -1,14 +1,20 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import type { SourceType } from "@/lib/data/types";
-
-const READONLY_MSG = "Write operations are not available (Notion read-only mode)";
+import { deletePageInNotion } from "@/lib/notion";
 
 export async function deleteSourcesBulkAction(
-  _ids: string[],
+  ids: string[],
   _type: SourceType,
 ): Promise<{ deleted: number }> {
-  throw new Error(READONLY_MSG);
+  let deleted = 0;
+  for (const id of ids) {
+    await deletePageInNotion(id);
+    deleted++;
+  }
+  revalidatePath("/", "layout");
+  return { deleted };
 }
 
 export async function moveSourcesBulkAction(
@@ -16,5 +22,5 @@ export async function moveSourcesBulkAction(
   _fromType: SourceType,
   _toType: SourceType,
 ): Promise<{ moved: number }> {
-  throw new Error(READONLY_MSG);
+  throw new Error("Source type is determined by Notion schema and cannot be changed in bulk");
 }

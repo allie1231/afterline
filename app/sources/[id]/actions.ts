@@ -1,30 +1,42 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import type { ReadingStatus, SourceType } from "@/lib/data/types";
+import {
+  updateSourceInNotion,
+  updateSourceNoteInNotion,
+  updateQuoteInNotion,
+  deletePageInNotion,
+} from "@/lib/notion";
 
-const READONLY_MSG = "Write operations are not available (Notion read-only mode)";
+function revalidateAll() {
+  revalidatePath("/", "layout");
+}
 
 export async function setRatingAction(
-  _sourceId: string,
-  _rating: number | null,
+  sourceId: string,
+  rating: number | null,
 ): Promise<void> {
-  throw new Error(READONLY_MSG);
+  await updateSourceNoteInNotion(sourceId, { rating });
+  revalidateAll();
 }
 
 type NoteTextField = "summary" | "personal_note";
 export async function updateNoteTextAction(
-  _sourceId: string,
-  _field: NoteTextField,
-  _value: string,
+  sourceId: string,
+  field: NoteTextField,
+  value: string,
 ): Promise<void> {
-  throw new Error(READONLY_MSG);
+  await updateSourceNoteInNotion(sourceId, { [field]: value });
+  revalidateAll();
 }
 
 export async function setStatusAction(
-  _sourceId: string,
-  _status: ReadingStatus | null,
+  sourceId: string,
+  status: ReadingStatus | null,
 ): Promise<void> {
-  throw new Error(READONLY_MSG);
+  await updateSourceNoteInNotion(sourceId, { status });
+  revalidateAll();
 }
 
 type NoteDateField = "started_at" | "finished_at";
@@ -33,7 +45,7 @@ export async function setNoteDateAction(
   _field: NoteDateField,
   _value: string | null,
 ): Promise<void> {
-  throw new Error(READONLY_MSG);
+  // Notion schema has no date fields for started/finished — no-op
 }
 
 export interface QuoteEditFields {
@@ -45,18 +57,24 @@ export interface QuoteEditFields {
 }
 
 export async function updateQuoteAction(
-  _quoteId: string,
+  quoteId: string,
   _sourceId: string,
-  _fields: QuoteEditFields,
+  fields: QuoteEditFields,
 ): Promise<void> {
-  throw new Error(READONLY_MSG);
+  await updateQuoteInNotion(quoteId, {
+    text: fields.text,
+    mood_tags: fields.mood_tags,
+    is_favorite: fields.is_favorite,
+  });
+  revalidateAll();
 }
 
 export async function deleteQuoteAction(
-  _quoteId: string,
+  quoteId: string,
   _sourceId: string,
 ): Promise<void> {
-  throw new Error(READONLY_MSG);
+  await deletePageInNotion(quoteId);
+  revalidateAll();
 }
 
 type SourceTextField =
@@ -70,18 +88,29 @@ type SourceTextField =
   | "genre";
 
 export async function updateSourceTextAction(
-  _sourceId: string,
-  _field: SourceTextField,
-  _value: string,
+  sourceId: string,
+  field: SourceTextField,
+  value: string,
 ): Promise<void> {
-  throw new Error(READONLY_MSG);
+  const fieldMap: Partial<Record<SourceTextField, string>> = {
+    title: "title",
+    creator: "creator",
+    publisher: "publisher",
+    genre: "genre",
+  };
+  const mapped = fieldMap[field];
+  if (mapped) {
+    await updateSourceInNotion(sourceId, { [mapped]: value });
+    revalidateAll();
+  }
 }
 
 export async function deleteSourceAction(
-  _sourceId: string,
+  sourceId: string,
   _type: SourceType,
 ): Promise<void> {
-  throw new Error(READONLY_MSG);
+  await deletePageInNotion(sourceId);
+  revalidateAll();
 }
 
 export interface EditSourceFields {
@@ -96,17 +125,24 @@ export interface EditSourceFields {
 }
 
 export async function updateSourceBulkAction(
-  _sourceId: string,
-  _fields: EditSourceFields,
+  sourceId: string,
+  fields: EditSourceFields,
 ): Promise<void> {
-  throw new Error(READONLY_MSG);
+  await updateSourceInNotion(sourceId, {
+    title: fields.title,
+    creator: fields.creator,
+    publisher: fields.publisher,
+    genre: fields.genre,
+  });
+  revalidateAll();
 }
 
 export async function updateSourceSpineColorAction(
   _sourceId: string,
   _color: string | null,
 ): Promise<void> {
-  throw new Error(READONLY_MSG);
+  // spine_color is computed from cover image, not stored in Notion
+  revalidateAll();
 }
 
 export async function changeSourceTypeAction(
@@ -114,5 +150,5 @@ export async function changeSourceTypeAction(
   _fromType: SourceType,
   _toType: SourceType,
 ): Promise<void> {
-  throw new Error(READONLY_MSG);
+  // Source type is fixed as "book" in Notion schema
 }
