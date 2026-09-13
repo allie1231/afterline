@@ -8,12 +8,10 @@ import { usePathname } from "next/navigation";
 const NAV = [
   { href: "/", en: "INDEX", ko: "색인" },
   { href: "/rooms", en: "ROOMS", ko: "방" },
+  { href: "/genre", en: "GENRE", ko: "분야" },
   { href: "/quotes/new", en: "NEW LINE", ko: "새 문장" },
   { href: "/capture", en: "CAPTURE", ko: "빠른 수집" },
-  { href: "/notes", en: "NOTES", ko: "노트" },
-  { href: "/people", en: "PEOPLE", ko: "저자" },
   { href: "/collections", en: "COLLECTIONS", ko: "수집노트" },
-  { href: "/mood", en: "TAGS", ko: "태그" },
   { href: "/stats", en: "STATS", ko: "통계" },
   { href: "/review", en: "REVIEW", ko: "연말 요약" },
   { href: "/data", en: "DATA", ko: "데이터" },
