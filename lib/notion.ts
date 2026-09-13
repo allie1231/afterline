@@ -12,7 +12,6 @@ import type {
   SourceType,
   ReadingStatus,
 } from "./data/types";
-import { enrichBookDetail } from "./aladin";
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
 const QUOTES_DB = process.env.NOTION_QUOTES_DB_ID!;
@@ -161,50 +160,6 @@ async function extractColorsForSources(sources: Source[]): Promise<void> {
   );
 }
 
-// ─── Aladin book detail enrichment ──────────────────────────────────
-
-function needsEnrichment(s: Source): boolean {
-  return s.type === "book" && (!s.isbn || !s.page_count || !s.book_height_mm || !s.book_width_mm);
-}
-
-async function enrichSourcesWithBookDetails(sources: Source[]): Promise<void> {
-  const targets = sources.filter(needsEnrichment);
-  if (targets.length === 0) return;
-  const BATCH = 3;
-  const MAX_PER_LOAD = 30;
-  const capped = targets.slice(0, MAX_PER_LOAD);
-  const enriched: Source[] = [];
-  for (let i = 0; i < capped.length; i += BATCH) {
-    const batch = capped.slice(i, i + BATCH);
-    const details = await Promise.all(
-      batch.map((s) => enrichBookDetail(s.isbn, s.title, s.creator)),
-    );
-    for (let j = 0; j < batch.length; j++) {
-      const detail = details[j];
-      if (detail) {
-        let changed = false;
-        if (!batch[j].isbn && detail.isbn13) { batch[j].isbn = detail.isbn13; changed = true; }
-        if (!batch[j].page_count && detail.pageCount) { batch[j].page_count = detail.pageCount; changed = true; }
-        if (!batch[j].book_height_mm && detail.sizeHeight) { batch[j].book_height_mm = detail.sizeHeight; changed = true; }
-        if (!batch[j].book_width_mm && detail.sizeWidth) { batch[j].book_width_mm = detail.sizeWidth; changed = true; }
-        if (changed) enriched.push(batch[j]);
-      }
-    }
-  }
-  await persistToNotion(
-    enriched,
-    (s) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const props: Record<string, any> = {};
-      if (s.page_count) props["총 페이지수"] = { number: s.page_count };
-      if (s.book_height_mm) props["책 높이"] = { number: s.book_height_mm };
-      if (s.book_width_mm) props["책 너비"] = { number: s.book_width_mm };
-      if (s.isbn) props["ISBN"] = richTextProp(s.isbn);
-      return props;
-    },
-  );
-}
-
 // ─── Persist enrichment to Notion ───────────────────────────────────
 
 async function persistToNotion(
@@ -309,7 +264,6 @@ async function load(): Promise<AllData> {
   }
 
   await extractColorsForSources(sources);
-  await enrichSourcesWithBookDetails(sources);
 
   const quotes: Quote[] = [];
   const vSources = new Map<string, Source>();

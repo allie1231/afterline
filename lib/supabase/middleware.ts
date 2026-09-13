@@ -44,7 +44,9 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/q/") || // public single-quote share pages
     path.startsWith("/api/quick-add") || // Personal Token POST
     path.startsWith("/api/today") || // legacy widget JSON endpoint
-    path.startsWith("/api/widget"); // iOS widget JSON endpoint
+    path.startsWith("/api/widget") || // iOS widget JSON endpoint
+    path.startsWith("/api/enrich") || // manual book enrichment
+    path.startsWith("/admin"); // admin tools
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
