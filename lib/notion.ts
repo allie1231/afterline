@@ -86,12 +86,12 @@ const TYPE_MAP: Record<string, SourceType> = {
   영화: "movie",
   드라마: "movie",
   뉴스레터: "article",
-  기사글: "article",
+  "기사/글": "article",
   가사: "lyrics",
   인용: "other",
   시: "other",
   명언: "other",
-  만화웹툰: "other",
+  "만화/웹툰": "other",
   디자인: "other",
   강의: "other",
 };
@@ -163,29 +163,36 @@ async function extractColorsForSources(sources: Source[]): Promise<void> {
 
 // ─── Aladin book detail enrichment ──────────────────────────────────
 
+function needsEnrichment(s: Source): boolean {
+  return s.type === "book" && (!s.isbn || !s.page_count || !s.book_height_mm || !s.book_width_mm);
+}
+
 async function enrichSourcesWithBookDetails(sources: Source[]): Promise<void> {
-  const targets = sources.filter(
-    (s) => s.type === "book" && !s.page_count,
-  );
+  const targets = sources.filter(needsEnrichment);
   if (targets.length === 0) return;
   const BATCH = 3;
-  for (let i = 0; i < targets.length; i += BATCH) {
-    const batch = targets.slice(i, i + BATCH);
+  const MAX_PER_LOAD = 30;
+  const capped = targets.slice(0, MAX_PER_LOAD);
+  const enriched: Source[] = [];
+  for (let i = 0; i < capped.length; i += BATCH) {
+    const batch = capped.slice(i, i + BATCH);
     const details = await Promise.all(
       batch.map((s) => enrichBookDetail(s.isbn, s.title, s.creator)),
     );
     for (let j = 0; j < batch.length; j++) {
       const detail = details[j];
       if (detail) {
-        if (!batch[j].isbn && detail.isbn13) batch[j].isbn = detail.isbn13;
-        if (detail.pageCount) batch[j].page_count = detail.pageCount;
-        if (detail.sizeHeight) batch[j].book_height_mm = detail.sizeHeight;
-        if (detail.sizeWidth) batch[j].book_width_mm = detail.sizeWidth;
+        let changed = false;
+        if (!batch[j].isbn && detail.isbn13) { batch[j].isbn = detail.isbn13; changed = true; }
+        if (!batch[j].page_count && detail.pageCount) { batch[j].page_count = detail.pageCount; changed = true; }
+        if (!batch[j].book_height_mm && detail.sizeHeight) { batch[j].book_height_mm = detail.sizeHeight; changed = true; }
+        if (!batch[j].book_width_mm && detail.sizeWidth) { batch[j].book_width_mm = detail.sizeWidth; changed = true; }
+        if (changed) enriched.push(batch[j]);
       }
     }
   }
   persistToNotion(
-    targets.filter((s) => s.page_count),
+    enriched,
     (s) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const props: Record<string, any> = {};
