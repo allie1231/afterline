@@ -58,6 +58,12 @@ function relIds(p: Props, k: string): string[] {
   return v.relation.map((r) => r.id);
 }
 
+function num(p: Props, k: string): number | null {
+  const v = p[k];
+  if (!v || v.type !== "number" || v.number === null) return null;
+  return v.number;
+}
+
 function fileUrl(p: Props, k: string): string | null {
   const v = p[k];
   if (!v || v.type !== "files" || v.files.length === 0) return null;
@@ -132,6 +138,7 @@ async function extractDominantColor(url: string): Promise<string | null> {
 
 async function extractColorsForSources(sources: Source[]): Promise<void> {
   const targets = sources.filter((s) => s.cover_url && !s.spine_color);
+  if (targets.length === 0) return;
   const BATCH = 20;
   for (let i = 0; i < targets.length; i += BATCH) {
     const batch = targets.slice(i, i + BATCH);
@@ -142,6 +149,10 @@ async function extractColorsForSources(sources: Source[]): Promise<void> {
       if (colors[j]) batch[j].spine_color = colors[j];
     }
   }
+  persistToNotion(
+    targets.filter((s) => s.spine_color),
+    (s) => ({ "책등 색상": richTextProp(s.spine_color!) }),
+  );
 }
 
 // ─── Aladin book detail enrichment ──────────────────────────────────
@@ -150,6 +161,7 @@ async function enrichSourcesWithBookDetails(sources: Source[]): Promise<void> {
   const targets = sources.filter(
     (s) => s.type === "book" && !s.page_count,
   );
+  if (targets.length === 0) return;
   const BATCH = 3;
   for (let i = 0; i < targets.length; i += BATCH) {
     const batch = targets.slice(i, i + BATCH);
@@ -166,6 +178,57 @@ async function enrichSourcesWithBookDetails(sources: Source[]): Promise<void> {
       }
     }
   }
+  persistToNotion(
+    targets.filter((s) => s.page_count),
+    (s) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const props: Record<string, any> = {};
+      if (s.page_count) props["페이지 수"] = { number: s.page_count };
+      if (s.book_height_mm) props["책 높이"] = { number: s.book_height_mm };
+      if (s.book_width_mm) props["책 너비"] = { number: s.book_width_mm };
+      if (s.isbn) props["ISBN"] = richTextProp(s.isbn);
+      return props;
+    },
+  );
+}
+
+// ─── Persist enrichment to Notion (fire-and-forget) ─────────────────
+
+function persistToNotion(
+  sources: Source[],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  propsFor: (s: Source) => Record<string, any>,
+): void {
+  if (sources.length === 0) return;
+  (async () => {
+    for (const s of sources) {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await notion.pages.update({ page_id: s.id, properties: propsFor(s) as any });
+      } catch {}
+    }
+  })();
+}
+
+// ─── Ensure DB properties exist ─────────────────────────────────────
+
+let _propsEnsured = false;
+async function ensureDbProperties(): Promise<void> {
+  if (_propsEnsured) return;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (notion.databases as any).update({
+      database_id: SOURCES_DB,
+      properties: {
+        "책등 색상": { rich_text: {} },
+        "ISBN": { rich_text: {} },
+        "페이지 수": { number: {} },
+        "책 높이": { number: {} },
+        "책 너비": { number: {} },
+      },
+    });
+  } catch {}
+  _propsEnsured = true;
 }
 
 // ─── Paginated DB fetch ──────────────────────────────────────────────
@@ -199,6 +262,7 @@ export interface AllData {
 // ─── Load + transform ────────────────────────────────────────────────
 
 async function load(): Promise<AllData> {
+  await ensureDbProperties();
   const [shelfPages, linePages] = await Promise.all([
     fetchAll(SOURCES_DB),
     fetchAll(QUOTES_DB),
@@ -219,6 +283,11 @@ async function load(): Promise<AllData> {
       publisher: richText(p, "출판사") || undefined,
       cover_url: fileUrl(p, "책 표지") || undefined,
       genre: sel(p, "분야"),
+      spine_color: richText(p, "책등 색상") || undefined,
+      isbn: richText(p, "ISBN") || undefined,
+      page_count: num(p, "페이지 수") ?? undefined,
+      book_height_mm: num(p, "책 높이") ?? undefined,
+      book_width_mm: num(p, "책 너비") ?? undefined,
       created_at: pg.created_time,
       updated_at: pg.last_edited_time,
     };
