@@ -3,7 +3,7 @@ export const revalidate = 300;
 import Link from "next/link";
 import { getStatsData } from "@/lib/data/repository";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { ROOM_CATEGORIES } from "@/lib/data/categories";
+import { SOURCE_TYPE_CATEGORIES, roomSlugForType } from "@/lib/data/categories";
 import type { SourceType } from "@/lib/data/types";
 
 function fmtDate(iso: string | null) {
@@ -58,14 +58,14 @@ export default async function StatsPage() {
           룸별 분포
         </div>
         <ul className="flex flex-col gap-3">
-          {ROOM_CATEGORIES.map((cat) => {
+          {SOURCE_TYPE_CATEGORIES.map((cat) => {
             const v = stats.linesByType[cat.type] ?? 0;
             const sources = stats.sourcesByType[cat.type] ?? 0;
             const pct = Math.round((v / maxLinesPerRoom) * 100);
             return (
               <li key={cat.type}>
                 <Link
-                  href={`/rooms/${cat.type}`}
+                  href={`/rooms/${roomSlugForType(cat.type)}`}
                   className="grid grid-cols-[140px_1fr_120px] gap-4 items-center group"
                 >
                   <div>
@@ -104,7 +104,7 @@ export default async function StatsPage() {
           룸별 세부 장르 — 검색 자동매핑 / 수동 입력 기준
         </div>
         {(() => {
-          const roomsWithGenre = ROOM_CATEGORIES.filter(
+          const roomsWithGenre = SOURCE_TYPE_CATEGORIES.filter(
             (cat) => (stats.genresByType[cat.type] ?? []).length > 0,
           );
           if (roomsWithGenre.length === 0) {
@@ -207,7 +207,7 @@ export default async function StatsPage() {
                 BY ROOM / 룸별
               </div>
               <ul className="flex flex-col gap-2">
-                {ROOM_CATEGORIES.filter(
+                {SOURCE_TYPE_CATEGORIES.filter(
                   (cat) => (stats.notes.byType[cat.type] ?? 0) > 0,
                 ).map((cat) => {
                   const v = stats.notes.byType[cat.type] ?? 0;
@@ -222,7 +222,7 @@ export default async function StatsPage() {
                       className="grid grid-cols-[120px_1fr_60px] gap-3 items-center"
                     >
                       <Link
-                        href={`/rooms/${cat.type}`}
+                        href={`/rooms/${roomSlugForType(cat.type)}`}
                         className="font-sans text-base hover:text-red transition-colors"
                       >
                         {cat.en}
@@ -374,7 +374,7 @@ export default async function StatsPage() {
           ) : (
             <ul className="flex flex-col gap-2">
               {stats.topSources.map(({ source, lines }) => {
-                const cat = ROOM_CATEGORIES.find(
+                const cat = SOURCE_TYPE_CATEGORIES.find(
                   (c) => c.type === source.type,
                 );
                 return (
@@ -405,7 +405,7 @@ export default async function StatsPage() {
       </div>
 
       {/* Tags by room */}
-      {ROOM_CATEGORIES.some((c) => (stats.tagsByType[c.type] ?? []).length > 0) && (
+      {SOURCE_TYPE_CATEGORIES.some((c) => (stats.tagsByType[c.type] ?? []).length > 0) && (
         <section className="mb-12">
           <h2 className="font-sans text-2xl tracking-tight mb-1">
             Tags by Room
@@ -414,7 +414,7 @@ export default async function StatsPage() {
             방 안에서 자주 쓰인 태그
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
-            {ROOM_CATEGORIES.map((cat) => {
+            {SOURCE_TYPE_CATEGORIES.map((cat) => {
               const tags = stats.tagsByType[cat.type] ?? [];
               if (tags.length === 0) return null;
               const max = Math.max(1, ...tags.map((t) => t.count));
@@ -422,7 +422,7 @@ export default async function StatsPage() {
                 <div key={cat.type}>
                   <div className="flex items-baseline justify-between mb-3 border-b border-line pb-2">
                     <Link
-                      href={`/rooms/${cat.type}`}
+                      href={`/rooms/${roomSlugForType(cat.type)}`}
                       className="font-sans text-lg tracking-tight hover:underline"
                     >
                       {cat.en}

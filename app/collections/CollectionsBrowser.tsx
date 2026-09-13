@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ROOM_CATEGORIES } from "@/lib/data/categories";
+import { SOURCE_TYPE_CATEGORIES } from "@/lib/data/categories";
 import { SourceCover } from "@/components/SourceCover";
 import { SourceSpine } from "@/components/SourceSpine";
 import type { CollectionsItem } from "@/lib/data/repository";
@@ -90,7 +90,7 @@ export function CollectionsBrowser({
           ko="전체"
           count={items.length}
         />
-        {ROOM_CATEGORIES.map((cat) => (
+        {SOURCE_TYPE_CATEGORIES.map((cat) => (
           <FilterChip
             key={cat.type}
             active={type === cat.type}
@@ -263,7 +263,7 @@ const NO_THUMB_TYPES = new Set<SourceType>([
 ]);
 
 function CollectionCard({ item }: { item: CollectionsItem }) {
-  const cat = ROOM_CATEGORIES.find((c) => c.type === item.source.type)!;
+  const cat = SOURCE_TYPE_CATEGORIES.find((c) => c.type === item.source.type)!;
   const statusLabel = item.note?.status
     ? STATUS_LABEL[item.note.status]
     : null;

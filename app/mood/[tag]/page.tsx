@@ -2,13 +2,13 @@ export const revalidate = 300;
 
 import Link from "next/link";
 import { getQuotesByTag } from "@/lib/data/repository";
-import { ROOM_CATEGORIES } from "@/lib/data/categories";
+import { SOURCE_TYPE_CATEGORIES } from "@/lib/data/categories";
 import type { SourceType } from "@/lib/data/types";
 import { Breadcrumb } from "@/components/Breadcrumb";
 
 const CAT_BY_TYPE = Object.fromEntries(
-  ROOM_CATEGORIES.map((c) => [c.type, c]),
-) as Record<SourceType, (typeof ROOM_CATEGORIES)[number]>;
+  SOURCE_TYPE_CATEGORIES.map((c) => [c.type, c]),
+) as Record<SourceType, (typeof SOURCE_TYPE_CATEGORIES)[number]>;
 
 export default async function TagPage({
   params,

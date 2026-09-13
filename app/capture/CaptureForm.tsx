@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { createQuoteAction } from "@/app/quotes/new/actions";
-import { ROOM_CATEGORIES } from "@/lib/data/categories";
+import { SOURCE_TYPE_CATEGORIES } from "@/lib/data/categories";
 import type { Source, SourceType } from "@/lib/data/types";
 
 type BookHit = {
@@ -266,7 +266,7 @@ export function CaptureForm({
           TYPE / 종류
         </div>
         <div className="grid grid-cols-3 gap-px bg-ink border border-ink">
-          {ROOM_CATEGORIES.map((cat) => {
+          {SOURCE_TYPE_CATEGORIES.map((cat) => {
             const active = type === cat.type;
             return (
               <button

@@ -22,6 +22,7 @@ import { SourceFieldEditor } from "@/components/SourceFieldEditor";
 import { DeleteSourceButton } from "@/components/DeleteSourceButton";
 import { SourceTypeChanger } from "@/components/SourceTypeChanger";
 import type { SourceType } from "@/lib/data/types";
+import { roomSlugForType } from "@/lib/data/categories";
 
 const NOTE_LABEL: Record<SourceType, { en: string; ko: string }> = {
   book: { en: "READING NOTE", ko: "독서노트" },
@@ -50,7 +51,7 @@ export default async function SourcePage({
   const [quotes, note, category, notes] = await Promise.all([
     getQuotesBySource(source.id),
     getCollectionNoteBySource(source.id),
-    getRoomCategory(source.type),
+    getRoomCategory(roomSlugForType(source.type)),
     getNotesBySource(source.id),
   ]);
 
@@ -90,7 +91,7 @@ export default async function SourcePage({
             { label: "ROOMS", href: "/rooms" },
             {
               label: source.type.toUpperCase(),
-              href: `/rooms/${source.type}`,
+              href: `/rooms/${roomSlugForType(source.type)}`,
             },
             { label: "COLLECTION NOTE" },
           ]}
@@ -243,7 +244,7 @@ export default async function SourcePage({
 
       <div className="mt-16 flex items-center justify-between gap-4 flex-wrap">
         <Link
-          href={`/rooms/${source.type}`}
+          href={`/rooms/${roomSlugForType(source.type)}`}
           className="font-mono text-[11px] tracking-[0.25em] text-muted hover:text-ink"
         >
           ← BACK TO {source.type.toUpperCase()} ROOM

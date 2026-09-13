@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Papa from "papaparse";
-import { ROOM_CATEGORIES } from "@/lib/data/categories";
+import { SOURCE_TYPE_CATEGORIES } from "@/lib/data/categories";
 import type { SourceType } from "@/lib/data/types";
 import {
   runImportAction,
@@ -245,7 +245,7 @@ export function DataPanel({
                 CSV 에 source_type 컬럼이 없거나 비어 있는 행은 이 유형으로 들어갑니다.
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px bg-ink border border-ink">
-                {ROOM_CATEGORIES.map((cat) => {
+                {SOURCE_TYPE_CATEGORIES.map((cat) => {
                   const active = defaultType === cat.type;
                   return (
                     <button

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getYearInReview } from "@/lib/data/repository";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { ROOM_CATEGORIES } from "@/lib/data/categories";
+import { SOURCE_TYPE_CATEGORIES, roomSlugForType } from "@/lib/data/categories";
 
 export const revalidate = 300;
 
@@ -128,7 +128,7 @@ export default async function YearReviewPage({
               어디서 가장 많이 머물렀는지
             </div>
             <ul className="flex flex-col gap-3">
-              {ROOM_CATEGORIES.filter((c) => (r.byType[c.type] ?? 0) > 0).map(
+              {SOURCE_TYPE_CATEGORIES.filter((c) => (r.byType[c.type] ?? 0) > 0).map(
                 (cat) => {
                   const v = r.byType[cat.type] ?? 0;
                   const max = Math.max(1, ...Object.values(r.byType));
@@ -139,7 +139,7 @@ export default async function YearReviewPage({
                       className="grid grid-cols-[140px_1fr_80px] gap-4 items-center"
                     >
                       <Link
-                        href={`/rooms/${cat.type}`}
+                        href={`/rooms/${roomSlugForType(cat.type)}`}
                         className="font-sans text-base"
                       >
                         {cat.en}

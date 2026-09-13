@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createQuote, createSource } from "@/lib/data/repository";
 import type { SourceType } from "@/lib/data/types";
+import { roomSlugForType } from "@/lib/data/categories";
 
 function str(formData: FormData, name: string): string | undefined {
   const v = formData.get(name);
@@ -65,7 +66,7 @@ export async function createQuoteAction(formData: FormData): Promise<void> {
   });
 
   revalidatePath("/rooms");
-  revalidatePath(`/rooms/${type}`);
+  revalidatePath(`/rooms/${roomSlugForType(type)}`);
   revalidatePath(`/sources/${sourceId}`);
 
   redirect(`/sources/${sourceId}`);
