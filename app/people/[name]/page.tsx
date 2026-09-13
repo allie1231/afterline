@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPersonPage } from "@/lib/data/repository";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { ROOM_CATEGORIES } from "@/lib/data/categories";
+import { SOURCE_TYPE_CATEGORIES } from "@/lib/data/categories";
 import { SourceSpine } from "@/components/SourceSpine";
 import type { SourceType } from "@/lib/data/types";
 
@@ -71,7 +71,7 @@ export default async function PersonPageView({
 
       {/* Sources grouped by room */}
       {[...sourcesByType.entries()].map(([type, sources]) => {
-        const cat = ROOM_CATEGORIES.find((c) => c.type === type);
+        const cat = SOURCE_TYPE_CATEGORIES.find((c) => c.type === type);
         return (
           <section key={type} className="mb-12">
             <div className="flex items-baseline justify-between mb-4 border-b border-line pb-2">

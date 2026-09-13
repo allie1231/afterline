@@ -74,8 +74,16 @@ export interface CollectionNote {
   updated_at: string;
 }
 
+export type RoomSlug =
+  | "books"
+  | "articles"
+  | "others"
+  | "want-to"
+  | "done"
+  | "year";
+
 export interface RoomCategory {
-  type: SourceType;
+  slug: RoomSlug;
   en: string;
   ko: string;
   description: string;

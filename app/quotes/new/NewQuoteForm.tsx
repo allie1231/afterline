@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { ROOM_CATEGORIES } from "@/lib/data/categories";
+import { SOURCE_TYPE_CATEGORIES } from "@/lib/data/categories";
 import { describeUploadError, uploadCover } from "@/lib/storage";
 import type { Source, SourceType } from "@/lib/data/types";
 import { createQuoteAction } from "./actions";
@@ -386,7 +386,7 @@ export function NewQuoteForm({
 
         <Field labelEn="TYPE" labelKo="종류">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px bg-ink border border-ink">
-            {ROOM_CATEGORIES.map((cat) => {
+            {SOURCE_TYPE_CATEGORIES.map((cat) => {
               const active = type === cat.type;
               return (
                 <button

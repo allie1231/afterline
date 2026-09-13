@@ -1,12 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { SourceType } from "@/lib/data/types";
+import type { RoomSlug } from "@/lib/data/types";
 import { deletePageInNotion } from "@/lib/notion";
 
 export async function deleteSourcesBulkAction(
   ids: string[],
-  _type: SourceType,
+  _slug: RoomSlug,
 ): Promise<{ deleted: number }> {
   let deleted = 0;
   for (const id of ids) {
@@ -19,8 +19,8 @@ export async function deleteSourcesBulkAction(
 
 export async function moveSourcesBulkAction(
   _ids: string[],
-  _fromType: SourceType,
-  _toType: SourceType,
+  _fromSlug: RoomSlug,
+  _toSlug: RoomSlug,
 ): Promise<{ moved: number }> {
   throw new Error("Source type is determined by Notion schema and cannot be changed in bulk");
 }

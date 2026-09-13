@@ -1,10 +1,11 @@
 import { getData } from "@/lib/notion";
-import { ROOM_CATEGORIES } from "./categories";
+import { ROOM_CATEGORIES, SOURCE_TYPE_CATEGORIES } from "./categories";
 import type {
   CollectionNote,
   Note,
   Quote,
   RoomCategory,
+  RoomSlug,
   Source,
   SourceType,
 } from "./types";
@@ -18,9 +19,62 @@ export async function getRoomCategories(): Promise<RoomCategory[]> {
 }
 
 export async function getRoomCategory(
-  type: SourceType,
+  slug: RoomSlug,
 ): Promise<RoomCategory | null> {
-  return ROOM_CATEGORIES.find((c) => c.type === type) ?? null;
+  return ROOM_CATEGORIES.find((c) => c.slug === slug) ?? null;
+}
+
+const OTHERS_TYPES: SourceType[] = ["lyrics", "movie", "conversation", "other"];
+
+export async function getSourcesByRoomSlug(slug: RoomSlug): Promise<Source[]> {
+  const { sources, collectionNotes } = await getData();
+  switch (slug) {
+    case "books":
+      return sources.filter((s) => s.type === "book");
+    case "articles":
+      return sources.filter((s) => s.type === "article");
+    case "others":
+      return sources.filter((s) => OTHERS_TYPES.includes(s.type));
+    case "want-to": {
+      const ids = new Set(
+        collectionNotes.filter((n) => n.status === "to_read").map((n) => n.source_id),
+      );
+      return sources.filter((s) => ids.has(s.id));
+    }
+    case "done": {
+      const ids = new Set(
+        collectionNotes.filter((n) => n.status === "finished").map((n) => n.source_id),
+      );
+      return sources.filter((s) => ids.has(s.id));
+    }
+    default:
+      return [];
+  }
+}
+
+export interface YearlyBooks {
+  year: number;
+  count: number;
+  sources: Source[];
+}
+
+export async function getFinishedBooksByYear(): Promise<YearlyBooks[]> {
+  const { sources, collectionNotes } = await getData();
+  const sourceById = new Map(sources.map((s) => [s.id, s]));
+  const byYear = new Map<number, Source[]>();
+
+  for (const note of collectionNotes) {
+    if (note.status !== "finished" || !note.finished_at) continue;
+    const src = sourceById.get(note.source_id);
+    if (!src) continue;
+    const year = new Date(note.finished_at).getFullYear();
+    if (!byYear.has(year)) byYear.set(year, []);
+    byYear.get(year)!.push(src);
+  }
+
+  return [...byYear.entries()]
+    .map(([year, srcs]) => ({ year, count: srcs.length, sources: srcs }))
+    .sort((a, b) => b.year - a.year);
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -125,23 +179,50 @@ export async function getCollectionsItems(): Promise<CollectionsItem[]> {
 // ─────────────────────────────────────────────────────────────────────
 
 export async function countByRoom(): Promise<
-  Record<SourceType, { sources: number; lines: number }>
+  Record<RoomSlug, { sources: number; lines: number }>
 > {
-  const { sources, quotes, sourceById } = await getData();
+  const { sources, quotes, sourceById, collectionNotes } = await getData();
 
-  const result = {} as Record<SourceType, { sources: number; lines: number }>;
+  const result = {} as Record<RoomSlug, { sources: number; lines: number }>;
   for (const cat of ROOM_CATEGORIES)
-    result[cat.type] = { sources: 0, lines: 0 };
+    result[cat.slug] = { sources: 0, lines: 0 };
 
-  for (const s of sources) {
-    result[s.type].sources += 1;
-  }
+  const linesBySource = new Map<string, number>();
   for (const q of quotes) {
     if (q.source_id) {
-      const s = sourceById.get(q.source_id);
-      if (s) result[s.type].lines += 1;
+      linesBySource.set(q.source_id, (linesBySource.get(q.source_id) ?? 0) + 1);
     }
   }
+
+  function addCount(slug: RoomSlug, s: Source) {
+    result[slug].sources += 1;
+    result[slug].lines += linesBySource.get(s.id) ?? 0;
+  }
+
+  const wantIds = new Set(
+    collectionNotes.filter((n) => n.status === "to_read").map((n) => n.source_id),
+  );
+  const doneIds = new Set(
+    collectionNotes.filter((n) => n.status === "finished").map((n) => n.source_id),
+  );
+  const finishedWithDate = collectionNotes.filter(
+    (n) => n.status === "finished" && n.finished_at,
+  );
+
+  for (const s of sources) {
+    if (s.type === "book") addCount("books", s);
+    else if (s.type === "article") addCount("articles", s);
+    else addCount("others", s);
+
+    if (wantIds.has(s.id)) addCount("want-to", s);
+    if (doneIds.has(s.id)) addCount("done", s);
+  }
+
+  result["year"].sources = finishedWithDate.length;
+  result["year"].lines = finishedWithDate.reduce(
+    (n, note) => n + (linesBySource.get(note.source_id) ?? 0), 0,
+  );
+
   return result;
 }
 
@@ -262,7 +343,7 @@ export async function getStatsData(): Promise<StatsData> {
 
   const linesByType = {} as Record<SourceType, number>;
   const sourcesByType = {} as Record<SourceType, number>;
-  for (const cat of ROOM_CATEGORIES) {
+  for (const cat of SOURCE_TYPE_CATEGORIES) {
     linesByType[cat.type] = 0;
     sourcesByType[cat.type] = 0;
   }
@@ -274,7 +355,7 @@ export async function getStatsData(): Promise<StatsData> {
   const linesBySourceId = new Map<string, number>();
   const tagCounts = new Map<string, number>();
   const tagCountsByType = new Map<SourceType, Map<string, number>>();
-  for (const cat of ROOM_CATEGORIES) tagCountsByType.set(cat.type, new Map());
+  for (const cat of SOURCE_TYPE_CATEGORIES) tagCountsByType.set(cat.type, new Map());
   const activityByDay = new Map<string, number>();
   let favoriteLines = 0;
   let latestLineAt: string | null = null;
@@ -327,7 +408,7 @@ export async function getStatsData(): Promise<StatsData> {
     SourceType,
     Map<string, { sources: number; lines: number }>
   >();
-  for (const cat of ROOM_CATEGORIES)
+  for (const cat of SOURCE_TYPE_CATEGORIES)
     genreCountsByType.set(cat.type, new Map());
   for (const s of sources) {
     const g = (s.genre ?? "").trim();
@@ -369,7 +450,7 @@ export async function getStatsData(): Promise<StatsData> {
   }
 
   const notesByType = {} as Record<SourceType, number>;
-  for (const cat of ROOM_CATEGORIES) notesByType[cat.type] = 0;
+  for (const cat of SOURCE_TYPE_CATEGORIES) notesByType[cat.type] = 0;
 
   return {
     totalLines: quotes.length,
@@ -429,7 +510,7 @@ export async function getYearInReview(year: number): Promise<YearInReview> {
   );
 
   const byType = {} as Record<SourceType, number>;
-  for (const cat of ROOM_CATEGORIES) byType[cat.type] = 0;
+  for (const cat of SOURCE_TYPE_CATEGORIES) byType[cat.type] = 0;
   const byMonthMap = new Map<number, number>();
   const linesBySource = new Map<string, number>();
   const tagCounts = new Map<string, number>();

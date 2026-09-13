@@ -73,6 +73,12 @@ function fileUrl(p: Props, k: string): string | null {
   return null;
 }
 
+function dateStart(p: Props, k: string): string | null {
+  const v = p[k];
+  if (!v || v.type !== "date" || !v.date) return null;
+  return v.date.start;
+}
+
 // ─── Type mapping ────────────────────────────────────────────────────
 
 const TYPE_MAP: Record<string, SourceType> = {
@@ -183,7 +189,7 @@ async function enrichSourcesWithBookDetails(sources: Source[]): Promise<void> {
     (s) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const props: Record<string, any> = {};
-      if (s.page_count) props["페이지 수"] = { number: s.page_count };
+      if (s.page_count) props["총 페이지수"] = { number: s.page_count };
       if (s.book_height_mm) props["책 높이"] = { number: s.book_height_mm };
       if (s.book_width_mm) props["책 너비"] = { number: s.book_width_mm };
       if (s.isbn) props["ISBN"] = richTextProp(s.isbn);
@@ -263,7 +269,7 @@ async function load(): Promise<AllData> {
       genre: sel(p, "분야"),
       spine_color: richText(p, "책등 색상") || undefined,
       isbn: richText(p, "ISBN") || undefined,
-      page_count: num(p, "페이지 수") ?? undefined,
+      page_count: num(p, "총 페이지수") ?? undefined,
       book_height_mm: num(p, "책 높이") ?? undefined,
       book_width_mm: num(p, "책 너비") ?? undefined,
       created_at: pg.created_time,
@@ -276,7 +282,9 @@ async function load(): Promise<AllData> {
     const memo = richText(p, "메모");
     const rating = toRating(sel(p, "평점"));
     const status = toReadingStatus(p);
-    if (summary || memo || rating !== undefined || status) {
+    const startedDate = dateStart(p, "읽기 시작한 날");
+    const finishedDate = dateStart(p, "완독한 날");
+    if (summary || memo || rating !== undefined || status || startedDate || finishedDate) {
       collectionNotes.push({
         id: `cn-${pg.id}`,
         user_id: "owner",
@@ -286,6 +294,8 @@ async function load(): Promise<AllData> {
         keywords: [],
         status,
         rating,
+        started_at: startedDate || undefined,
+        finished_at: finishedDate || undefined,
         created_at: pg.created_time,
         updated_at: pg.last_edited_time,
       });
@@ -442,6 +452,8 @@ export async function updateSourceNoteInNotion(
     personal_note?: string;
     rating?: number | null;
     status?: string | null;
+    started_at?: string | null;
+    finished_at?: string | null;
   },
 ): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -455,6 +467,17 @@ export async function updateSourceNoteInNotion(
     for (const [status, propName] of Object.entries(STATUS_CHECKBOX_MAP)) {
       properties[propName] = checkboxProp(status === fields.status);
     }
+  }
+
+  if (fields.started_at !== undefined) {
+    properties["읽기 시작한 날"] = fields.started_at
+      ? { date: { start: fields.started_at } }
+      : { date: null };
+  }
+  if (fields.finished_at !== undefined) {
+    properties["완독한 날"] = fields.finished_at
+      ? { date: { start: fields.finished_at } }
+      : { date: null };
   }
 
   if (Object.keys(properties).length > 0) {

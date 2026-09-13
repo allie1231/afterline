@@ -2,7 +2,7 @@ import { TypographicCover } from "./TypographicCover";
 import { NewspaperCover } from "./covers/NewspaperCover";
 import { TranscriptCover } from "./covers/TranscriptCover";
 import { ArchiveCover } from "./covers/ArchiveCover";
-import type { RoomCategory, Source } from "@/lib/data/types";
+import type { Source } from "@/lib/data/types";
 
 /**
  * Cover/poster for a source.
@@ -27,7 +27,7 @@ export function SourceCover({
   size = "lg",
 }: {
   source: Source;
-  category: RoomCategory;
+  category: { accent: string; contrast: "light" | "dark" };
   size?: "lg" | "sm";
 }) {
   const isLyrics = source.type === "lyrics";

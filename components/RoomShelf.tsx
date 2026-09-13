@@ -9,13 +9,13 @@ import {
 import { updateSourceSpineColorAction } from "@/app/sources/[id]/actions";
 import { ROOM_CATEGORIES } from "@/lib/data/categories";
 import { SPINE_COLORS } from "@/lib/data/spine-colors";
-import type { Source, SourceType } from "@/lib/data/types";
+import type { RoomSlug, Source, SourceType } from "@/lib/data/types";
 
 export function RoomShelf({
-  type,
+  slug,
   sourceCounts,
 }: {
-  type: SourceType;
+  slug: RoomSlug;
   sourceCounts: { source: Source; lines: number }[];
 }) {
   const [editMode, setEditMode] = useState(false);
@@ -87,21 +87,21 @@ export function RoomShelf({
     );
     if (!ok) return;
     startTransition(async () => {
-      await deleteSourcesBulkAction([...selected], type);
+      await deleteSourcesBulkAction([...selected], slug);
       setSelected(new Set());
       setEditMode(false);
     });
   }
 
-  function handleBulkMove(targetType: SourceType) {
-    if (selected.size === 0 || targetType === type) return;
-    const target = ROOM_CATEGORIES.find((c) => c.type === targetType);
+  function handleBulkMove(targetSlug: RoomSlug) {
+    if (selected.size === 0 || targetSlug === slug) return;
+    const target = ROOM_CATEGORIES.find((c) => c.slug === targetSlug);
     const ok = confirm(
       `${selected.size}개의 출처를 ${target?.en} (${target?.ko}) 룸으로 옮길까요?`,
     );
     if (!ok) return;
     startTransition(async () => {
-      await moveSourcesBulkAction([...selected], type, targetType);
+      await moveSourcesBulkAction([...selected], slug, targetSlug);
       setSelected(new Set());
       setEditMode(false);
       setMoveOpen(false);
@@ -162,14 +162,14 @@ export function RoomShelf({
                   <div className="font-mono text-[11px] tracking-[0.3em] text-muted px-3 py-2 border-b border-line">
                     MOVE TO ROOM / 룸 이동
                   </div>
-                  {ROOM_CATEGORIES.map((cat) => {
-                    const active = cat.type === type;
+                  {ROOM_CATEGORIES.filter((c) => ["books", "articles", "others"].includes(c.slug)).map((cat) => {
+                    const active = cat.slug === slug;
                     return (
                       <button
                         type="button"
-                        key={cat.type}
+                        key={cat.slug}
                         disabled={active || pending}
-                        onClick={() => handleBulkMove(cat.type)}
+                        onClick={() => handleBulkMove(cat.slug)}
                         className={`flex w-full items-center justify-between px-3 py-2 font-mono text-[11px] tracking-[0.25em] border-b border-line last:border-b-0 transition-colors ${
                           active
                             ? "bg-line/30 text-muted cursor-default"

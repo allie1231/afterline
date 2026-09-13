@@ -41,11 +41,12 @@ export async function setStatusAction(
 
 type NoteDateField = "started_at" | "finished_at";
 export async function setNoteDateAction(
-  _sourceId: string,
-  _field: NoteDateField,
-  _value: string | null,
+  sourceId: string,
+  field: NoteDateField,
+  value: string | null,
 ): Promise<void> {
-  // Notion schema has no date fields for started/finished — no-op
+  await updateSourceNoteInNotion(sourceId, { [field]: value });
+  revalidateAll();
 }
 
 export interface QuoteEditFields {

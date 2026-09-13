@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getAllCreators } from "@/lib/data/repository";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { ROOM_CATEGORIES } from "@/lib/data/categories";
+import { SOURCE_TYPE_CATEGORIES } from "@/lib/data/categories";
 
 export const revalidate = 300;
 
@@ -46,7 +46,7 @@ export default async function PeoplePage() {
                   </div>
                   <div className="font-mono text-[11px] tracking-[0.25em] text-muted mt-1 flex gap-3 flex-wrap">
                     {c.types.map((t) => {
-                      const cat = ROOM_CATEGORIES.find((cc) => cc.type === t);
+                      const cat = SOURCE_TYPE_CATEGORIES.find((cc) => cc.type === t);
                       return (
                         <span
                           key={t}

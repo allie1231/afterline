@@ -5,20 +5,13 @@ import { notFound } from "next/navigation";
 import {
   getQuotesBySource,
   getRoomCategory,
-  getSourcesByType,
+  getSourcesByRoomSlug,
 } from "@/lib/data/repository";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { RoomShelf } from "@/components/RoomShelf";
-import type { SourceType } from "@/lib/data/types";
+import type { RoomSlug } from "@/lib/data/types";
 
-const VALID: SourceType[] = [
-  "book",
-  "article",
-  "lyrics",
-  "movie",
-  "conversation",
-  "other",
-];
+const VALID: RoomSlug[] = ["books", "articles", "others", "want-to", "done"];
 
 export default async function RoomPage({
   params,
@@ -26,10 +19,11 @@ export default async function RoomPage({
   params: Promise<{ type: string }>;
 }) {
   const { type } = await params;
-  if (!VALID.includes(type as SourceType)) notFound();
+  if (!VALID.includes(type as RoomSlug)) notFound();
 
-  const category = await getRoomCategory(type as SourceType);
-  const sources = await getSourcesByType(type as SourceType);
+  const slug = type as RoomSlug;
+  const category = await getRoomCategory(slug);
+  const sources = await getSourcesByRoomSlug(slug);
   if (!category) notFound();
 
   const sourceCounts = await Promise.all(
@@ -60,7 +54,7 @@ export default async function RoomPage({
             <div className="font-sans text-lg mt-1">{category.description}</div>
           </div>
           <Link
-            href={`/quotes/new?type=${category.type}`}
+            href="/quotes/new"
             className="font-mono text-xs tracking-[0.3em] border border-ink px-5 py-3 hover:bg-ink hover:text-paper transition-colors whitespace-nowrap"
           >
             + NEW LINE
@@ -74,14 +68,14 @@ export default async function RoomPage({
             NO SOURCES YET / 아직 수집된 출처가 없습니다.
           </div>
           <Link
-            href={`/quotes/new?type=${category.type}`}
+            href="/quotes/new"
             className="font-mono text-xs tracking-[0.3em] border border-ink px-6 py-4 hover:bg-ink hover:text-paper transition-colors"
           >
             [ ADD FIRST LINE / 첫 문장 더하기 ]
           </Link>
         </div>
       ) : (
-        <RoomShelf type={type as SourceType} sourceCounts={sourceCounts} />
+        <RoomShelf slug={slug} sourceCounts={sourceCounts} />
       )}
     </section>
   );

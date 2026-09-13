@@ -5,9 +5,9 @@ import Link from "next/link";
 import { Markdown } from "@/components/Markdown";
 import type { NoteWithSource } from "@/lib/data/repository";
 import type { SourceType } from "@/lib/data/types";
-import { ROOM_CATEGORIES } from "@/lib/data/categories";
+import { SOURCE_TYPE_CATEGORIES } from "@/lib/data/categories";
 
-const ROOM_TYPES: SourceType[] = ROOM_CATEGORIES.map((c) => c.type);
+const ROOM_TYPES: SourceType[] = SOURCE_TYPE_CATEGORIES.map((c) => c.type);
 
 function fmtDate(iso: string) {
   return iso.slice(0, 10).replace(/-/g, ".");
@@ -60,7 +60,7 @@ export function NotesBrowser({ items }: { items: NoteWithSource[] }) {
         >
           <option value="all">ALL ROOMS</option>
           {ROOM_TYPES.map((t) => {
-            const cat = ROOM_CATEGORIES.find((c) => c.type === t)!;
+            const cat = SOURCE_TYPE_CATEGORIES.find((c) => c.type === t)!;
             return (
               <option key={t} value={t}>
                 {cat.en} / {cat.ko}

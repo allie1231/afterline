@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ROOM_CATEGORIES } from "@/lib/data/categories";
+import { SOURCE_TYPE_CATEGORIES } from "@/lib/data/categories";
 import { changeSourceTypeAction } from "@/app/sources/[id]/actions";
 import type { SourceType } from "@/lib/data/types";
 
@@ -18,7 +18,7 @@ export function SourceTypeChanger({
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  const current = ROOM_CATEGORIES.find((c) => c.type === currentType)!;
+  const current = SOURCE_TYPE_CATEGORIES.find((c) => c.type === currentType)!;
 
   useEffect(() => {
     if (!open) return;
@@ -62,7 +62,7 @@ export function SourceTypeChanger({
           <div className="font-mono text-[11px] tracking-[0.3em] text-muted px-3 py-2 border-b border-line">
             MOVE TO ROOM / 룸 이동
           </div>
-          {ROOM_CATEGORIES.map((cat) => {
+          {SOURCE_TYPE_CATEGORIES.map((cat) => {
             const active = cat.type === currentType;
             return (
               <button

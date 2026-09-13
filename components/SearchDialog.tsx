@@ -3,12 +3,12 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { searchAction, type SearchHit } from "@/app/search/actions";
-import { ROOM_CATEGORIES } from "@/lib/data/categories";
+import { SOURCE_TYPE_CATEGORIES } from "@/lib/data/categories";
 import type { SourceType } from "@/lib/data/types";
 
 const CAT_BY_TYPE = Object.fromEntries(
-  ROOM_CATEGORIES.map((c) => [c.type, c]),
-) as Record<SourceType, (typeof ROOM_CATEGORIES)[number]>;
+  SOURCE_TYPE_CATEGORIES.map((c) => [c.type, c]),
+) as Record<SourceType, (typeof SOURCE_TYPE_CATEGORIES)[number]>;
 
 function highlight(text: string, query: string): React.ReactNode {
   if (!query.trim()) return text;

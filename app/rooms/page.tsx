@@ -18,7 +18,7 @@ export default async function RoomsPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-ink border border-ink">
         {categories.map((cat) => {
-          const c = counts[cat.type];
+          const c = counts[cat.slug];
           const isLight = cat.contrast === "light";
           const fg = isLight ? "var(--ink)" : "var(--white)";
           const fgMuted = isLight
@@ -30,8 +30,8 @@ export default async function RoomsPage() {
 
           return (
             <Link
-              key={cat.type}
-              href={`/rooms/${cat.type}`}
+              key={cat.slug}
+              href={`/rooms/${cat.slug}`}
               className="group relative p-8 min-h-[320px] flex flex-col justify-between transition-[transform,filter] duration-300 ease-out hover:[transform:translateY(-6px)_scale(1.015)] hover:brightness-[1.04]"
               style={{ background: cat.accent, color: fg }}
             >
