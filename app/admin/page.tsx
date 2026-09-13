@@ -4,9 +4,11 @@ import { useState } from "react";
 
 interface EnrichResult {
   title: string;
+  creator: string;
   id: string;
   filled: string[];
   skipped: boolean;
+  missing: string[];
 }
 
 interface EnrichResponse {
@@ -111,14 +113,19 @@ export default function AdminPage() {
                     />
                     <div>
                       <span className="font-sans">{d.title}</span>
+                      {d.creator && (
+                        <span className="ml-1 text-muted text-sm">
+                          — {d.creator}
+                        </span>
+                      )}
                       {d.filled.length > 0 && (
                         <span className="ml-2 font-mono text-[10px] text-green tracking-wider">
-                          {d.filled.join(", ")}
+                          + {d.filled.join(", ")}
                         </span>
                       )}
                       {d.skipped && (
                         <span className="ml-2 font-mono text-[10px] text-muted tracking-wider">
-                          NOT FOUND
+                          NOT FOUND ({d.missing.join(", ")})
                         </span>
                       )}
                     </div>

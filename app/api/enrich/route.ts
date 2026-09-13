@@ -67,9 +67,11 @@ export async function POST() {
   const batch = needsWork.slice(0, BATCH_SIZE);
   const results: Array<{
     title: string;
+    creator: string;
     id: string;
     filled: string[];
     skipped: boolean;
+    missing: string[];
   }> = [];
 
   const CONCURRENT = 3;
@@ -91,9 +93,15 @@ export async function POST() {
       const p = pg.properties;
       const detail = details[j];
       const bookTitle = title(p, "책 제목");
+      const bookCreator = richText(p, "저자");
+      const missing: string[] = [];
+      if (!richText(p, "ISBN")) missing.push("ISBN");
+      if (num(p, "총 페이지수") === null) missing.push("페이지수");
+      if (num(p, "책 높이") === null) missing.push("높이");
+      if (num(p, "책 너비") === null) missing.push("너비");
 
       if (!detail) {
-        results.push({ title: bookTitle, id: pg.id, filled: [], skipped: true });
+        results.push({ title: bookTitle, creator: bookCreator, id: pg.id, filled: [], skipped: true, missing });
         continue;
       }
 
@@ -121,13 +129,13 @@ export async function POST() {
       if (Object.keys(props).length > 0) {
         try {
           await notion.pages.update({ page_id: pg.id, properties: props });
-          results.push({ title: bookTitle, id: pg.id, filled, skipped: false });
+          results.push({ title: bookTitle, creator: bookCreator, id: pg.id, filled, skipped: false, missing });
         } catch (e) {
           console.error(`[enrich] update failed for ${pg.id}:`, e);
-          results.push({ title: bookTitle, id: pg.id, filled: [], skipped: true });
+          results.push({ title: bookTitle, creator: bookCreator, id: pg.id, filled: [], skipped: true, missing });
         }
       } else {
-        results.push({ title: bookTitle, id: pg.id, filled: [], skipped: true });
+        results.push({ title: bookTitle, creator: bookCreator, id: pg.id, filled: [], skipped: true, missing });
       }
     }
   }
