@@ -155,7 +155,7 @@ async function extractColorsForSources(sources: Source[]): Promise<void> {
       if (colors[j]) batch[j].spine_color = colors[j];
     }
   }
-  persistToNotion(
+  await persistToNotion(
     targets.filter((s) => s.spine_color),
     (s) => ({ "책등 색상": richTextProp(s.spine_color!) }),
   );
@@ -191,7 +191,7 @@ async function enrichSourcesWithBookDetails(sources: Source[]): Promise<void> {
       }
     }
   }
-  persistToNotion(
+  await persistToNotion(
     enriched,
     (s) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -205,22 +205,21 @@ async function enrichSourcesWithBookDetails(sources: Source[]): Promise<void> {
   );
 }
 
-// ─── Persist enrichment to Notion (fire-and-forget) ─────────────────
+// ─── Persist enrichment to Notion ───────────────────────────────────
 
-function persistToNotion(
+async function persistToNotion(
   sources: Source[],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   propsFor: (s: Source) => Record<string, any>,
-): void {
-  if (sources.length === 0) return;
-  (async () => {
-    for (const s of sources) {
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await notion.pages.update({ page_id: s.id, properties: propsFor(s) as any });
-      } catch {}
+): Promise<void> {
+  for (const s of sources) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await notion.pages.update({ page_id: s.id, properties: propsFor(s) as any });
+    } catch (e) {
+      console.error(`[persistToNotion] failed for ${s.id}:`, e);
     }
-  })();
+  }
 }
 
 // ─── Paginated DB fetch ──────────────────────────────────────────────
