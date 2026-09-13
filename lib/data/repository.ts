@@ -96,6 +96,24 @@ export async function getSourceById(id: string): Promise<Source | null> {
   return sourceById.get(id) ?? null;
 }
 
+export interface GenreGroup {
+  genre: string;
+  sources: Source[];
+}
+
+export async function getSourcesByGenre(): Promise<GenreGroup[]> {
+  const { sources } = await getData();
+  const map = new Map<string, Source[]>();
+  for (const s of sources) {
+    if (!s.genre) continue;
+    if (!map.has(s.genre)) map.set(s.genre, []);
+    map.get(s.genre)!.push(s);
+  }
+  return [...map.entries()]
+    .map(([genre, srcs]) => ({ genre, sources: srcs }))
+    .sort((a, b) => b.sources.length - a.sources.length);
+}
+
 // ─────────────────────────────────────────────────────────────────────
 // Quotes
 // ─────────────────────────────────────────────────────────────────────

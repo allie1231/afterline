@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getOrCreateApiToken } from "@/lib/data/repository";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { RegenerateTokenButton } from "@/components/RegenerateTokenButton";
@@ -115,6 +116,21 @@ curl -X POST https://afterline-pi.vercel.app/api/quick-add \\
 # 오늘의 한 줄 가져오기 (JSON)
 curl "https://afterline-pi.vercel.app/api/today?token=<위 토큰>"`}
         </pre>
+      </div>
+      <div className="mt-10 border-t border-line pt-10">
+        <div className="font-mono text-[11px] tracking-[0.3em] text-muted mb-3">
+          ADMIN TOOLS / 관리 도구
+        </div>
+        <Link
+          href="/admin"
+          className="inline-block font-mono text-[11px] tracking-[0.3em] border border-ink px-6 py-3 hover:bg-ink hover:text-paper transition-colors"
+        >
+          BOOK ENRICHMENT →
+        </Link>
+        <p className="font-mono text-[11px] tracking-[0.15em] text-muted mt-3 leading-relaxed max-w-md">
+          Notion 책장 DB의 빈 속성(ISBN, 페이지수, 크기)을 Aladin API로 30권씩
+          채웁니다.
+        </p>
       </div>
     </section>
   );
