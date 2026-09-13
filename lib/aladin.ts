@@ -48,19 +48,17 @@ async function itemLookup(
   }
 }
 
-async function searchByTitle(
+async function searchOnce(
   key: string,
-  title: string,
-  creator?: string,
+  query: string,
 ): Promise<BookDetail | null> {
-  const query = creator ? `${title} ${creator}` : title;
   const url =
     `${ALADIN_BASE}/ItemSearch.aspx?` +
     new URLSearchParams({
       ttbkey: key,
       Query: query,
       QueryType: "Keyword",
-      MaxResults: "1",
+      MaxResults: "3",
       start: "1",
       SearchTarget: "Book",
       output: "js",
@@ -77,13 +75,44 @@ async function searchByTitle(
     const cleaned = text.trim();
     if (!cleaned.startsWith("{")) return null;
     const data = JSON.parse(cleaned);
-    const item = data.item?.[0];
-    if (!item?.isbn13) return null;
+    const items = data.item;
+    if (!items?.length) return null;
 
-    return itemLookup(key, item.isbn13, "ISBN13");
+    const best = items.find((i: { isbn13?: string }) => i.isbn13) ?? items[0];
+    if (!best?.isbn13) return null;
+
+    return itemLookup(key, best.isbn13, "ISBN13");
   } catch {
     return null;
   }
+}
+
+function cleanTitle(title: string): string {
+  return title
+    .replace(/\s*[\[(（【].*?[\])）】]\s*/g, " ")
+    .replace(/\s*[:-]\s*.{15,}$/, "")
+    .trim();
+}
+
+async function searchByTitle(
+  key: string,
+  title: string,
+  creator?: string,
+): Promise<BookDetail | null> {
+  if (creator) {
+    const result = await searchOnce(key, `${title} ${creator}`);
+    if (result) return result;
+  }
+
+  const result = await searchOnce(key, title);
+  if (result) return result;
+
+  const cleaned = cleanTitle(title);
+  if (cleaned !== title && cleaned.length >= 2) {
+    return searchOnce(key, cleaned);
+  }
+
+  return null;
 }
 
 const detailCache = new Map<string, BookDetail | null>();
