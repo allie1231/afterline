@@ -132,7 +132,7 @@ async function extractDominantColor(url: string): Promise<string | null> {
 
 async function extractColorsForSources(sources: Source[]): Promise<void> {
   const targets = sources.filter((s) => s.cover_url && !s.spine_color);
-  const BATCH = 3;
+  const BATCH = 20;
   for (let i = 0; i < targets.length; i += BATCH) {
     const batch = targets.slice(i, i + BATCH);
     const colors = await Promise.all(
