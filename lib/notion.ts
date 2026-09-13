@@ -210,27 +210,6 @@ function persistToNotion(
   })();
 }
 
-// ─── Ensure DB properties exist ─────────────────────────────────────
-
-let _propsEnsured = false;
-async function ensureDbProperties(): Promise<void> {
-  if (_propsEnsured) return;
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (notion.databases as any).update({
-      database_id: SOURCES_DB,
-      properties: {
-        "책등 색상": { rich_text: {} },
-        "ISBN": { rich_text: {} },
-        "페이지 수": { number: {} },
-        "책 높이": { number: {} },
-        "책 너비": { number: {} },
-      },
-    });
-  } catch {}
-  _propsEnsured = true;
-}
-
 // ─── Paginated DB fetch ──────────────────────────────────────────────
 
 async function fetchAll(dbId: string): Promise<PageObjectResponse[]> {
@@ -262,7 +241,6 @@ export interface AllData {
 // ─── Load + transform ────────────────────────────────────────────────
 
 async function load(): Promise<AllData> {
-  await ensureDbProperties();
   const [shelfPages, linePages] = await Promise.all([
     fetchAll(SOURCES_DB),
     fetchAll(QUOTES_DB),
