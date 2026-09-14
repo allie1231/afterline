@@ -7,266 +7,107 @@ export interface BookDetail {
   sizeWidth?: number;
 }
 
-async function itemLookup(
+export interface EnrichResult {
+  detail: BookDetail | null;
+  rateLimited: boolean;
+}
+
+interface AladinItem {
+  title?: string;
+  isbn13?: string;
+  mallType?: string;
+  subInfo?: {
+    itemPage?: number;
+    packing?: { sizeHeight?: number; sizeWidth?: number };
+    paperBookList?: Array<{ isbn13?: string }>;
+  };
+}
+
+const HANGUL = /[가-힣]/;
+
+// Aladin rejects bursts above roughly 5 requests/second with HTTP 429 and an
+// empty body, which is indistinguishable from a miss unless it is handled
+// explicitly. Request starts are spaced out globally so concurrent callers
+// share one budget.
+const MIN_REQUEST_GAP_MS = 120;
+const MAX_RETRIES = 3;
+
+let nextSlot = 0;
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+async function takeSlot(): Promise<void> {
+  const now = Date.now();
+  const slot = Math.max(now, nextSlot);
+  nextSlot = slot + MIN_REQUEST_GAP_MS;
+  if (slot > now) await sleep(slot - now);
+}
+
+class RateLimitError extends Error {}
+
+async function fetchAladin(
+  endpoint: string,
+  params: Record<string, string>,
+): Promise<unknown | null> {
+  const url = `${ALADIN_BASE}/${endpoint}?` + new URLSearchParams(params).toString();
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    await takeSlot();
+    try {
+      const r = await fetch(url, {
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(7000),
+      });
+
+      if (r.status === 429) {
+        const backoff = 1000 * 2 ** attempt;
+        nextSlot = Math.max(nextSlot, Date.now() + backoff);
+        continue;
+      }
+      if (!r.ok) return null;
+
+      const text = (await r.text()).trim();
+      if (!text.startsWith("{")) return null;
+      return JSON.parse(text);
+    } catch {
+      if (attempt === MAX_RETRIES) return null;
+    }
+  }
+
+  throw new RateLimitError(endpoint);
+}
+
+async function lookupItem(
   key: string,
   itemId: string,
-  idType: "ISBN13" | "ISBN" | "ItemId" = "ISBN13",
-): Promise<BookDetail | null> {
-  const url =
-    `${ALADIN_BASE}/ItemLookUp.aspx?` +
-    new URLSearchParams({
-      ttbkey: key,
-      itemIdType: idType,
-      ItemId: itemId,
-      output: "js",
-      Version: "20131101",
-      OptResult: "packing",
-    }).toString();
-
-  try {
-    const r = await fetch(url, {
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!r.ok) return null;
-    const text = await r.text();
-    const cleaned = text.trim();
-    if (!cleaned.startsWith("{")) return null;
-    const data = JSON.parse(cleaned);
-    const item = data.item?.[0];
-    if (!item) return null;
-
-    const packing = item.subInfo?.packing;
-    return {
-      isbn13: item.isbn13 || undefined,
-      pageCount: item.subInfo?.itemPage || undefined,
-      sizeHeight: packing?.sizeHeight || undefined,
-      sizeWidth: packing?.sizeWidth || undefined,
-    };
-  } catch {
-    return null;
-  }
+  idType: "ISBN13" | "ISBN",
+): Promise<AladinItem | null> {
+  const data = (await fetchAladin("ItemLookUp.aspx", {
+    ttbkey: key,
+    itemIdType: idType,
+    ItemId: itemId,
+    output: "js",
+    Version: "20131101",
+    OptResult: "packing",
+  })) as { item?: AladinItem[] } | null;
+  return data?.item?.[0] ?? null;
 }
 
-async function searchOnce(
-  key: string,
-  query: string,
-): Promise<BookDetail | null> {
-  const url =
-    `${ALADIN_BASE}/ItemSearch.aspx?` +
-    new URLSearchParams({
-      ttbkey: key,
-      Query: query,
-      QueryType: "Keyword",
-      MaxResults: "3",
-      start: "1",
-      SearchTarget: "Book",
-      output: "js",
-      Version: "20131101",
-    }).toString();
-
-  try {
-    const r = await fetch(url, {
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!r.ok) return null;
-    const text = await r.text();
-    const cleaned = text.trim();
-    if (!cleaned.startsWith("{")) return null;
-    const data = JSON.parse(cleaned);
-    const items = data.item;
-    if (!items?.length) return null;
-
-    const best = items.find((i: { isbn13?: string }) => i.isbn13) ?? items[0];
-    if (!best?.isbn13) return null;
-
-    return itemLookup(key, best.isbn13, "ISBN13");
-  } catch {
-    return null;
-  }
+function detailFromItem(item: AladinItem): BookDetail {
+  const packing = item.subInfo?.packing;
+  return {
+    isbn13: item.isbn13 || undefined,
+    pageCount: item.subInfo?.itemPage || undefined,
+    sizeHeight: packing?.sizeHeight || undefined,
+    sizeWidth: packing?.sizeWidth || undefined,
+  };
 }
 
-function cleanTitle(title: string): string {
-  return title
-    .replace(/\s*[\[(（【].*?[\])）】]\s*/g, " ")
-    .replace(/\s*[:-]\s*.{15,}$/, "")
-    .trim();
+function isComplete(d: BookDetail | null): boolean {
+  return !!d && !!d.isbn13 && !!d.pageCount && !!d.sizeHeight && !!d.sizeWidth;
 }
 
-async function searchByTitle(
-  key: string,
-  title: string,
-  creator?: string,
-): Promise<BookDetail | null> {
-  if (creator) {
-    const result = await searchOnce(key, `${title} ${creator}`);
-    if (result) return result;
-  }
-
-  const result = await searchOnce(key, title);
-  if (result) return result;
-
-  const cleaned = cleanTitle(title);
-  if (cleaned !== title && cleaned.length >= 2) {
-    return searchOnce(key, cleaned);
-  }
-
-  return null;
-}
-
-// ─── Google Books fallback ──────────────────────────────────────────
-
-function parseCmToMm(dim: string | undefined): number | undefined {
-  if (!dim) return undefined;
-  const m = dim.match(/([\d.]+)\s*cm/i);
-  if (m) return Math.round(parseFloat(m[1]) * 10);
-  const mm = dim.match(/([\d.]+)\s*mm/i);
-  if (mm) return Math.round(parseFloat(mm[1]));
-  return undefined;
-}
-
-async function googleBooksSearch(query: string): Promise<BookDetail | null> {
-  const url =
-    `https://www.googleapis.com/books/v1/volumes?` +
-    new URLSearchParams({ q: query, maxResults: "3" }).toString();
-
-  try {
-    const r = await fetch(url, { signal: AbortSignal.timeout(5000) });
-    if (!r.ok) return null;
-    const data = await r.json();
-    const items = data.items as Array<{ volumeInfo: Record<string, unknown> }> | undefined;
-    if (!items?.length) return null;
-
-    for (const item of items) {
-      const vol = item.volumeInfo;
-      const ids = vol.industryIdentifiers as
-        | Array<{ type: string; identifier: string }>
-        | undefined;
-      const isbn13 =
-        ids?.find((i) => i.type === "ISBN_13")?.identifier ?? undefined;
-      const dims = vol.dimensions as
-        | { height?: string; width?: string }
-        | undefined;
-
-      const detail: BookDetail = {
-        isbn13,
-        pageCount: (vol.pageCount as number) || undefined,
-        sizeHeight: parseCmToMm(dims?.height),
-        sizeWidth: parseCmToMm(dims?.width),
-      };
-
-      if (detail.isbn13 || detail.pageCount) return detail;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-async function googleBooksLookup(
-  isbn?: string,
-  title?: string,
-  creator?: string,
-): Promise<BookDetail | null> {
-  if (isbn) {
-    const r = await googleBooksSearch(`isbn:${isbn}`);
-    if (r) return r;
-  }
-
-  if (title && creator) {
-    const r = await googleBooksSearch(`intitle:${title} inauthor:${creator}`);
-    if (r) return r;
-  }
-
-  if (title) {
-    const r = await googleBooksSearch(title);
-    if (r) return r;
-  }
-
-  return null;
-}
-
-// ─── Open Library fallback ─────────────────────────────────────────
-
-async function openLibraryLookup(
-  isbn?: string,
-  title?: string,
-  creator?: string,
-): Promise<BookDetail | null> {
-  if (isbn) {
-    try {
-      const url = `https://openlibrary.org/isbn/${isbn}.json`;
-      const r = await fetch(url, { signal: AbortSignal.timeout(5000) });
-      if (r.ok) {
-        const data = await r.json();
-        const isbn13List = data.isbn_13 as string[] | undefined;
-        const physDim = data.physical_dimensions as string | undefined;
-        let h: number | undefined;
-        let w: number | undefined;
-        if (physDim) {
-          const parts = physDim.match(/([\d.]+)\s*x\s*([\d.]+)(?:\s*x\s*[\d.]+)?\s*(centimeters|inches)/i);
-          if (parts) {
-            const unit = parts[3].toLowerCase();
-            const v1 = parseFloat(parts[1]);
-            const v2 = parseFloat(parts[2]);
-            const big = Math.max(v1, v2);
-            const small = Math.min(v1, v2);
-            if (unit === "centimeters") {
-              h = Math.round(big * 10);
-              w = Math.round(small * 10);
-            } else {
-              h = Math.round(big * 25.4);
-              w = Math.round(small * 25.4);
-            }
-          }
-        }
-        const detail: BookDetail = {
-          isbn13: isbn13List?.[0] ?? undefined,
-          pageCount: (data.number_of_pages as number) || undefined,
-          sizeHeight: h,
-          sizeWidth: w,
-        };
-        if (detail.isbn13 || detail.pageCount || detail.sizeHeight) return detail;
-      }
-    } catch { /* continue */ }
-  }
-
-  if (title) {
-    try {
-      const params: Record<string, string> = { title, limit: "3" };
-      if (creator) params.author = creator;
-      const url =
-        `https://openlibrary.org/search.json?` +
-        new URLSearchParams(params).toString();
-      const r = await fetch(url, { signal: AbortSignal.timeout(5000) });
-      if (!r.ok) return null;
-      const data = await r.json();
-      const docs = data.docs as Array<Record<string, unknown>> | undefined;
-      if (!docs?.length) return null;
-
-      const best = docs[0];
-      const isbns = best.isbn as string[] | undefined;
-      const isbn13 = isbns?.find((i: string) => i.length === 13);
-
-      return {
-        isbn13: isbn13 ?? undefined,
-        pageCount: (best.number_of_pages_median as number) || undefined,
-        sizeHeight: undefined,
-        sizeWidth: undefined,
-      };
-    } catch {
-      return null;
-    }
-  }
-
-  return null;
-}
-
-// ─── Combined enrichment ────────────────────────────────────────────
-
-function mergeDetails(a: BookDetail | null, b: BookDetail | null): BookDetail | null {
-  if (!a && !b) return null;
+function merge(a: BookDetail | null, b: BookDetail | null): BookDetail | null {
   if (!a) return b;
   if (!b) return a;
   return {
@@ -277,89 +118,232 @@ function mergeDetails(a: BookDetail | null, b: BookDetail | null): BookDetail | 
   };
 }
 
+// An ebook entry carries no dimensions and no page count. Aladin links it to
+// its print edition through paperBookList, which is where packing data lives.
+async function resolveWithPaperEdition(
+  key: string,
+  item: AladinItem,
+): Promise<BookDetail> {
+  const detail = detailFromItem(item);
+  if (isComplete(detail)) return detail;
+
+  const paperIsbn = item.subInfo?.paperBookList?.[0]?.isbn13;
+  if (!paperIsbn || paperIsbn === item.isbn13) return detail;
+
+  const paperItem = await lookupItem(key, paperIsbn, "ISBN13");
+  if (!paperItem) return detail;
+
+  return merge(detail, detailFromItem(paperItem))!;
+}
+
+function cleanTitle(title: string): string {
+  return title
+    .replace(/[“”‘’"']/g, " ")
+    .replace(/\s*[[(（【].*?[\])）】]\s*/g, " ")
+    .replace(/\s*[:：]\s*.*$/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+async function searchItems(
+  key: string,
+  query: string,
+  queryType: "Keyword" | "Title",
+): Promise<AladinItem[]> {
+  const data = (await fetchAladin("ItemSearch.aspx", {
+    ttbkey: key,
+    Query: query,
+    QueryType: queryType,
+    MaxResults: "5",
+    start: "1",
+    SearchTarget: "Book",
+    output: "js",
+    Version: "20131101",
+  })) as { item?: AladinItem[] } | null;
+  return data?.item ?? [];
+}
+
+const MAX_CANDIDATES = 4;
+
+// Search responses never carry packing data, so each candidate needs a full
+// lookup before we can tell whether it has dimensions.
+async function searchByTitle(
+  key: string,
+  title: string,
+  creator?: string,
+): Promise<BookDetail | null> {
+  const cleaned = cleanTitle(title);
+  const attempts: Array<[string, "Keyword" | "Title"]> = [];
+  if (creator) attempts.push([`${title} ${creator}`, "Keyword"]);
+  attempts.push([title, "Title"]);
+  if (cleaned !== title && cleaned.length >= 2) {
+    if (creator) attempts.push([`${cleaned} ${creator}`, "Keyword"]);
+    attempts.push([cleaned, "Title"]);
+  }
+
+  let best: BookDetail | null = null;
+  let examined = 0;
+
+  for (const [query, queryType] of attempts) {
+    const items = await searchItems(key, query, queryType);
+    for (const item of items) {
+      if (!item.isbn13) continue;
+      if (examined >= MAX_CANDIDATES) return best;
+      examined++;
+
+      const full = await lookupItem(key, item.isbn13, "ISBN13");
+      if (!full) continue;
+      const detail = await resolveWithPaperEdition(key, full);
+      if (isComplete(detail)) return detail;
+      best = merge(best, detail);
+    }
+  }
+
+  return best;
+}
+
+// ─── Non-Korean fallbacks ───────────────────────────────────────────
+// Google Books and Open Library return nothing for Korean ISBNs, so they only
+// run for titles without Hangul.
+
+function parseCmToMm(dim: string | undefined): number | undefined {
+  if (!dim) return undefined;
+  const cm = dim.match(/([\d.]+)\s*cm/i);
+  if (cm) return Math.round(parseFloat(cm[1]) * 10);
+  const mm = dim.match(/([\d.]+)\s*mm/i);
+  if (mm) return Math.round(parseFloat(mm[1]));
+  const inch = dim.match(/([\d.]+)\s*(?:in|inches)/i);
+  if (inch) return Math.round(parseFloat(inch[1]) * 25.4);
+  return undefined;
+}
+
+async function googleBooksLookup(
+  isbn?: string,
+  title?: string,
+  creator?: string,
+): Promise<BookDetail | null> {
+  const queries: string[] = [];
+  if (isbn) queries.push(`isbn:${isbn}`);
+  if (title && creator) queries.push(`intitle:${title} inauthor:${creator}`);
+  if (title) queries.push(title);
+
+  for (const q of queries) {
+    try {
+      const url =
+        `https://www.googleapis.com/books/v1/volumes?` +
+        new URLSearchParams({ q, maxResults: "3" }).toString();
+      const r = await fetch(url, { signal: AbortSignal.timeout(7000) });
+      if (!r.ok) continue;
+      const data = await r.json();
+      for (const entry of data.items ?? []) {
+        const vol = entry.volumeInfo ?? {};
+        const ids = vol.industryIdentifiers as
+          | Array<{ type: string; identifier: string }>
+          | undefined;
+        const dims = vol.dimensions as { height?: string; width?: string } | undefined;
+        const detail: BookDetail = {
+          isbn13: ids?.find((i) => i.type === "ISBN_13")?.identifier || undefined,
+          pageCount: vol.pageCount || undefined,
+          sizeHeight: parseCmToMm(dims?.height),
+          sizeWidth: parseCmToMm(dims?.width),
+        };
+        if (detail.isbn13 || detail.pageCount) return detail;
+      }
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
+async function openLibraryLookup(isbn?: string): Promise<BookDetail | null> {
+  if (!isbn) return null;
+  try {
+    const r = await fetch(`https://openlibrary.org/isbn/${isbn}.json`, {
+      signal: AbortSignal.timeout(7000),
+    });
+    if (!r.ok) return null;
+    const data = await r.json();
+
+    let sizeHeight: number | undefined;
+    let sizeWidth: number | undefined;
+    const parts = (data.physical_dimensions as string | undefined)?.match(
+      /([\d.]+)\s*x\s*([\d.]+)(?:\s*x\s*[\d.]+)?\s*(centimeters|inches)/i,
+    );
+    if (parts) {
+      const factor = parts[3].toLowerCase() === "centimeters" ? 10 : 25.4;
+      const a = parseFloat(parts[1]);
+      const b = parseFloat(parts[2]);
+      sizeHeight = Math.round(Math.max(a, b) * factor);
+      sizeWidth = Math.round(Math.min(a, b) * factor);
+    }
+
+    return {
+      isbn13: (data.isbn_13 as string[] | undefined)?.[0] || undefined,
+      pageCount: (data.number_of_pages as number) || undefined,
+      sizeHeight,
+      sizeWidth,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// ─── Combined enrichment ────────────────────────────────────────────
+
 const detailCache = new Map<string, BookDetail | null>();
-
-function needsMoreFields(d: BookDetail | null): boolean {
-  return !d || !d.isbn13 || !d.pageCount || !d.sizeHeight || !d.sizeWidth;
-}
-
-function estimateDimensions(detail: BookDetail): BookDetail {
-  if (detail.sizeHeight && detail.sizeWidth) return detail;
-  const pages = detail.pageCount ?? 200;
-  if (pages > 400) {
-    return { ...detail, sizeHeight: detail.sizeHeight ?? 230, sizeWidth: detail.sizeWidth ?? 152 };
-  }
-  if (pages > 200) {
-    return { ...detail, sizeHeight: detail.sizeHeight ?? 210, sizeWidth: detail.sizeWidth ?? 148 };
-  }
-  return { ...detail, sizeHeight: detail.sizeHeight ?? 188, sizeWidth: detail.sizeWidth ?? 128 };
-}
 
 export async function enrichBookDetail(
   isbn?: string,
   title?: string,
   creator?: string,
-): Promise<BookDetail | null> {
+): Promise<EnrichResult> {
   const cacheKey = isbn || title || "";
-  if (!cacheKey) return null;
-  if (detailCache.has(cacheKey)) return detailCache.get(cacheKey)!;
+  if (!cacheKey) return { detail: null, rateLimited: false };
+  if (detailCache.has(cacheKey)) {
+    return { detail: detailCache.get(cacheKey)!, rateLimited: false };
+  }
 
+  try {
+    const detail = await lookupBookDetail(isbn, title, creator);
+    detailCache.set(cacheKey, detail);
+    return { detail, rateLimited: false };
+  } catch (e) {
+    if (e instanceof RateLimitError) return { detail: null, rateLimited: true };
+    throw e;
+  }
+}
+
+async function lookupBookDetail(
+  isbn?: string,
+  title?: string,
+  creator?: string,
+): Promise<BookDetail | null> {
   let detail: BookDetail | null = null;
 
   const aladinKey = process.env.ALADIN_TTB_KEY;
   if (aladinKey) {
     if (isbn && isbn.length >= 10) {
-      const idType = isbn.length === 13 ? "ISBN13" : "ISBN";
-      detail = await itemLookup(aladinKey, isbn, idType);
+      const item = await lookupItem(
+        aladinKey,
+        isbn,
+        isbn.length === 13 ? "ISBN13" : "ISBN",
+      );
+      if (item) detail = await resolveWithPaperEdition(aladinKey, item);
+      if (isComplete(detail)) return detail;
     }
-    if (!detail && title) {
-      detail = await searchByTitle(aladinKey, title, creator);
+
+    if (title) {
+      detail = merge(detail, await searchByTitle(aladinKey, title, creator));
+      if (isComplete(detail)) return detail;
     }
   }
 
-  if (needsMoreFields(detail)) {
-    const lookupIsbn = detail?.isbn13 || isbn;
-    const gDetail = await googleBooksLookup(lookupIsbn, title, creator);
-    detail = mergeDetails(detail, gDetail);
+  if (!HANGUL.test(title ?? "") && !HANGUL.test(creator ?? "")) {
+    detail = merge(detail, await googleBooksLookup(detail?.isbn13 || isbn, title, creator));
+    if (isComplete(detail)) return detail;
+    detail = merge(detail, await openLibraryLookup(detail?.isbn13 || isbn));
   }
 
-  if (needsMoreFields(detail)) {
-    const lookupIsbn = detail?.isbn13 || isbn;
-    const olDetail = await openLibraryLookup(lookupIsbn, title, creator);
-    detail = mergeDetails(detail, olDetail);
-  }
-
-  if (detail && (!detail.sizeHeight || !detail.sizeWidth)) {
-    detail = estimateDimensions(detail);
-  }
-
-  detailCache.set(cacheKey, detail);
   return detail;
-}
-
-export async function enrichBooksInBatch(
-  books: Array<{
-    isbn?: string;
-    title: string;
-    creator?: string;
-  }>,
-): Promise<Map<string, BookDetail>> {
-  const results = new Map<string, BookDetail>();
-  const BATCH = 3;
-
-  for (let i = 0; i < books.length; i += BATCH) {
-    const batch = books.slice(i, i + BATCH);
-    const details = await Promise.all(
-      batch.map((b) => enrichBookDetail(b.isbn, b.title, b.creator)),
-    );
-    for (let j = 0; j < batch.length; j++) {
-      const book = batch[j];
-      const detail = details[j];
-      if (detail) {
-        results.set(book.isbn || book.title, detail);
-      }
-    }
-  }
-
-  return results;
 }

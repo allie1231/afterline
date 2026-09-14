@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+type SkipReason = "not_found" | "no_data" | "write_failed" | "rate_limited";
+
 interface EnrichResult {
   title: string;
   creator: string;
@@ -9,6 +11,7 @@ interface EnrichResult {
   filled: string[];
   skipped: boolean;
   missing: string[];
+  reason?: SkipReason;
 }
 
 interface EnrichResponse {
@@ -16,9 +19,18 @@ interface EnrichResponse {
   processed: number;
   enriched: number;
   skipped: number;
+  not_found: number;
+  rate_limited: number;
   remaining: number;
   details: EnrichResult[];
 }
+
+const REASON_LABEL: Record<SkipReason, string> = {
+  not_found: "알라딘에 없음 — 직접 입력 필요",
+  no_data: "정보 부족 — 직접 입력 필요",
+  rate_limited: "요청 제한 — 다시 시도하면 됩니다",
+  write_failed: "저장 실패",
+};
 
 export default function AdminPage() {
   const [loading, setLoading] = useState(false);
@@ -52,9 +64,8 @@ export default function AdminPage() {
 
       <p className="text-sm text-muted mb-6">
         Notion 책장 DB에서 ISBN, 페이지수, 높이, 너비가 비어있는 책을
-        Aladin → Google Books → Open Library 순서로 검색하여 채웁니다.
-        치수를 찾을 수 없는 경우 표준 규격으로 추정합니다.
-        한 번에 최대 30권씩 처리됩니다.
+        알라딘에서 찾아 채웁니다. 전자책 ISBN은 종이책 판본을 따라가 실제
+        판형을 가져옵니다. 한 번에 최대 100권씩 처리됩니다.
       </p>
 
       <button
@@ -62,7 +73,7 @@ export default function AdminPage() {
         disabled={loading}
         className="font-mono text-[11px] tracking-[0.3em] border border-ink px-6 py-3 hover:bg-ink hover:text-paper transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        {loading ? "ENRICHING..." : "ENRICH 30 BOOKS"}
+        {loading ? "ENRICHING..." : "ENRICH 100 BOOKS"}
       </button>
 
       {error && (
@@ -125,9 +136,10 @@ export default function AdminPage() {
                           + {d.filled.join(", ")}
                         </span>
                       )}
-                      {d.skipped && (
+                      {d.skipped && d.reason && (
                         <span className="ml-2 font-mono text-[10px] text-muted tracking-wider">
-                          NOT FOUND ({d.missing.join(", ")})
+                          {REASON_LABEL[d.reason]}
+                          {d.missing.length > 0 && ` (${d.missing.join(", ")})`}
                         </span>
                       )}
                     </div>
