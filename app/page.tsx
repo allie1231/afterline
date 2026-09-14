@@ -81,22 +81,13 @@ export default async function EntrancePage() {
 
       <RandomQuotePanel pool={pool} />
 
-      <div className="flex items-end justify-between">
+      <div className="flex items-end">
         <Link
           href="/rooms"
           className="font-mono text-xs tracking-[0.3em] border border-ink px-8 py-5 hover:bg-ink hover:text-paper transition-colors"
         >
           [ ENTER ARCHIVE ]
         </Link>
-        <div className="font-mono text-[11px] tracking-[0.2em] text-muted text-right leading-relaxed">
-          A PRIVATE ARCHIVE
-          <br />
-          OF LINES THAT STAYED
-          <br />
-          AFTER READING, LISTENING,
-          <br />
-          AND LIVING.
-        </div>
       </div>
     </section>
   );
