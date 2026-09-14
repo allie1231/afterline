@@ -6,9 +6,9 @@ import { enrichBookDetail } from "@/lib/aladin";
 import { invalidateNotionCache } from "@/lib/notion";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+export const maxDuration = 300;
 
-const BATCH_SIZE = 30;
+const BATCH_SIZE = 100;
 
 function richText(
   p: PageObjectResponse["properties"],
@@ -72,12 +72,13 @@ export async function POST() {
     filled: string[];
     skipped: boolean;
     missing: string[];
+    reason?: "not_found" | "no_data" | "write_failed" | "rate_limited";
   }> = [];
 
-  const CONCURRENT = 3;
+  const CONCURRENT = 5;
   for (let i = 0; i < batch.length; i += CONCURRENT) {
     const chunk = batch.slice(i, i + CONCURRENT);
-    const details = await Promise.all(
+    const outcomes = await Promise.all(
       chunk.map((pg) => {
         const p = pg.properties;
         return enrichBookDetail(
@@ -91,7 +92,7 @@ export async function POST() {
     for (let j = 0; j < chunk.length; j++) {
       const pg = chunk[j];
       const p = pg.properties;
-      const detail = details[j];
+      const { detail, rateLimited } = outcomes[j];
       const bookTitle = title(p, "책 제목");
       const bookCreator = richText(p, "저자");
       const missing: string[] = [];
@@ -101,7 +102,10 @@ export async function POST() {
       if (num(p, "책 너비") === null) missing.push("너비");
 
       if (!detail) {
-        results.push({ title: bookTitle, creator: bookCreator, id: pg.id, filled: [], skipped: true, missing });
+        results.push({
+          title: bookTitle, creator: bookCreator, id: pg.id, filled: [], skipped: true, missing,
+          reason: rateLimited ? "rate_limited" : "not_found",
+        });
         continue;
       }
 
@@ -132,10 +136,10 @@ export async function POST() {
           results.push({ title: bookTitle, creator: bookCreator, id: pg.id, filled, skipped: false, missing: [] });
         } catch (e) {
           console.error(`[enrich] update failed for ${pg.id}:`, e);
-          results.push({ title: bookTitle, creator: bookCreator, id: pg.id, filled: [], skipped: true, missing });
+          results.push({ title: bookTitle, creator: bookCreator, id: pg.id, filled: [], skipped: true, missing, reason: "write_failed" });
         }
       } else {
-        results.push({ title: bookTitle, creator: bookCreator, id: pg.id, filled: [], skipped: true, missing });
+        results.push({ title: bookTitle, creator: bookCreator, id: pg.id, filled: [], skipped: true, missing, reason: "no_data" });
       }
     }
   }
@@ -150,6 +154,8 @@ export async function POST() {
     processed: batch.length,
     enriched: enriched.length,
     skipped: skipped.length,
+    not_found: results.filter((r) => r.reason === "not_found").length,
+    rate_limited: results.filter((r) => r.reason === "rate_limited").length,
     remaining: Math.max(0, needsWork.length - BATCH_SIZE),
     details: results,
   });
