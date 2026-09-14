@@ -126,50 +126,141 @@ function parseCmToMm(dim: string | undefined): number | undefined {
   return undefined;
 }
 
-async function googleBooksLookup(
-  isbn?: string,
-  title?: string,
-  creator?: string,
-): Promise<BookDetail | null> {
-  let query: string;
-  if (isbn) {
-    query = `isbn:${isbn}`;
-  } else if (title) {
-    query = creator ? `intitle:${title}+inauthor:${creator}` : `intitle:${title}`;
-  } else {
-    return null;
-  }
-
+async function googleBooksSearch(query: string): Promise<BookDetail | null> {
   const url =
     `https://www.googleapis.com/books/v1/volumes?` +
-    new URLSearchParams({ q: query, maxResults: "1" }).toString();
+    new URLSearchParams({ q: query, maxResults: "3" }).toString();
 
   try {
     const r = await fetch(url, { signal: AbortSignal.timeout(5000) });
     if (!r.ok) return null;
     const data = await r.json();
-    const vol = data.items?.[0]?.volumeInfo;
-    if (!vol) return null;
+    const items = data.items as Array<{ volumeInfo: Record<string, unknown> }> | undefined;
+    if (!items?.length) return null;
 
-    const ids = vol.industryIdentifiers as
-      | Array<{ type: string; identifier: string }>
-      | undefined;
-    const isbn13 =
-      ids?.find((i) => i.type === "ISBN_13")?.identifier ?? undefined;
+    for (const item of items) {
+      const vol = item.volumeInfo;
+      const ids = vol.industryIdentifiers as
+        | Array<{ type: string; identifier: string }>
+        | undefined;
+      const isbn13 =
+        ids?.find((i) => i.type === "ISBN_13")?.identifier ?? undefined;
+      const dims = vol.dimensions as
+        | { height?: string; width?: string }
+        | undefined;
 
-    const dims = vol.dimensions as
-      | { height?: string; width?: string }
-      | undefined;
+      const detail: BookDetail = {
+        isbn13,
+        pageCount: (vol.pageCount as number) || undefined,
+        sizeHeight: parseCmToMm(dims?.height),
+        sizeWidth: parseCmToMm(dims?.width),
+      };
 
-    return {
-      isbn13,
-      pageCount: vol.pageCount || undefined,
-      sizeHeight: parseCmToMm(dims?.height),
-      sizeWidth: parseCmToMm(dims?.width),
-    };
+      if (detail.isbn13 || detail.pageCount) return detail;
+    }
+    return null;
   } catch {
     return null;
   }
+}
+
+async function googleBooksLookup(
+  isbn?: string,
+  title?: string,
+  creator?: string,
+): Promise<BookDetail | null> {
+  if (isbn) {
+    const r = await googleBooksSearch(`isbn:${isbn}`);
+    if (r) return r;
+  }
+
+  if (title && creator) {
+    const r = await googleBooksSearch(`intitle:${title} inauthor:${creator}`);
+    if (r) return r;
+  }
+
+  if (title) {
+    const r = await googleBooksSearch(title);
+    if (r) return r;
+  }
+
+  return null;
+}
+
+// ─── Open Library fallback ─────────────────────────────────────────
+
+async function openLibraryLookup(
+  isbn?: string,
+  title?: string,
+  creator?: string,
+): Promise<BookDetail | null> {
+  if (isbn) {
+    try {
+      const url = `https://openlibrary.org/isbn/${isbn}.json`;
+      const r = await fetch(url, { signal: AbortSignal.timeout(5000) });
+      if (r.ok) {
+        const data = await r.json();
+        const isbn13List = data.isbn_13 as string[] | undefined;
+        const physDim = data.physical_dimensions as string | undefined;
+        let h: number | undefined;
+        let w: number | undefined;
+        if (physDim) {
+          const parts = physDim.match(/([\d.]+)\s*x\s*([\d.]+)(?:\s*x\s*[\d.]+)?\s*(centimeters|inches)/i);
+          if (parts) {
+            const unit = parts[3].toLowerCase();
+            const v1 = parseFloat(parts[1]);
+            const v2 = parseFloat(parts[2]);
+            const big = Math.max(v1, v2);
+            const small = Math.min(v1, v2);
+            if (unit === "centimeters") {
+              h = Math.round(big * 10);
+              w = Math.round(small * 10);
+            } else {
+              h = Math.round(big * 25.4);
+              w = Math.round(small * 25.4);
+            }
+          }
+        }
+        const detail: BookDetail = {
+          isbn13: isbn13List?.[0] ?? undefined,
+          pageCount: (data.number_of_pages as number) || undefined,
+          sizeHeight: h,
+          sizeWidth: w,
+        };
+        if (detail.isbn13 || detail.pageCount || detail.sizeHeight) return detail;
+      }
+    } catch { /* continue */ }
+  }
+
+  if (title) {
+    try {
+      const params: Record<string, string> = { title, limit: "3" };
+      if (creator) params.author = creator;
+      const url =
+        `https://openlibrary.org/search.json?` +
+        new URLSearchParams(params).toString();
+      const r = await fetch(url, { signal: AbortSignal.timeout(5000) });
+      if (!r.ok) return null;
+      const data = await r.json();
+      const docs = data.docs as Array<Record<string, unknown>> | undefined;
+      if (!docs?.length) return null;
+
+      const best = docs[0];
+      const isbns = best.isbn as string[] | undefined;
+      const isbn13 = isbns?.find((i: string) => i.length === 13);
+
+      return {
+        isbn13: isbn13 ?? undefined,
+        pageCount: (best.number_of_pages_median as number) || undefined,
+        sizeHeight: undefined,
+        sizeWidth: undefined,
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
 }
 
 // ─── Combined enrichment ────────────────────────────────────────────
@@ -187,6 +278,22 @@ function mergeDetails(a: BookDetail | null, b: BookDetail | null): BookDetail | 
 }
 
 const detailCache = new Map<string, BookDetail | null>();
+
+function needsMoreFields(d: BookDetail | null): boolean {
+  return !d || !d.isbn13 || !d.pageCount || !d.sizeHeight || !d.sizeWidth;
+}
+
+function estimateDimensions(detail: BookDetail): BookDetail {
+  if (detail.sizeHeight && detail.sizeWidth) return detail;
+  const pages = detail.pageCount ?? 200;
+  if (pages > 400) {
+    return { ...detail, sizeHeight: detail.sizeHeight ?? 230, sizeWidth: detail.sizeWidth ?? 152 };
+  }
+  if (pages > 200) {
+    return { ...detail, sizeHeight: detail.sizeHeight ?? 210, sizeWidth: detail.sizeWidth ?? 148 };
+  }
+  return { ...detail, sizeHeight: detail.sizeHeight ?? 188, sizeWidth: detail.sizeWidth ?? 128 };
+}
 
 export async function enrichBookDetail(
   isbn?: string,
@@ -210,11 +317,20 @@ export async function enrichBookDetail(
     }
   }
 
-  const needsMore = !detail || !detail.isbn13 || !detail.pageCount || !detail.sizeHeight || !detail.sizeWidth;
-  if (needsMore) {
+  if (needsMoreFields(detail)) {
     const lookupIsbn = detail?.isbn13 || isbn;
     const gDetail = await googleBooksLookup(lookupIsbn, title, creator);
     detail = mergeDetails(detail, gDetail);
+  }
+
+  if (needsMoreFields(detail)) {
+    const lookupIsbn = detail?.isbn13 || isbn;
+    const olDetail = await openLibraryLookup(lookupIsbn, title, creator);
+    detail = mergeDetails(detail, olDetail);
+  }
+
+  if (detail && (!detail.sizeHeight || !detail.sizeWidth)) {
+    detail = estimateDimensions(detail);
   }
 
   detailCache.set(cacheKey, detail);

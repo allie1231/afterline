@@ -129,7 +129,7 @@ export async function POST() {
       if (Object.keys(props).length > 0) {
         try {
           await notion.pages.update({ page_id: pg.id, properties: props });
-          results.push({ title: bookTitle, creator: bookCreator, id: pg.id, filled, skipped: false, missing });
+          results.push({ title: bookTitle, creator: bookCreator, id: pg.id, filled, skipped: false, missing: [] });
         } catch (e) {
           console.error(`[enrich] update failed for ${pg.id}:`, e);
           results.push({ title: bookTitle, creator: bookCreator, id: pg.id, filled: [], skipped: true, missing });
