@@ -19,7 +19,7 @@ export function RandomQuotePanel({ pool }: { pool: RandomLine[] }) {
     return (
       <div className="border-y border-line py-6 my-12">
         <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
-          TODAY&apos;S LINE / 오늘의 한 줄
+          TODAY&apos;S LINE / <span className="tracking-normal">오늘의 한 줄</span>
         </div>
         <p className="font-sans text-xl text-muted mt-3">
           아직 수집된 문장이 없어요. 첫 문장을 더해보세요.
@@ -52,7 +52,7 @@ export function RandomQuotePanel({ pool }: { pool: RandomLine[] }) {
     <div className="border-y border-line py-8 my-12">
       <div className="flex items-baseline justify-between mb-4">
         <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
-          TODAY&apos;S LINE / 오늘의 한 줄
+          TODAY&apos;S LINE / <span className="tracking-normal">오늘의 한 줄</span>
         </div>
         <div className="flex items-center gap-3">
           {line.is_favorite && (
@@ -76,7 +76,7 @@ export function RandomQuotePanel({ pool }: { pool: RandomLine[] }) {
       </blockquote>
 
       <div className="mt-5 flex items-baseline justify-between flex-wrap gap-3">
-        <div className="flex items-baseline gap-3 font-mono text-[11px] tracking-[0.25em] text-muted">
+        <div className="flex items-baseline gap-3 font-sans text-[13px] text-muted">
           {line.source_title && (
             <span className="text-ink">— {line.source_title}</span>
           )}

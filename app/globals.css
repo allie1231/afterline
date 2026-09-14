@@ -5,7 +5,7 @@
   --paper: #fcfbfa;
   --ink: #111111;
   --white: #ffffff;
-  --muted: #8c867d;
+  --muted: #736e66;
   --line: #d8d1c5;
 
   --blue: #2f5fbb;
@@ -48,6 +48,19 @@ body {
 
 * {
   box-sizing: border-box;
+}
+
+/* Secondary controls stay out of the way while reading, but only on devices
+   that can hover — touch screens keep them visible. */
+@media (hover: hover) {
+  .hover-reveal {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .group:hover .hover-reveal,
+  .group:focus-within .hover-reveal {
+    opacity: 1;
+  }
 }
 
 ::selection {

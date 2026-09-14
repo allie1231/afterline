@@ -6,7 +6,7 @@ import { SideNavTrigger } from "./SideNav";
 // opens a left-aligned vertical sidebar with all routes.
 export function AppHeader() {
   return (
-    <header className="border-b border-line bg-paper">
+    <header className="sticky top-0 z-30 border-b border-line bg-paper">
       {/* Three-column grid: MENU left · AFTERLINE centered · actions right.
           Using grid (not flex) keeps the logo dead-centered regardless of
           how wide MENU or the right cluster get. */}

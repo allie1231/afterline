@@ -42,7 +42,7 @@ export default async function EntrancePage() {
         <section className="border-y border-line py-6">
           <div className="flex items-baseline justify-between mb-4">
             <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
-              NOW READING / 지금 읽는 중
+              NOW READING / <span className="tracking-normal">지금 읽는 중</span>
             </div>
             <span className="font-mono text-[11px] tracking-[0.25em] text-muted">
               {String(reading.length).padStart(2, "0")} ACTIVE
@@ -60,7 +60,7 @@ export default async function EntrancePage() {
         <section className="border-y border-line py-6">
           <div className="flex items-baseline justify-between mb-5">
             <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
-              ON THIS DAY / 같은 날의 기록
+              ON THIS DAY / <span className="tracking-normal">같은 날의 기록</span>
             </div>
             <span className="font-mono text-[11px] tracking-[0.25em] text-muted">
               {String(onThisDay.length).padStart(2, "0")} ENTRIES
@@ -81,22 +81,13 @@ export default async function EntrancePage() {
 
       <RandomQuotePanel pool={pool} />
 
-      <div className="flex items-end justify-between">
+      <div className="flex items-end">
         <Link
           href="/rooms"
           className="font-mono text-xs tracking-[0.3em] border border-ink px-8 py-5 hover:bg-ink hover:text-paper transition-colors"
         >
           [ ENTER ARCHIVE ]
         </Link>
-        <div className="font-mono text-[11px] tracking-[0.2em] text-muted text-right leading-relaxed">
-          A PRIVATE ARCHIVE
-          <br />
-          OF LINES THAT STAYED
-          <br />
-          AFTER READING, LISTENING,
-          <br />
-          AND LIVING.
-        </div>
       </div>
     </section>
   );
@@ -113,7 +104,7 @@ function PastQuoteBody({ q, large = false }: { q: PastLine; large?: boolean }) {
         &ldquo;{q.text}&rdquo;
       </p>
       {(q.source_title || q.source_id) && (
-        <div className="mt-3 font-mono text-[11px] tracking-[0.25em] text-muted">
+        <div className="mt-3 font-sans text-[13px] text-muted">
           {q.source_id ? (
             <Link href={`/sources/${q.source_id}`} className="hover:text-ink">
               {q.source_title}
