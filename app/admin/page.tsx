@@ -52,7 +52,9 @@ export default function AdminPage() {
 
       <p className="text-sm text-muted mb-6">
         Notion 책장 DB에서 ISBN, 페이지수, 높이, 너비가 비어있는 책을
-        Aladin API로 채웁니다. 한 번에 최대 30권씩 처리됩니다.
+        Aladin → Google Books → Open Library 순서로 검색하여 채웁니다.
+        치수를 찾을 수 없는 경우 표준 규격으로 추정합니다.
+        한 번에 최대 30권씩 처리됩니다.
       </p>
 
       <button
