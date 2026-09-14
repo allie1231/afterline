@@ -147,11 +147,11 @@ export default async function SourcePage({
                 href={`/people/${encodeURIComponent(source.creator)}`}
                 className="font-mono text-[11px] tracking-[0.25em] text-muted hover:text-ink whitespace-nowrap"
               >
-                → ALL FROM {source.creator.toUpperCase()}
+                → ALL FROM <span className="tracking-normal">{source.creator.toUpperCase()}</span>
               </Link>
             )}
           </div>
-          <div className="font-mono text-[11px] tracking-[0.2em] text-muted mt-2 flex gap-4 flex-wrap">
+          <div className="font-sans text-[13px] text-muted mt-2 flex gap-4 flex-wrap">
             <SourceFieldEditor
               sourceId={source.id}
               field="publisher"
@@ -193,7 +193,7 @@ export default async function SourcePage({
       <div className="mb-16">
         <div className="flex items-baseline justify-between mb-6">
           <div className="font-mono text-[11px] tracking-[0.25em] text-muted">
-            LINES / 수집 문장
+            LINES / <span className="tracking-normal">수집 문장</span>
           </div>
           <Link
             href={`/quotes/new?type=${source.type}&source=${source.id}`}
@@ -206,10 +206,10 @@ export default async function SourcePage({
       </div>
 
       {/* Long-form notes */}
-      <div id="notes" className="mb-16 scroll-mt-20">
+      <div id="notes" className="mb-16 scroll-mt-28">
         <div className="flex items-baseline justify-between mb-6">
           <div className="font-mono text-[11px] tracking-[0.25em] text-muted">
-            NOTES / 노트
+            NOTES / <span className="tracking-normal">노트</span>
           </div>
           <span className="font-mono text-[11px] tracking-[0.25em] text-muted">
             {String(notes.length).padStart(2, "0")} ENTRIES
@@ -226,7 +226,7 @@ export default async function SourcePage({
       <div>
         <div className="flex items-center justify-between gap-4 mb-4">
           <div className="font-mono text-[11px] tracking-[0.25em] text-muted">
-            {noteLabel.en} / {noteLabel.ko}
+            {noteLabel.en} / <span className="tracking-normal">{noteLabel.ko}</span>
           </div>
           <SaveCardButton
             targetId={`library-card-${source.id}`}

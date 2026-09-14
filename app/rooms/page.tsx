@@ -12,7 +12,7 @@ export default async function RoomsPage() {
       <div className="flex items-baseline justify-between mb-10">
         <h2 className="font-serif text-4xl tracking-tight">Rooms</h2>
         <span className="font-mono text-[11px] tracking-[0.25em] text-muted">
-          SELECT A DOOR / 문을 선택하세요
+          SELECT A DOOR / <span className="tracking-normal">문을 선택하세요</span>
         </span>
       </div>
 
@@ -61,7 +61,7 @@ export default async function RoomsPage() {
                   {cat.en}
                 </div>
                 <div
-                  className="font-mono text-xs tracking-[0.3em] mt-2"
+                  className="font-sans text-[13px] mt-2"
                   style={{ color: fgMuted }}
                 >
                   {cat.ko}

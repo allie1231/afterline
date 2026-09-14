@@ -45,10 +45,10 @@ export default async function RoomPage({
       />
 
       <div className="flex items-baseline justify-between mb-12 border-b border-line pb-6">
-        <h2 className="font-sans text-4xl md:text-5xl tracking-tight">{category.en}</h2>
+        <h2 className="font-serif text-5xl md:text-6xl tracking-tight">{category.en}</h2>
         <div className="flex items-end gap-6">
           <div className="text-right">
-            <div className="font-mono text-[11px] tracking-[0.25em] text-muted">
+            <div className="font-sans text-[13px] text-muted">
               {category.ko}
             </div>
             <div className="font-sans text-lg mt-1">{category.description}</div>
@@ -65,13 +65,13 @@ export default async function RoomPage({
       {sources.length === 0 ? (
         <div className="flex flex-col items-center py-24 gap-6">
           <div className="font-mono text-xs tracking-[0.25em] text-muted">
-            NO SOURCES YET / 아직 수집된 출처가 없습니다.
+            NO SOURCES YET / <span className="tracking-normal">아직 수집된 출처가 없습니다.</span>
           </div>
           <Link
             href="/quotes/new"
             className="font-mono text-xs tracking-[0.3em] border border-ink px-6 py-4 hover:bg-ink hover:text-paper transition-colors"
           >
-            [ ADD FIRST LINE / 첫 문장 더하기 ]
+            [ ADD FIRST LINE / <span className="tracking-normal">첫 문장 더하기</span> ]
           </Link>
         </div>
       ) : (

@@ -160,7 +160,7 @@ export function RoomShelf({
               {moveOpen && (
                 <div className="absolute top-full right-0 mt-2 z-30 bg-paper border border-ink min-w-[220px] shadow-[4px_4px_0_var(--ink)]">
                   <div className="font-mono text-[11px] tracking-[0.3em] text-muted px-3 py-2 border-b border-line">
-                    MOVE TO ROOM / 룸 이동
+                    MOVE TO ROOM / <span className="tracking-normal">룸 이동</span>
                   </div>
                   {ROOM_CATEGORIES.filter((c) => ["books", "articles", "others"].includes(c.slug)).map((cat) => {
                     const active = cat.slug === slug;
@@ -177,7 +177,7 @@ export function RoomShelf({
                         }`}
                       >
                         <span>
-                          {cat.en} / {cat.ko}
+                          {cat.en} / <span className="tracking-normal">{cat.ko}</span>
                         </span>
                         {active ? (
                           <span className="text-[11px]">HERE</span>
@@ -216,14 +216,14 @@ export function RoomShelf({
               }}
               className="font-mono text-[11px] tracking-[0.3em] text-muted hover:text-ink py-2"
             >
-              REFRESH / 새로고침
+              REFRESH / <span className="tracking-normal">새로고침</span>
             </button>
             <button
               type="button"
               onClick={() => setEditMode(true)}
               className="font-mono text-[11px] tracking-[0.3em] text-muted hover:text-ink py-2"
             >
-              EDIT / 정리
+              EDIT / <span className="tracking-normal">정리</span>
             </button>
           </div>
         )}
@@ -234,7 +234,7 @@ export function RoomShelf({
         <div className="border border-ink bg-paper p-4 mb-3 shadow-[4px_4px_0_var(--ink)]">
           <div className="flex items-baseline justify-between mb-3">
             <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
-              SPINE COLOR / 책등 색
+              SPINE COLOR / <span className="tracking-normal">책등 색</span>
               <span className="text-ink ml-3 font-sans text-base">
                 {colorPickerTarget.title}
               </span>

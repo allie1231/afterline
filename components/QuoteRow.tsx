@@ -183,13 +183,13 @@ export function QuoteRow({
           </div>
         )}
 
-        <div className="mt-3">
+        <div className="mt-3 hover-reveal">
           <SaveQuoteButton quote={quote} source={source} />
         </div>
       </div>
 
       {/* Side actions — stacked vertically, never overlap the text */}
-      <div className="flex flex-col gap-1 pt-1 opacity-40 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+      <div className="flex flex-col gap-1 pt-1 hover-reveal">
         <button
           type="button"
           onClick={() => setEditing(true)}

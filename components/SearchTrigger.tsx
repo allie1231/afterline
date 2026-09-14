@@ -28,7 +28,10 @@ export function SearchTrigger() {
         title="Search (⌘K)"
       >
         <span>⌕ SEARCH</span>
-        <span className="text-muted text-[11px] mt-0.5">검색 ⌘K</span>
+        <span className="text-muted text-[11px] mt-0.5">
+          <span className="tracking-normal">검색</span>
+          <span className="hidden md:inline"> ⌘K</span>
+        </span>
       </button>
       <SearchDialog open={open} onClose={() => setOpen(false)} />
     </>

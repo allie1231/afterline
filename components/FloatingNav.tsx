@@ -3,56 +3,52 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
-// Hide on routes where it would just get in the way (iframe widgets, login).
 const HIDDEN_PREFIXES = ["/embed", "/login"];
 
+// Browsers already have a back button; only the home-screen app (standalone)
+// needs one of its own. Scroll-to-top appears once the header is far away.
 export function FloatingNav() {
   const router = useRouter();
   const pathname = usePathname();
-  const [canScrollUp, setCanScrollUp] = useState(false);
-  const [canScrollDown, setCanScrollDown] = useState(false);
+  const [standalone, setStandalone] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    setStandalone(
+      window.matchMedia("(display-mode: standalone)").matches ||
+        (navigator as Navigator & { standalone?: boolean }).standalone === true,
+    );
+  }, []);
 
   useEffect(() => {
     function update() {
-      const y = window.scrollY;
-      const max =
-        document.documentElement.scrollHeight - window.innerHeight;
-      // Only surface the arrows when there's somewhere to actually go.
-      setCanScrollUp(y > 200);
-      setCanScrollDown(max - y > 200);
+      setScrolled(window.scrollY > 600);
     }
     update();
     window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
-    return () => {
-      window.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
-    };
+    return () => window.removeEventListener("scroll", update);
   }, [pathname]);
 
   if (HIDDEN_PREFIXES.some((p) => pathname.startsWith(p))) return null;
 
-  function toTop() {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-  function toBottom() {
-    window.scrollTo({
-      top: document.documentElement.scrollHeight,
-      behavior: "smooth",
-    });
-  }
-  function back() {
-    router.back();
-  }
+  const showBack = standalone && pathname !== "/";
+  if (!showBack && !scrolled) return null;
 
   return (
     <div
-      className="fixed right-4 sm:right-6 bottom-4 sm:bottom-6 z-30 flex flex-col gap-2"
+      className="fixed right-4 sm:right-6 bottom-4 sm:bottom-6 z-30 flex divide-x divide-ink border border-ink bg-paper"
       aria-label="페이지 이동"
     >
-      <Btn onClick={back} label="←" title="뒤로 / 이전 페이지" />
-      {canScrollUp && <Btn onClick={toTop} label="↑" title="최상단으로" />}
-      {canScrollDown && <Btn onClick={toBottom} label="↓" title="최하단으로" />}
+      {showBack && (
+        <Btn onClick={() => router.back()} label="←" title="뒤로" />
+      )}
+      {scrolled && (
+        <Btn
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          label="↑"
+          title="맨 위로"
+        />
+      )}
     </div>
   );
 }
@@ -72,7 +68,7 @@ function Btn({
       onClick={onClick}
       title={title}
       aria-label={title}
-      className="w-11 h-11 flex items-center justify-center bg-paper text-ink border border-ink font-mono text-base leading-none hover:bg-ink hover:text-paper transition-colors"
+      className="w-10 h-10 flex items-center justify-center font-mono text-sm leading-none hover:bg-ink hover:text-paper transition-colors"
     >
       {label}
     </button>

@@ -30,11 +30,11 @@ export default async function GenrePage() {
       />
 
       <div className="flex items-baseline justify-between mb-12 border-b border-line pb-6">
-        <h2 className="font-sans text-4xl md:text-5xl tracking-tight">
+        <h2 className="font-serif text-5xl md:text-6xl tracking-tight">
           Genre
         </h2>
         <div className="text-right">
-          <div className="font-mono text-[11px] tracking-[0.25em] text-muted">
+          <div className="font-sans text-[13px] text-muted">
             분야
           </div>
           <div className="font-sans text-lg mt-1">분야별 책장</div>
@@ -44,7 +44,7 @@ export default async function GenrePage() {
       {genresWithCounts.length === 0 ? (
         <div className="flex flex-col items-center py-24 gap-6">
           <div className="font-mono text-xs tracking-[0.25em] text-muted">
-            NO GENRES YET / 분야가 지정된 책이 없습니다.
+            NO GENRES YET / <span className="tracking-normal">분야가 지정된 책이 없습니다.</span>
           </div>
         </div>
       ) : (
