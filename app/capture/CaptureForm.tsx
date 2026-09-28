@@ -13,7 +13,7 @@ type BookHit = {
   published_date?: string;
   isbn?: string;
   cover_url?: string;
-  source: "aladin" | "google";
+  source: "kakao" | "google";
 };
 
 type Hit = {
