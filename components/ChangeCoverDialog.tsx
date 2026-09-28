@@ -21,7 +21,7 @@ type CoverHit = {
   creator?: string;
   meta?: string; // year / album / publisher / etc.
   cover_url?: string;
-  source: string; // "ALADIN" | "GOOGLE" | "TMDB" | "ITUNES"
+  source: string; // "KAKAO" | "GOOGLE" | "TMDB" | "ITUNES"
   // Raw values used to auto-fill the source's text fields when USE is clicked.
   raw?: {
     title?: string;
@@ -54,7 +54,7 @@ async function fetchHits(
         isbn?: string;
         cover_url?: string;
         genre?: string;
-        source: "aladin" | "google";
+        source: "kakao" | "google";
       }>;
     };
     return (data.results ?? []).map((b) => ({
@@ -173,7 +173,7 @@ async function fetchHits(
 }
 
 const PROVIDER_LABEL: Record<SourceType, string> = {
-  book: "ALADIN + GOOGLE BOOKS",
+  book: "KAKAO + GOOGLE BOOKS",
   movie: "TMDB",
   lyrics: "ITUNES",
   article: "—",

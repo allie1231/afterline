@@ -69,7 +69,7 @@ type BookResult = {
   isbn?: string;
   cover_url?: string;
   genre?: string;
-  source: "aladin" | "google";
+  source: "kakao" | "google";
 };
 
 async function searchBooks(query: string): Promise<BookResult[]> {

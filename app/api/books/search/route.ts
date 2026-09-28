@@ -1,7 +1,11 @@
 // Server-side book search proxy.
-// 1) Aladin first (best Korean coverage). Server-side because Aladin
-//    doesn't expose CORS for browsers and the key stays out of the bundle.
-// 2) Google Books as a fallback when Aladin returns nothing.
+// 1) Kakao first (best Korean coverage, and the only source with cover images
+//    for Korean books — Google Books had none for 30 of 30 sampled). Server-side
+//    because the REST key must stay out of the bundle.
+// 2) Google Books as a fallback when Kakao returns nothing.
+//
+// Kakao carries no category, so book results have no genre; it is typed in on
+// the source page instead.
 
 import { NextResponse } from "next/server";
 
@@ -14,84 +18,66 @@ export type BookSearchResult = {
   isbn?: string;
   cover_url?: string;
   genre?: string;
-  source: "aladin" | "google";
+  source: "kakao" | "google";
 };
 
-// Pick a reasonable subgenre label from Aladin's nested category string.
-// Example input:  "국내도서>소설/시/희곡>한국소설"
-//             →  "한국소설"
-// Falls back to the second segment when the leaf is generic ("전체" etc.).
-function aladinCategoryToGenre(raw?: string): string | undefined {
-  if (!raw) return undefined;
-  const parts = raw
-    .split(">")
-    .map((p) => p.trim())
-    .filter((p) => p.length > 0);
-  if (parts.length === 0) return undefined;
-  const last = parts[parts.length - 1];
-  if (last && last !== "전체") return last;
-  return parts[parts.length - 2];
+// Kakao returns both ISBNs in one space-separated field: "8937473135 9788937473135".
+function pickIsbn13(raw?: string): string | undefined {
+  const parts = String(raw ?? "").trim().split(/\s+/).filter(Boolean);
+  return parts.find((p) => p.length === 13) ?? parts[0];
 }
 
-function cleanAuthor(raw?: string): string | undefined {
-  if (!raw) return undefined;
-  // Aladin returns things like "헤르만 헤세 (지은이), 전영애 (옮긴이)".
-  // Strip the parenthetical roles to keep just the names.
-  return raw.replace(/\s*\([^)]*\)/g, "").trim();
+// The thumbnail Kakao hands back is a signed 120x174 crop — asking that host for
+// a bigger crop is rejected — but it wraps the full-size original in ?fname=,
+// which serves ~458x666 over https.
+function fullSizeCover(thumbnail?: string): string | undefined {
+  if (!thumbnail) return undefined;
+  try {
+    const original = new URL(thumbnail).searchParams.get("fname");
+    if (original) return original.replace(/^http:\/\//, "https://");
+  } catch {
+    // fall through to the thumbnail below
+  }
+  return thumbnail;
 }
 
-async function searchAladin(query: string): Promise<BookSearchResult[]> {
-  const key = process.env.ALADIN_TTB_KEY;
+async function searchKakao(query: string): Promise<BookSearchResult[]> {
+  const key = process.env.KAKAO_REST_KEY;
   if (!key) return [];
   const url =
-    `https://www.aladin.co.kr/ttb/api/ItemSearch.aspx?` +
-    new URLSearchParams({
-      ttbkey: key,
-      Query: query,
-      QueryType: "Keyword",
-      MaxResults: "10",
-      start: "1",
-      SearchTarget: "Book",
-      output: "js",
-      Version: "20131101",
-      Cover: "Big",
-    }).toString();
+    `https://dapi.kakao.com/v3/search/book?` +
+    new URLSearchParams({ query, size: "10" }).toString();
 
   try {
     const r = await fetch(url, {
-      headers: { Accept: "application/json" },
-      // Aladin caches responses well; no need to revalidate constantly.
+      headers: { Authorization: `KakaoAK ${key}` },
       next: { revalidate: 60 * 60 },
     });
     if (!r.ok) return [];
-    const text = await r.text();
-    // Aladin sometimes prefixes the JSON with whitespace or BOM. Trim.
-    const cleaned = text.trim();
-    if (!cleaned.startsWith("{")) return [];
-    const data = JSON.parse(cleaned);
-    const items = (data.item ?? []) as Array<{
-      itemId?: number | string;
+    const data = await r.json();
+    const docs = (data.documents ?? []) as Array<{
       title?: string;
-      author?: string;
+      authors?: string[];
+      translators?: string[];
       publisher?: string;
-      pubDate?: string;
+      datetime?: string;
       isbn?: string;
-      isbn13?: string;
-      cover?: string;
-      categoryName?: string;
+      thumbnail?: string;
     }>;
-    return items
-      .map<BookSearchResult>((it) => ({
-        id: `aladin-${it.itemId ?? it.isbn13 ?? Math.random()}`,
-        title: it.title ?? "",
-        creator: cleanAuthor(it.author),
-        publisher: it.publisher,
-        published_date: it.pubDate?.slice(0, 4),
-        isbn: it.isbn13 || it.isbn,
-        cover_url: it.cover,
-        genre: aladinCategoryToGenre(it.categoryName),
-        source: "aladin",
-      }))
+    return docs
+      .map<BookSearchResult>((d) => {
+        const isbn = pickIsbn13(d.isbn);
+        return {
+          id: `kakao-${isbn ?? d.title ?? Math.random()}`,
+          title: d.title ?? "",
+          creator: d.authors?.filter(Boolean).join(", ") || undefined,
+          publisher: d.publisher || undefined,
+          published_date: d.datetime?.slice(0, 4),
+          isbn,
+          cover_url: fullSizeCover(d.thumbnail),
+          source: "kakao",
+        };
+      })
       .filter((r) => r.title.length > 0);
   } catch {
     return [];
@@ -147,9 +133,9 @@ export async function GET(request: Request) {
   const q = (searchParams.get("q") ?? "").trim();
   if (!q) return NextResponse.json({ results: [] });
 
-  const aladin = await searchAladin(q);
-  if (aladin.length > 0) {
-    return NextResponse.json({ results: aladin });
+  const kakao = await searchKakao(q);
+  if (kakao.length > 0) {
+    return NextResponse.json({ results: kakao });
   }
   const google = await searchGoogleBooks(q);
   return NextResponse.json({ results: google });
