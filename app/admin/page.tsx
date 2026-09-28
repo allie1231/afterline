@@ -64,8 +64,8 @@ export default function AdminPage() {
 
       <p className="text-sm text-muted mb-6">
         Notion 책장 DB에서 ISBN, 페이지수, 높이, 너비가 비어있는 책을
-        알라딘에서 찾아 채웁니다. 전자책 ISBN은 종이책 판본을 따라가 실제
-        판형을 가져옵니다. 한 번에 최대 100권씩 처리됩니다.
+        국립중앙도서관 서지정보에서 찾아 채웁니다. 전자책 ISBN은 종이책 판본을
+        따라가 실제 판형을 가져옵니다. 한 번에 최대 100권씩 처리됩니다.
       </p>
 
       <button

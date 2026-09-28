@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { Client } from "@notionhq/client";
 import type { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints/common";
 import type { QueryDataSourceResponse } from "@notionhq/client/build/src/api-endpoints/data-sources";
-import { enrichBookDetail } from "@/lib/aladin";
+import { enrichBookDetail } from "@/lib/book-lookup";
 import { invalidateNotionCache } from "@/lib/notion";
 
 export const dynamic = "force-dynamic";
