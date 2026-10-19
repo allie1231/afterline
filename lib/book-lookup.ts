@@ -340,6 +340,62 @@ async function openLibraryLookup(isbn?: string): Promise<BookDetail | null> {
   };
 }
 
+// ─── Kakao Books (ISBN discovery for Korean titles) ─────────────────
+
+async function kakaoSearchIsbn(
+  title: string,
+  creator?: string,
+): Promise<string | null> {
+  const key = process.env.KAKAO_REST_KEY;
+  if (!key) return null;
+
+  const queries = creator ? [`${title} ${creator}`, title] : [title];
+
+  for (const query of queries) {
+    const url =
+      `https://dapi.kakao.com/v3/search/book?` +
+      new URLSearchParams({ query, size: "5" }).toString();
+
+    try {
+      await takeSlot();
+      const r = await fetch(url, {
+        headers: { Authorization: `KakaoAK ${key}` },
+        signal: AbortSignal.timeout(5000),
+      });
+      if (r.status === 429) continue;
+      if (!r.ok) continue;
+      const data = await r.json();
+      const docs = (data.documents ?? []) as Array<{
+        title?: string;
+        isbn?: string;
+      }>;
+
+      for (const doc of docs) {
+        const isbns = String(doc.isbn ?? "").split(/\s+/).filter(Boolean);
+        const isbn13 = isbns.find((i) => i.length === 13);
+        if (isbn13) return isbn13;
+      }
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
+// ─── Dimension estimation (last resort) ─────────────────────────────
+
+function estimateDimensions(detail: BookDetail): BookDetail {
+  if (detail.sizeHeight && detail.sizeWidth) return detail;
+  const pages = detail.pageCount ?? 200;
+  if (pages > 400) {
+    return { ...detail, sizeHeight: detail.sizeHeight ?? 230, sizeWidth: detail.sizeWidth ?? 152 };
+  }
+  if (pages > 200) {
+    return { ...detail, sizeHeight: detail.sizeHeight ?? 210, sizeWidth: detail.sizeWidth ?? 148 };
+  }
+  return { ...detail, sizeHeight: detail.sizeHeight ?? 188, sizeWidth: detail.sizeWidth ?? 128 };
+}
+
 // ─── Combined lookup ────────────────────────────────────────────────
 
 const detailCache = new Map<string, BookDetail | null>();
@@ -391,10 +447,26 @@ async function lookupBookDetail(
     if (isComplete(detail)) return detail;
   }
 
+  // Kakao can find ISBNs for Korean books that NL missed; look up the ISBN at NL.
+  if (!detail?.isbn13 && title && HANGUL.test(title)) {
+    const kakaoIsbn = await kakaoSearchIsbn(title, primaryCreator);
+    if (kakaoIsbn) {
+      const nlDetail = await seojiByIsbn(kakaoIsbn);
+      detail = merge(detail, nlDetail);
+      if (!detail) detail = { isbn13: kakaoIsbn };
+      else if (!detail.isbn13) detail = { ...detail, isbn13: kakaoIsbn };
+      if (isComplete(detail)) return detail;
+    }
+  }
+
   if (!HANGUL.test(title ?? "") && !HANGUL.test(creator ?? "")) {
     detail = merge(detail, await googleBooksLookup(detail?.isbn13 || isbn, title, creator));
     if (isComplete(detail)) return detail;
     detail = merge(detail, await openLibraryLookup(detail?.isbn13 || isbn));
+  }
+
+  if (detail && (!detail.sizeHeight || !detail.sizeWidth)) {
+    detail = estimateDimensions(detail);
   }
 
   return detail;
