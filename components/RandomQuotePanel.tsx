@@ -22,14 +22,8 @@ export function RandomQuotePanel({ pool }: { pool: RandomLine[] }) {
           TODAY&apos;S LINE / <span className="tracking-normal">오늘의 한 줄</span>
         </div>
         <p className="font-sans text-xl text-muted mt-3">
-          아직 수집된 문장이 없어요. 첫 문장을 더해보세요.
+          아직 수집된 문장이 없어요. 노션에 문장을 더하면 여기에 보입니다.
         </p>
-        <Link
-          href="/quotes/new"
-          className="inline-block mt-4 font-mono text-[11px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors"
-        >
-          + NEW LINE
-        </Link>
       </div>
     );
   }

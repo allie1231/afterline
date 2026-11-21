@@ -1,14 +1,17 @@
 import type { CollectionNote, Source, SourceType } from "@/lib/data/types";
 import { resolveSpineColor } from "@/lib/data/spineColor";
-import { StarRating } from "./StarRating";
-import { StatusPicker } from "./StatusPicker";
-import { DateField } from "./DateField";
-import { NoteFieldEditor } from "./NoteFieldEditor";
 
-function fmtDate(iso?: string) {
+function fmtDate(iso?: string | null) {
   if (!iso) return "—";
   return iso.slice(0, 10).replace(/-/g, ".");
 }
+
+const STATUS_LABEL: Record<string, string> = {
+  to_read: "TO READ",
+  reading: "READING",
+  finished: "FINISHED",
+  archived: "ARCHIVED",
+};
 
 // Source types that show a cover area inside the card. "other" is excluded —
 // per request, no image area at all.
@@ -120,13 +123,15 @@ export function LibraryCard({
             <div className="font-mono text-[11px] tracking-[0.25em] text-muted mb-2">
               MY THOUGHT / 내 생각
             </div>
-            <NoteFieldEditor
-              sourceId={source.id}
-              field="personal_note"
-              initialValue={note?.personal_note ?? ""}
-              placeholder="+ 짧은 생각을 더해보세요"
-              textClassName="font-sans text-base leading-relaxed"
-            />
+            {note?.personal_note ? (
+              <p className="font-sans text-base leading-relaxed whitespace-pre-line">
+                {note.personal_note}
+              </p>
+            ) : (
+              <div className="font-mono text-[11px] tracking-[0.2em] text-muted italic">
+                (노션에서 적은 생각이 여기에 보입니다)
+              </div>
+            )}
           </div>
 
           {note?.keywords && note.keywords.length > 0 && (
@@ -149,27 +154,14 @@ export function LibraryCard({
         </div>
 
         <aside className="border-t md:border-t-0 border-ink px-5 py-6 flex flex-col gap-5">
-          <StarRating
-            sourceId={source.id}
-            initialRating={note?.rating ?? null}
-          />
-          <StatusPicker
-            sourceId={source.id}
-            initialStatus={note?.status ?? null}
+          <Rating value={note?.rating ?? null} />
+          <Stamp
+            label="STATUS"
+            value={note?.status ? STATUS_LABEL[note.status] ?? "—" : "UNFILED"}
           />
           <Stamp label="LINES" value={String(lineCount).padStart(2, "0")} />
-          <DateField
-            sourceId={source.id}
-            field="started_at"
-            label="STARTED"
-            initialDate={note?.started_at ?? null}
-          />
-          <DateField
-            sourceId={source.id}
-            field="finished_at"
-            label="FINISHED"
-            initialDate={note?.finished_at ?? null}
-          />
+          <Stamp label="STARTED" value={fmtDate(note?.started_at)} />
+          <Stamp label="FINISHED" value={fmtDate(note?.finished_at)} />
         </aside>
       </div>
 
@@ -183,6 +175,26 @@ export function LibraryCard({
         />
       </div>
     </article>
+  );
+}
+
+function Rating({ value }: { value: number | null }) {
+  return (
+    <div>
+      <div className="font-mono text-[11px] tracking-[0.3em] text-muted">
+        RATING / <span className="tracking-normal">평점</span>
+      </div>
+      <div className="flex gap-0.5 mt-1 text-xl leading-none">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <span
+            key={n}
+            style={{ color: value && n <= value ? "var(--red)" : "var(--line)" }}
+          >
+            ★
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }
 

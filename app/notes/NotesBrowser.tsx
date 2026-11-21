@@ -91,7 +91,7 @@ export function NotesBrowser({ items }: { items: NoteWithSource[] }) {
       {filtered.length === 0 ? (
         <div className="font-mono text-xs tracking-[0.2em] text-muted py-20 text-center">
           {items.length === 0
-            ? "NO NOTES YET / 아직 작성된 노트가 없어요. 소스 페이지에서 + NEW NOTE 를 눌러보세요."
+            ? "NO NOTES YET / 아직 작성된 노트가 없어요."
             : "필터에 맞는 노트가 없어요."}
         </div>
       ) : (

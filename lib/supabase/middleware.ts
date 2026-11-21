@@ -42,7 +42,6 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/auth") ||
     path.startsWith("/embed") || // iframe widgets — token in URL
     path.startsWith("/q/") || // public single-quote share pages
-    path.startsWith("/api/quick-add") || // Personal Token POST
     path.startsWith("/api/today") || // legacy widget JSON endpoint
     path.startsWith("/api/widget") || // iOS widget JSON endpoint
     path.startsWith("/api/enrich") || // manual book enrichment
