@@ -12,15 +12,11 @@ import {
 } from "@/lib/data/repository";
 import { extractQuoteRefs } from "@/lib/note-refs";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { CoverEditor } from "@/components/CoverEditor";
-import { EditSourceButton } from "@/components/EditSourceButton";
 import { LibraryCard } from "@/components/LibraryCard";
 import { NoteList } from "@/components/NoteList";
 import { QuoteList } from "@/components/QuoteList";
 import { SaveCardButton } from "@/components/SaveCardButton";
-import { SourceFieldEditor } from "@/components/SourceFieldEditor";
-import { DeleteSourceButton } from "@/components/DeleteSourceButton";
-import { SourceTypeChanger } from "@/components/SourceTypeChanger";
+import { SourceCover } from "@/components/SourceCover";
 import type { SourceType } from "@/lib/data/types";
 import { roomSlugForType } from "@/lib/data/categories";
 
@@ -109,7 +105,6 @@ export default async function SourcePage({
         )}
       </div>
 
-      {/* Header — title/creator/publisher all inline-editable */}
       <header
         className={`${
           showCover
@@ -117,31 +112,17 @@ export default async function SourcePage({
             : ""
         } border-b border-ink pb-8 mb-12`}
       >
-        {showCover && <CoverEditor source={source} category={category} />}
+        {showCover && <SourceCover source={source} category={category} />}
 
         <div className="flex flex-col justify-end">
-          <div className="mb-2 flex items-center gap-3 flex-wrap">
-            <SourceTypeChanger
-              sourceId={source.id}
-              currentType={source.type}
-            />
+          <div className="mb-2 font-mono text-[11px] tracking-[0.25em] text-muted">
+            {source.type.toUpperCase()}
           </div>
           <h1 className="font-sans text-[clamp(28px,4vw,48px)] leading-[1.05] tracking-tight break-words">
-            <SourceFieldEditor
-              sourceId={source.id}
-              field="title"
-              initialValue={source.title}
-              placeholder="제목"
-            />
+            {source.title}
           </h1>
           <div className="font-sans text-lg text-muted mt-2 flex items-baseline gap-3 flex-wrap">
-            <SourceFieldEditor
-              sourceId={source.id}
-              field="creator"
-              initialValue={source.creator ?? ""}
-              placeholder="+ 저자 / 출연자"
-              emptyClassName="text-muted italic text-base"
-            />
+            {source.creator && <span>{source.creator}</span>}
             {source.creator && source.type !== "movie" && (
               <Link
                 href={`/people/${encodeURIComponent(source.creator)}`}
@@ -152,32 +133,9 @@ export default async function SourcePage({
             )}
           </div>
           <div className="font-sans text-[13px] text-muted mt-2 flex gap-4 flex-wrap">
-            <SourceFieldEditor
-              sourceId={source.id}
-              field="publisher"
-              initialValue={source.publisher ?? ""}
-              placeholder="+ 출판사 / 앨범"
-            />
-            {(source.type === "movie" ||
-              source.type === "book" ||
-              source.type === "lyrics") && (
-              <SourceFieldEditor
-                sourceId={source.id}
-                field="published_date"
-                initialValue={source.published_date ?? ""}
-                placeholder="+ 연도"
-              />
-            )}
-            {(source.type === "movie" ||
-              source.type === "book" ||
-              source.type === "lyrics") && (
-              <SourceFieldEditor
-                sourceId={source.id}
-                field="genre"
-                initialValue={source.genre ?? ""}
-                placeholder="+ 장르"
-              />
-            )}
+            {source.publisher && <span>{source.publisher}</span>}
+            {source.published_date && <span>{source.published_date}</span>}
+            {source.genre && <span>{source.genre}</span>}
           </div>
 
           <div className="flex gap-6 mt-5 font-mono text-[11px] tracking-[0.25em]">
@@ -195,12 +153,9 @@ export default async function SourcePage({
           <div className="font-mono text-[11px] tracking-[0.25em] text-muted">
             LINES / <span className="tracking-normal">수집 문장</span>
           </div>
-          <Link
-            href={`/quotes/new?type=${source.type}&source=${source.id}`}
-            className="font-mono text-[11px] tracking-[0.3em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors"
-          >
-            + NEW LINE
-          </Link>
+          <span className="font-mono text-[11px] tracking-[0.25em] text-muted">
+            {String(quotes.length).padStart(2, "0")} LINES
+          </span>
         </div>
         <QuoteList quotes={quotes} source={source} />
       </div>
@@ -215,11 +170,7 @@ export default async function SourcePage({
             {String(notes.length).padStart(2, "0")} ENTRIES
           </span>
         </div>
-        <NoteList
-          notes={notes}
-          sourceId={source.id}
-          quotesById={quotesById}
-        />
+        <NoteList notes={notes} quotesById={quotesById} />
       </div>
 
       {/* Note as library card */}
@@ -242,21 +193,13 @@ export default async function SourcePage({
         />
       </div>
 
-      <div className="mt-16 flex items-center justify-between gap-4 flex-wrap">
+      <div className="mt-16">
         <Link
           href={`/rooms/${roomSlugForType(source.type)}`}
           className="font-mono text-[11px] tracking-[0.25em] text-muted hover:text-ink"
         >
           ← BACK TO {source.type.toUpperCase()} ROOM
         </Link>
-        <div className="flex items-center gap-3">
-          <EditSourceButton source={source} />
-          <DeleteSourceButton
-            sourceId={source.id}
-            type={source.type}
-            title={source.title}
-          />
-        </div>
       </div>
     </section>
   );

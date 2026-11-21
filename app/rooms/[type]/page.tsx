@@ -46,19 +46,9 @@ export default async function RoomPage({
 
       <div className="flex items-baseline justify-between mb-12 border-b border-line pb-6">
         <h2 className="font-serif text-5xl md:text-6xl tracking-tight">{category.en}</h2>
-        <div className="flex items-end gap-6">
-          <div className="text-right">
-            <div className="font-sans text-[13px] text-muted">
-              {category.ko}
-            </div>
-            <div className="font-sans text-lg mt-1">{category.description}</div>
-          </div>
-          <Link
-            href="/quotes/new"
-            className="font-mono text-xs tracking-[0.3em] border border-ink px-5 py-3 hover:bg-ink hover:text-paper transition-colors whitespace-nowrap"
-          >
-            + NEW LINE
-          </Link>
+        <div className="text-right">
+          <div className="font-sans text-[13px] text-muted">{category.ko}</div>
+          <div className="font-sans text-lg mt-1">{category.description}</div>
         </div>
       </div>
 
@@ -67,12 +57,6 @@ export default async function RoomPage({
           <div className="font-mono text-xs tracking-[0.25em] text-muted">
             NO SOURCES YET / <span className="tracking-normal">아직 수집된 출처가 없습니다.</span>
           </div>
-          <Link
-            href="/quotes/new"
-            className="font-mono text-xs tracking-[0.3em] border border-ink px-6 py-4 hover:bg-ink hover:text-paper transition-colors"
-          >
-            [ ADD FIRST LINE / <span className="tracking-normal">첫 문장 더하기</span> ]
-          </Link>
         </div>
       ) : (
         <RoomShelf slug={slug} sourceCounts={sourceCounts} />
